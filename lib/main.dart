@@ -42,23 +42,37 @@ class _Myapp2State extends State<Myapp2> {
                 fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily),
           ),
         ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage('assets/images/WatalyGold.png'),
+                  fit: BoxFit.cover)),
+        ),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("สวัสดีค่ะ ชื่อมอสนะคะ"),
-            Text("Hello"),
+            const Text("สวัสดีค่ะ ชื่อมอสนะคะ"),
+            const Text("Hello"),
+            Text(
+              number.toString(),
+              style: const TextStyle(fontSize: 50),
+            )
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-
-        },
+        onPressed: addNumber,
         child: Icon(Icons.add),
       ),
       backgroundColor: Colors.lightGreenAccent,
     );
+  }
+
+  void addNumber() {
+    setState(() {
+      number++;
+    });
   }
 }
