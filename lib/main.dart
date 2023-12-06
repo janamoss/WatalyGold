@@ -19,6 +19,21 @@ class myApp extends StatelessWidget {
   }
 }
 
+class _MyCustomClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height);
+    path.lineTo(size.width, size.height);
+    path.quadraticBezierTo(size.width / 2, size.height + 25, 0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_MyCustomClipper oldClipper) => true;
+}
+
 // Widget stateful
 class Myapp2 extends StatefulWidget {
   const Myapp2({super.key});
@@ -33,20 +48,29 @@ class _Myapp2State extends State<Myapp2> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            "Wataly Gold",
-            style: TextStyle(
-                fontSize: 30,
-                color: Colors.amber,
-                fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily),
+        toolbarHeight: 200,
+        title: ClipRRect(
+          
+          borderRadius: BorderRadius.circular(15),
+          child: Image.asset(
+            'assets/images/WatalyGoldIcons.png',
+            fit: BoxFit.contain,
+            width: 80,
           ),
         ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
+        flexibleSpace: ClipPath(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(75)),
               image: DecorationImage(
-                  image: AssetImage('assets/images/WatalyGold.png'),
-                  fit: BoxFit.cover)),
+                image: AssetImage('assets/images/WatalyGold.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(75)),
         ),
       ),
       body: Center(
