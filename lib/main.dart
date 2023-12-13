@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'Home/HomeApp.dart';
+import 'Home/basepage.dart';
 
 void main() {
   var app = const myApp();
@@ -15,9 +16,10 @@ class myApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,),
+        fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
+      ),
       title: "Wataly Gold",
-      home: Homeapp(),
+      home: const BasePage(),
     );
   }
 }
