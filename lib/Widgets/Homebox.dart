@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:watalygold/models/category.dart';
+import 'package:watalygold/Home/Knowledge/Knowledge.dart';
+import 'package:watalygold/Home/Quality/MainAnalysis.dart';
 import 'CategoryCard.dart';
 
 class Homebox extends StatefulWidget {
@@ -19,7 +21,7 @@ class _HomeboxState extends State<Homebox> {
             shrinkWrap: true,
             itemCount: categoryList.length,
             padding: const EdgeInsets.symmetric(
-              horizontal: 30,
+              horizontal: 22,
               vertical: 20,
             ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -29,8 +31,36 @@ class _HomeboxState extends State<Homebox> {
               mainAxisSpacing: 24,
             ),
             itemBuilder: (context, index) {
-              return CategoryCard(
-                category: categoryList[index],
+              return GestureDetector(
+                onTap: () {
+                  if (index == 0) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const TakePictureScreen(camera: )));
+                  }
+                  if (index == 1) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const KnowledgeMain()));
+                  }
+                  if (index == 2) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const KnowledgeMain()));
+                  }
+                  if (index == 3) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const KnowledgeMain()));
+                  }
+                },
+                child: CategoryCard(
+                  category: categoryList[index],
+                ),
               );
             })
       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watalygold/models/category.dart';
+import 'package:watalygold/Home/Knowledge/Knowledge.dart';
 
 class CategoryCard extends StatelessWidget {
   final Category category;
@@ -8,7 +9,6 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -32,7 +32,7 @@ class CategoryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(
-              height: 10,
+              height: 2,
             ),
             Center(
               child: Text(category.name,
