@@ -12,16 +12,25 @@ Future<void> main() async {
   // Obtain a list of the available cameras on the device.
   final cameras = await availableCameras();
 
-  // Get a specific camera from the list of available cameras.
-  final firstCamera = cameras.first;
+  if (cameras.isEmpty) {
+    // Handle the case where no cameras are available
+    print('No cameras available');
+    return;
+  }
 
   runApp(
     MaterialApp(
+      initialRoute: '/home', // กำหนด initialRoute หรือหน้าแรกของแอพ
+      routes: {
+        '/home': (context) =>
+            Homeapp(camera: cameras), // กำหนด route สำหรับ BasePage
+        // เพิ่ม routes อื่นๆ ตามต้องการ
+      },
       theme: ThemeData(
         fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
       ),
       title: "Wataly Gold",
-      home: const BasePage(),
+      home: BasePage(camera: cameras),
     ),
   );
 }

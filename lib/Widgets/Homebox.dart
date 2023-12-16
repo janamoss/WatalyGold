@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:watalygold/models/category.dart';
 import 'package:watalygold/Home/Knowledge/Knowledge.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
+import 'package:camera/camera.dart';
 import 'CategoryCard.dart';
 
 class Homebox extends StatefulWidget {
-  const Homebox({super.key});
+  final List<CameraDescription> camera;
+  const Homebox({Key? key, required this.camera}) : super(key: key);
 
   @override
   State<Homebox> createState() => _HomeboxState();
@@ -21,7 +23,7 @@ class _HomeboxState extends State<Homebox> {
             shrinkWrap: true,
             itemCount: categoryList.length,
             padding: const EdgeInsets.symmetric(
-              horizontal: 22,
+              horizontal: 24,
               vertical: 20,
             ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -37,7 +39,8 @@ class _HomeboxState extends State<Homebox> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const TakePictureScreen(camera: )));
+                            builder: (context) =>
+                                TakePictureScreen(camera: widget.camera)));
                   }
                   if (index == 1) {
                     Navigator.push(

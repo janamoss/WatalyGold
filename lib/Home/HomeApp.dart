@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:watalygold/Widgets/BTNavBar.dart';
 import 'package:watalygold/Widgets/Homebox.dart';
+import 'package:camera/camera.dart';
 
 void main() {}
 
 class Homeapp extends StatefulWidget {
-  const Homeapp({super.key});
+  final List<CameraDescription> camera;
+
+  const Homeapp({Key? key, required this.camera}) : super(key: key);
+
 
   @override
   State<Homeapp> createState() => _HomeappState();
@@ -45,7 +49,7 @@ class _HomeappState extends State<Homeapp> {
         ),
       ),
       body: Column(
-        children: [Homebox()],
+        children: [Homebox(camera: widget.camera,)],
       ),
       backgroundColor: const Color(0xFFF2F6F5),
     );

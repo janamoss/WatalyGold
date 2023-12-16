@@ -36,7 +36,14 @@ class NavBar extends StatelessWidget {
 }
 
 class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+  final int selectedIndex; // Receive selectedIndex from _BasePageState
+  final Function(int) onItemTapped; // Receive callback function
+
+  const BottomNavBar({
+    required this.selectedIndex,
+    required this.onItemTapped,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
@@ -79,12 +86,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
           label: 'คู่มือการ\nใช้งาน',
         ),
       ],
-      currentIndex: _selectedIndex,
-      onTap: (int index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
+      currentIndex: widget.selectedIndex, // Set currentIndex using received selectedIndex
+      onTap: widget.onItemTapped, // Call the callback function on tap
     );
   }
 }
