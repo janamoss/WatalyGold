@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'ExportPrice/ExportPrice.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  var app = myApp();
-  runApp(app);
-}
+
+
+ void main() {
+   var app = myApp();
+   runApp(app);
+ }
+
+
 
 // Widget  stateless
 class myApp extends StatelessWidget {
@@ -13,66 +20,36 @@ class myApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
+      ),
       title: "Wataly Gold",
-      home: Myapp2(),
+      home: const ExportPrice(),
+      
     );
   }
 }
 
-// Widget stateful
-class Myapp2 extends StatefulWidget {
-  const Myapp2({super.key});
+// class ExportPrice extends StatefulWidget {
+//   @override
+//   _ExportPageState createState() => _ExportPageState();
+// }
 
-  @override
-  State<Myapp2> createState() => _Myapp2State();
-}
-
-class _Myapp2State extends State<Myapp2> {
-  int number = 0;
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text(
-            "Wataly Gold",
-            style: TextStyle(
-                fontSize: 30,
-                color: Colors.amber,
-                fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily),
-          ),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage('assets/images/WatalyGold.png'),
-                  fit: BoxFit.cover)),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("สวัสดีค่ะ ชื่อมอสนะคะ"),
-            const Text("Hello"),
-            Text(
-              number.toString(),
-              style: const TextStyle(fontSize: 50),
-            )
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addNumber,
-        child: Icon(Icons.add),
-      ),
-      backgroundColor: Colors.lightGreenAccent,
-    );
-  }
-
-  void addNumber() {
-    setState(() {
-      number++;
-    });
-  }
-}
+// class _ExportPageState extends State<ExportPrice>{
+//   @override
+//   void initState(){
+//     super.initState();
+//     print("fkvmf");
+//   }
+//   @override
+//   Widget build(BuildContext context) {
+//     print("mfkv");
+//     return Scaffold(
+//      appBar: AppBar(
+//       title: Text("ราคาตลาดส่งออก",
+//       style: TextStyle(color:Colors.white,fontWeight: FontWeight.bold)),
+//      ),
+//      body: Column(children: [],)
+//     );
+//   }
+// }
