@@ -1,3 +1,4 @@
+import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,23 +6,27 @@ import 'Home/HomeApp.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:video_player/video_player.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Obtain a list of the available cameras on the device.
   final cameras = await availableCameras();
-
   if (cameras.isEmpty) {
     // Handle the case where no cameras are available
     print('No cameras available');
     return;
   }
-
   runApp(
     MaterialApp(
-      initialRoute: '/home', // กำหนด initialRoute หรือหน้าแรกของแอพ
+      initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
       routes: {
+        '/base': (context) => BasePage(camera: cameras),
         '/home': (context) =>
             Homeapp(camera: cameras), // กำหนด route สำหรับ BasePage
         // เพิ่ม routes อื่นๆ ตามต้องการ
