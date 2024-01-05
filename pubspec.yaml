@@ -48,6 +48,7 @@ dependencies:
   logger: ^2.0.2+1
   tflite_v2: ^1.0.0
   path_provider: ^2.1.1
+  cloud_functions: ^4.5.8
   
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
@@ -14,7 +15,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  FirebaseFunctions.instanceFor(region: 'asia-southeast1')
+      .useFunctionsEmulator('127.0.0.1', 5001);
   // Obtain a list of the available cameras on the device.
   final cameras = await availableCameras();
   if (cameras.isEmpty) {

@@ -1,9 +1,11 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
@@ -127,6 +129,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Future Gallery() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+      print(image?.path);
       if (image == null) return;
       final imageTemporary = File(image.path);
       setState(() {
@@ -144,11 +147,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       Future uploadImageAndUpdateState() async {
         await referenceImagetoUpload.putFile(File(image.path));
         imageUrl = await referenceImagetoUpload.getDownloadURL();
-        print("image2");
+        print(imageUrl);
         // loadModel();
         // เรียก setState เพื่ออัพเดท UI หลังจากได้ imageUrl แล้ว
         setState(() {
-          detectImage(imageTemporary);
+          // detectImage(imageTemporary);
         });
       }
 
@@ -162,14 +165,17 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       File imageFile, String imageName) async {
     final storageRef =
         FirebaseStorage.instance.ref().child('image_analysis/$imageName');
-    final uploadTask = storageRef.putFile(imageFile);
 
-    return uploadTask.then((snapshot) {
-      if (snapshot.state.name.isEmpty) {
-        throw Exception('Error uploading image: $snapshot');
-      }
-      return snapshot.ref.getDownloadURL();
-    });
+    // Set metadata to specify the content type
+    final metadata = SettableMetadata(
+        contentType: 'image/png'); // Adjust content type if needed
+
+    // Upload file with metadata
+    final uploadTask = storageRef.putFile(imageFile, metadata);
+    final snapshot = await uploadTask;
+
+    String downloadURL = await snapshot.ref.getDownloadURL();
+    return imageName;
   }
 
   detectImage(File image) async {
@@ -399,23 +405,40 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                         'Bottom_$uniquename',
                       ];
 
-                      bool allImagesUploaded =
-                          true; // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
+                      bool allImagesUploaded = true;
 
-                      // Loop การอัปโหลดรูปภาพที่จับได้
+                      List<String> imageuri = [];
                       for (int i = 0; i < capturedImages.length; i++) {
                         String imageUrl = await uploadImageToCloudStorage(
                             capturedImages[i], imageNames[i]);
-
+                        imageuri.add(imageUrl);
                         if (imageUrl == null) {
                           allImagesUploaded = false;
                           break;
                         }
                       }
 
+                      String concatenatedString = imageuri.join(',');
+                      // File first = capturedImages[0];
+                      // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
+
+                      var firebasefunctions = FirebaseFunctions.instanceFor(
+                          region: 'asia-southeast1');
+
+                      try {
+                        await firebasefunctions
+                            .httpsCallable("add_images")
+                            .call({"imagename": concatenatedString});
+                      } on FirebaseFunctionsException catch (error) {
+                        debugPrint(
+                            'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
+                      rethrow;
+                      }
+
                       // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
                       if (allImagesUploaded) {
-                        Navigator.of(context).pop(); // กลับไปยังหน้าหลัก
+                        print(imageuri);
+                        Navigator.of(context).pop();
                         // ResizeandRectangleImages();
                       }
                     }
