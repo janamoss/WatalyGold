@@ -15,6 +15,12 @@ const apiUrl = "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&f
 axios.get(apiUrl)
   .then((response) => {
     const data = response.data;
+    data.price_list.forEach((_item: { date: string }) => {
+      const timestamp = admin.firestore.Timestamp
+        .fromDate(new Date(_item.date));
+      const newDate = timestamp.toDate().toLocaleDateString();
+      _item.date = newDate;
+    });
     const db = admin.firestore();
     const docRef = db.collection("ExportPrice").doc("new_ExportPrice");
     docRef.set(data)
