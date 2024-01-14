@@ -1,14 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:d_chart/d_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:watalygold/widget/Color.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import 'package:watalygold/widget/LineChart.dart';
 import 'package:watalygold/widget/simple.dart';
 import 'package:custom_date_range_picker/custom_date_range_picker.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:watalygold/widget/appcolor.dart';
 
 void main() {}
+
+class NumericData {
+  NumericData(
+      {required this.domain, required this.measure, required this.pointLabel});
+  final double domain;
+  final double? measure;
+  final String pointLabel;
+}
 
 class ExportPrice extends StatefulWidget {
   const ExportPrice({super.key});
@@ -19,8 +30,16 @@ class ExportPrice extends StatefulWidget {
 
 class _ExportPriceState extends State<ExportPrice> {
   TextEditingController _dateController = TextEditingController();
-
   DateTime selectedDate = DateTime.now();
+  // late List<SalesData> _chartData;
+  late TooltipBehavior _tooltipBehavior;
+
+  @override
+  void initState() {
+    super.initState();
+    // _chartData = getChartData();
+    _tooltipBehavior = TooltipBehavior(enable: true);
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -87,7 +106,8 @@ class _ExportPriceState extends State<ExportPrice> {
             DateTime itemDate = DateFormat('M/d/yyyy').parse(item['date']);
             return NumericData(
               domain: itemDate.day.toDouble(),
-              measure: item['price_max'] ?? 0,
+              measure: (item['price_max'] ?? 0).toDouble(),
+              pointLabel: item['date'], // Use the date as the point label
             );
           }).toList();
 
@@ -95,25 +115,29 @@ class _ExportPriceState extends State<ExportPrice> {
             DateTime itemDate = DateFormat('M/d/yyyy').parse(item['date']);
             return NumericData(
               domain: itemDate.day.toDouble(),
-              measure: item['price_min'] ?? 0,
+              measure: (item['price_min'] ?? 0).toDouble(),
+              pointLabel: item['date'], // Use the date as the point label
             );
           }).toList();
+          // final maxGroupList = [
+          //   NumericGroup(
+          //     id: 'max',
+          //     data: maxDataList,
+          //     color: GPrimaryColor,
+          //   ),
+          // ];
 
-          final maxGroupList = [
-            NumericGroup(
-              id: 'max',
-              data: maxDataList,
-              color: GPrimaryColor,
-            ),
-          ];
-
-          final minGroupList = [
-            NumericGroup(
-              id: 'min',
-              data: minDataList,
-              color: Color(0xFFFBBD17),
-            ),
-          ];
+          // final minGroupList = [
+          //   NumericGroup(
+          //     id: 'min',
+          //     data: minDataList,
+          //     color: Color(0xFFFBBD17),
+          //   ),
+          // ];
+          // LineChartSample2(
+          //   maxDataList: maxDataList,
+          //   minDataList: minDataList,
+          // );
 
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -169,7 +193,7 @@ class _ExportPriceState extends State<ExportPrice> {
                 ),
               ),
               Container(
-                height: 180,
+                height: 160,
                 width: 325,
                 padding: EdgeInsets.all(15),
                 margin: EdgeInsets.only(bottom: 25),
@@ -309,69 +333,115 @@ class _ExportPriceState extends State<ExportPrice> {
                 )),
               ]),
 
+              // Padding(
+              //   padding: EdgeInsets.all(7),
+              //   child: AspectRatio(
+              //     aspectRatio: 16 / 10,
+              //     child: Container(
+              //       child: DChartLineN(
+              //         groupList: [...maxGroupList, ...minGroupList],
+              //         configRenderLine: ConfigRenderLine(
+              //           includeArea: true,
+              //           includePoints: true,
+              //         ),
+              //         areaColor: (group, ordinalData, index) {
+              //           return Color.fromARGB(255, 253, 253, 225)
+              //               .withOpacity(0.3);
+              //         },
+              //       ),
+              //     ),
+              //   ),
+              // ),
+
               Padding(
                 padding: EdgeInsets.all(7),
-                child: AspectRatio(
-                  aspectRatio: 16 / 10,
-                  child: Container(
-                    child: DChartLineN(
-                      groupList: [...maxGroupList, ...minGroupList],
-                      configRenderLine: ConfigRenderLine(
-                        includeArea: true,
-                        includePoints: true,
+                child: SfCartesianChart(
+                  tooltipBehavior: _tooltipBehavior,
+                  series: <ChartSeries>[
+                    LineSeries<NumericData, double>(
+                      name: 'ราคาสูงสุด',
+                      dataSource: maxDataList,
+                      xValueMapper: (NumericData data, _) => data.domain,
+                      yValueMapper: (NumericData data, _) => data.measure,
+                      enableTooltip: true,
+                      color: GPrimaryColor,
+                      markerSettings: MarkerSettings(
+                        isVisible: true,
+                        shape: DataMarkerType.circle,
+                        color: GPrimaryColor,
+                        height: 5,
+                        width: 5,
                       ),
-                      areaColor: (group, ordinalData, index) {
-                        return Color.fromARGB(255, 253, 253, 225)
-                            .withOpacity(0.3);
-                      },
                     ),
+                    LineSeries<NumericData, double>(
+                      name: 'ราคาต่ำสุด',
+                      dataSource: minDataList,
+                      xValueMapper: (NumericData data, _) => data.domain,
+                      yValueMapper: (NumericData data, _) => data.measure,
+                      enableTooltip: true,
+                       color: yellowColor,
+                      markerSettings: MarkerSettings(
+                        isVisible: true,
+                        shape: DataMarkerType.circle,
+                        color: yellowColor,
+                        height: 5,
+                        width: 5,
+                      ),
+                    ),
+                  ],
+                  primaryXAxis: NumericAxis(
+                    edgeLabelPlacement: EdgeLabelPlacement.shift,
+                  ),
+                  primaryYAxis: NumericAxis(
+                    labelFormat: '{value}',
+                    
                   ),
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(right: 20, top: 20),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 5,
-                          backgroundColor: GPrimaryColor,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          "สูงสุด",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(right: 22, top: 20),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 5,
-                          backgroundColor: yellowColor,
-                        ),
-                        SizedBox(width: 8), // Adjust the spacing as needed
-                        Text(
-                          "ต่ำสุด",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              // LineChartSample1(),
+
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.end,
+              //   children: [
+              //     Container(
+              //       margin: EdgeInsets.only(right: 20, top: 20),
+              //       child: Row(
+              //         children: [
+              //           CircleAvatar(
+              //             radius: 5,
+              //             backgroundColor: GPrimaryColor,
+              //           ),
+              //           SizedBox(width: 8),
+              //           Text(
+              //             "สูงสุด",
+              //             style: TextStyle(
+              //               fontSize: 12,
+              //               color: Colors.black,
+              //             ),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //     Container(
+              //       margin: EdgeInsets.only(right: 22, top: 20),
+              //       child: Row(
+              //         children: [
+              //           CircleAvatar(
+              //             radius: 5,
+              //             backgroundColor: yellowColor,
+              //           ),
+              //           SizedBox(width: 8),
+              //           Text(
+              //             "ต่ำสุด",
+              //             style: TextStyle(
+              //               fontSize: 12,
+              //               color: Colors.black,
+              //             ),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           );
         },
@@ -379,3 +449,4 @@ class _ExportPriceState extends State<ExportPrice> {
     );
   }
 }
+

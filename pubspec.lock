@@ -82,7 +82,7 @@ packages:
     source: hosted
     version: "1.0.2"
   community_charts_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: community_charts_flutter
       sha256: ca5bd07337e162daee13c19679f602cd8b3f704520d242beeebbc2e312f84f89

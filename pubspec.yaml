@@ -43,6 +43,7 @@ dependencies:
   syncfusion_flutter_charts: ^21.2.4
   custom_date_range_picker: ^1.0.6
   d_chart: ^2.6.4
+  community_charts_flutter: ^1.0.2
 
 
 dependency_overrides:

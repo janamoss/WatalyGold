@@ -1,12 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.9.0'
     repositories {
         google()
         mavenCentral()
+         google()
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.3.13'
     }
 }
 
@@ -14,6 +16,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        google()
     }
 }
 
@@ -28,3 +31,23 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+// buildscript {
+//   repositories {
+//     // Check that you have the following line (if not, add it):
+//     google()  // Google's Maven repository
+//   }
+//   dependencies {
+//     ...
+//     // Add this line
+//     classpath 'com.google.gms:google-services:4.3.13'
+//   }
+// }
+
+// allprojects {
+//   ...
+//   repositories {
+//     // Check that you have the following line (if not, add it):
+//     google()  // Google's Maven repository
+//     ...
+//   }
+// }
