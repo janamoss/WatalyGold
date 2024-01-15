@@ -1,15 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:d_chart/d_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:watalygold/widget/Color.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
-import 'package:watalygold/widget/LineChart.dart';
-import 'package:watalygold/widget/simple.dart';
-import 'package:custom_date_range_picker/custom_date_range_picker.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:watalygold/widget/appcolor.dart';
+
 
 void main() {}
 
@@ -31,19 +26,18 @@ class ExportPrice extends StatefulWidget {
 class _ExportPriceState extends State<ExportPrice> {
   TextEditingController _dateController = TextEditingController();
   DateTime selectedDate = DateTime.now();
-  // late List<SalesData> _chartData;
   late TooltipBehavior _tooltipBehavior;
 
   @override
   void initState() {
     super.initState();
-    // _chartData = getChartData();
     _tooltipBehavior = TooltipBehavior(enable: true);
   }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
+      locale: const Locale("th", "TH"),
       initialDate: selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
@@ -107,7 +101,7 @@ class _ExportPriceState extends State<ExportPrice> {
             return NumericData(
               domain: itemDate.day.toDouble(),
               measure: (item['price_max'] ?? 0).toDouble(),
-              pointLabel: item['date'], // Use the date as the point label
+              pointLabel: item['date'], 
             );
           }).toList();
 
@@ -116,28 +110,9 @@ class _ExportPriceState extends State<ExportPrice> {
             return NumericData(
               domain: itemDate.day.toDouble(),
               measure: (item['price_min'] ?? 0).toDouble(),
-              pointLabel: item['date'], // Use the date as the point label
+              pointLabel: item['date'], 
             );
           }).toList();
-          // final maxGroupList = [
-          //   NumericGroup(
-          //     id: 'max',
-          //     data: maxDataList,
-          //     color: GPrimaryColor,
-          //   ),
-          // ];
-
-          // final minGroupList = [
-          //   NumericGroup(
-          //     id: 'min',
-          //     data: minDataList,
-          //     color: Color(0xFFFBBD17),
-          //   ),
-          // ];
-          // LineChartSample2(
-          //   maxDataList: maxDataList,
-          //   minDataList: minDataList,
-          // );
 
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -333,26 +308,6 @@ class _ExportPriceState extends State<ExportPrice> {
                 )),
               ]),
 
-              // Padding(
-              //   padding: EdgeInsets.all(7),
-              //   child: AspectRatio(
-              //     aspectRatio: 16 / 10,
-              //     child: Container(
-              //       child: DChartLineN(
-              //         groupList: [...maxGroupList, ...minGroupList],
-              //         configRenderLine: ConfigRenderLine(
-              //           includeArea: true,
-              //           includePoints: true,
-              //         ),
-              //         areaColor: (group, ordinalData, index) {
-              //           return Color.fromARGB(255, 253, 253, 225)
-              //               .withOpacity(0.3);
-              //         },
-              //       ),
-              //     ),
-              //   ),
-              // ),
-
               Padding(
                 padding: EdgeInsets.all(7),
                 child: SfCartesianChart(
@@ -379,7 +334,7 @@ class _ExportPriceState extends State<ExportPrice> {
                       xValueMapper: (NumericData data, _) => data.domain,
                       yValueMapper: (NumericData data, _) => data.measure,
                       enableTooltip: true,
-                       color: yellowColor,
+                      color: yellowColor,
                       markerSettings: MarkerSettings(
                         isVisible: true,
                         shape: DataMarkerType.circle,
@@ -394,54 +349,11 @@ class _ExportPriceState extends State<ExportPrice> {
                   ),
                   primaryYAxis: NumericAxis(
                     labelFormat: '{value}',
-                    
                   ),
                 ),
               ),
 
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.end,
-              //   children: [
-              //     Container(
-              //       margin: EdgeInsets.only(right: 20, top: 20),
-              //       child: Row(
-              //         children: [
-              //           CircleAvatar(
-              //             radius: 5,
-              //             backgroundColor: GPrimaryColor,
-              //           ),
-              //           SizedBox(width: 8),
-              //           Text(
-              //             "สูงสุด",
-              //             style: TextStyle(
-              //               fontSize: 12,
-              //               color: Colors.black,
-              //             ),
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //     Container(
-              //       margin: EdgeInsets.only(right: 22, top: 20),
-              //       child: Row(
-              //         children: [
-              //           CircleAvatar(
-              //             radius: 5,
-              //             backgroundColor: yellowColor,
-              //           ),
-              //           SizedBox(width: 8),
-              //           Text(
-              //             "ต่ำสุด",
-              //             style: TextStyle(
-              //               fontSize: 12,
-              //               color: Colors.black,
-              //             ),
-              //           ),
-              //         ],
-              //       ),
-              //     ),
-              //   ],
-              // ),
+              
             ],
           );
         },
@@ -449,4 +361,3 @@ class _ExportPriceState extends State<ExportPrice> {
     );
   }
 }
-
