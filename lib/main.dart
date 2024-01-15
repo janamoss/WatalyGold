@@ -3,6 +3,7 @@ import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:watalygold/Home/Quality/Result.dart';
 import 'Home/HomeApp.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
@@ -29,6 +30,7 @@ Future<void> main() async {
       initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
       routes: {
         '/base': (context) => BasePage(camera: cameras),
+        // '/base': (context) => const ResultPage(),
         '/home': (context) =>
             Homeapp(camera: cameras), // กำหนด route สำหรับ BasePage
         // เพิ่ม routes อื่นๆ ตามต้องการ
@@ -37,6 +39,7 @@ Future<void> main() async {
         fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
       ),
       title: "Wataly Gold",
+      // home: const ResultPage(),
       home: BasePage(camera: cameras),
     ),
   );

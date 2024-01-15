@@ -44,7 +44,19 @@ class _BasePageState extends State<BasePage> {
         selectedIndex: selectedIndex, // Pass selectedIndex to BottomNavBar
         onItemTapped: (int index) {
           setState(() {
-            selectedIndex = index; // Update selectedIndex on tap
+            if (index == 2) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      TakePictureScreen(camera: widget.camera),
+                ),
+              );
+            } else {
+              setState(() {
+                selectedIndex = index;
+              });
+            } // Update selectedIndex on tap
           });
         },
       ),

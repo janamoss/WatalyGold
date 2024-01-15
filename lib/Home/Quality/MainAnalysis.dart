@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:platform_device_id/platform_device_id.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -15,7 +14,6 @@ import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:image/image.dart' as img;
-import 'package:tflite_v2/tflite_v2.dart';
 
 const modelname = "Mango-Color";
 
@@ -36,16 +34,26 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   late Future<void> _initializeControllerFuture;
 
   late File model;
-
+  String? _deviceId;
   int selectedIndex = 0;
   FirebaseModelDownloader downloader = FirebaseModelDownloader.instance;
-  List _predictions = [];
+  final List _predictions = [];
   img.Image? inputImage;
+  late String idResult;
+  late List<String> ids;
+
+  void _getDeviceId() async {
+    //Recieving device id in the result
+    String? result = await PlatformDeviceId.getDeviceId;
+    setState(() {
+      _deviceId = result;
+    });
+  }
 
   @override
   void initState() {
     initializeCamera(selectedCamera); //Initially selectedCamera = 0
-    Future<File> model = loadModelforfirebase("watalygold");
+    _getDeviceId();
     super.initState();
   }
 
@@ -75,57 +83,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   bool isModelLoaded = false;
 
-  Future<File> loadModelforfirebase(String modelName) async {
-    try {
-      final model = FirebaseModelDownloader.instance.getModel(
-          modelName,
-          FirebaseModelDownloadType.localModel,
-          FirebaseModelDownloadConditions(
-            iosAllowsCellularAccess: true,
-            iosAllowsBackgroundDownloading: false,
-            androidChargingRequired: false,
-            androidWifiRequired: false,
-            androidDeviceIdleRequired: false,
-          ));
-
-      var modelFile = await model.then((value) => value.file);
-      return modelFile;
-    } catch (exception) {
-      rethrow;
-    }
-  }
-
-  loadModel() async {
-    // Load the model using the absolute path
-    Tflite.loadModel(
-      model: 'assets/model.tflite',
-      labels: 'assets/lebels.txt',
-    );
-    // Set isModelLoaded to true when the model is loaded
-    isModelLoaded = true;
-    print('Model loaded.');
-  }
-
-  List<img.Image> processingImg = [];
-  int desiredWidth = 255;
-  int desiredHeight = 255;
-
-  ResizeandRectangleImages() {
-    for (File image in capturedImages) {
-      final imgPath = File(image.path);
-      final img.Image imagecrop = img.copyCrop(imgPath as img.Image,
-          x: 0, y: 0, width: 255, height: 255);
-
-      setState(() {
-        processingImg.add(imagecrop);
-      });
-      // Uint8List imageBytes = imgPath.readAsBytesSync();
-      // img.Image images = img.decodeImage(imageBytes)!;
-      // img.Image resizedImage =
-      //     img.copyResize(images, width: desiredWidth, height: desiredHeight);
-    }
-  }
-
   Future Gallery() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -148,6 +105,70 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         await referenceImagetoUpload.putFile(File(image.path));
         imageUrl = await referenceImagetoUpload.getDownloadURL();
         print(imageUrl);
+        if (capturedImages.length == 4) {
+          // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
+          String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
+
+          // ชื่อของรูปภาพที่ต้องการ
+          List<String> imageNames = [
+            'Front_$uniquename',
+            'Back_$uniquename',
+            'Top_$uniquename',
+            'Bottom_$uniquename',
+          ];
+
+          bool allImagesUploaded = true;
+
+          List<String> imageuri = [];
+          for (int i = 0; i < capturedImages.length; i++) {
+            String imageUrl = await uploadImageToCloudStorage(
+                capturedImages[i], imageNames[i]);
+            imageuri.add(imageUrl);
+          }
+
+          String concatenatedString = imageuri.join(',');
+          // File first = capturedImages[0];
+          // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
+
+          var firebasefunctions =
+              FirebaseFunctions.instanceFor(region: 'asia-southeast1');
+
+          try {
+            final result = await firebasefunctions
+                .httpsCallable("add_images")
+                .call({"imagename": concatenatedString, "ip": _deviceId});
+            print(result.data);
+            final Map<String, dynamic> data =
+                Map<String, dynamic>.from(result.data);
+
+            idResult = data['ID_Result'];
+            ids = List<String>.from(data['IDs']);
+
+            // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
+            print('ID_Result: $idResult');
+            print('IDs: $ids');
+          } on FirebaseFunctionsException catch (error) {
+            debugPrint(
+                'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
+            rethrow;
+          }
+
+          // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
+          if (allImagesUploaded) {
+            print(imageuri);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResultPage(
+                  ID_Result: idResult,
+                  ID_Image: ids,
+                  capturedImage: capturedImages.reversed.toList(),
+                ),
+              ),
+            );
+            // ResizeandRectangleImages();
+          }
+        }
         // loadModel();
         // เรียก setState เพื่ออัพเดท UI หลังจากได้ imageUrl แล้ว
         setState(() {
@@ -176,42 +197,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
     String downloadURL = await snapshot.ref.getDownloadURL();
     return imageName;
-  }
-
-  detectImage(File image) async {
-    print("before");
-    var prediction = await Tflite.runModelOnImage(
-      path: image.path,
-      numResults: 1,
-      imageMean:
-          0.0, // ค่าที่ใช้ในการปรับค่าเฉลี่ยของภาพ สามารถปรับค่าตามต้องการได้
-      imageStd:
-          255.0, // ค่าที่ใช้ในการปรับค่ามาตรฐานของภาพ สามารถปรับค่าตามต้องการได้
-    );
-
-    print("success $prediction ");
-    // ตรวจสอบว่าตัวแปร prediction มีค่าหรือไม่
-    if (prediction != null) {
-      setState(() {
-        _predictions = prediction;
-      });
-    } else {
-      // แจ้งเตือนว่าตัวแปร prediction ไม่มีค่า
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("ตัวแปร prediction ไม่มีค่า"),
-        ),
-      );
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ResultsPage(
-          predictions: _predictions,
-        ),
-      ),
-    );
   }
 
   @override
@@ -412,10 +397,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                         String imageUrl = await uploadImageToCloudStorage(
                             capturedImages[i], imageNames[i]);
                         imageuri.add(imageUrl);
-                        if (imageUrl == null) {
-                          allImagesUploaded = false;
-                          break;
-                        }
                       }
 
                       String concatenatedString = imageuri.join(',');
@@ -426,19 +407,40 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           region: 'asia-southeast1');
 
                       try {
-                        await firebasefunctions
+                        final result = await firebasefunctions
                             .httpsCallable("add_images")
-                            .call({"imagename": concatenatedString});
+                            .call({
+                          "imagename": concatenatedString,
+                          "ip": _deviceId
+                        });
+                        print(result.data);
+                        final Map<String, dynamic> data =
+                            Map<String, dynamic>.from(result.data);
+
+                        idResult = data['ID_Result'];
+                        ids = List<String>.from(data['IDs']);
+
+                        // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
+                        print('ID_Result: $idResult');
+                        print('IDs: $ids');
                       } on FirebaseFunctionsException catch (error) {
                         debugPrint(
                             'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-                      rethrow;
+                        rethrow;
                       }
-
                       // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
                       if (allImagesUploaded) {
                         print(imageuri);
-                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ResultPage(
+                              ID_Result: idResult,
+                              ID_Image: ids,
+                              capturedImage: capturedImages.reversed.toList(),
+                            ),
+                          ),
+                        );
                         // ResizeandRectangleImages();
                       }
                     }
