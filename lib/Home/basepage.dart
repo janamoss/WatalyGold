@@ -1,3 +1,5 @@
+import 'package:watalygold/ExportPrice/ExportPrice.dart';
+
 import 'HomeApp.dart';
 import 'package:flutter/material.dart';
 import 'package:watalygold/Widgets/BTNavBar.dart';
@@ -23,7 +25,7 @@ class _BasePageState extends State<BasePage> {
     super.initState();
     _widgetOption = [
       _createHomeapp(widget.camera),
-      _createHomeapp(widget.camera),
+      const ExportPrice(),
       TakePictureScreen(camera: widget.camera),
       _createHomeapp(widget.camera),
       _createHomeapp(widget.camera),

@@ -1,6 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
@@ -27,6 +28,14 @@ Future<void> main() async {
   }
   runApp(
     MaterialApp(
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('th', 'TH'), 
+        const Locale('en', 'US'), 
+      ],
       initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
       routes: {
         '/base': (context) => BasePage(camera: cameras),
