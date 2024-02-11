@@ -42,7 +42,7 @@ options.set_global_options(
         cors_methods=["get", "post"],
     )
 )
-def on_request_example(req: https_fn.Request) -> https_fn.Response:
+def onrequestexample(req: https_fn.Request) -> https_fn.Response:
     storage_client = storage.Client()
     # This is the name of the Cloud Storage bucket that will store the images.
     bucket_name = 'watalygold-imageanalysis'
@@ -90,7 +90,7 @@ def on_request_example(req: https_fn.Request) -> https_fn.Response:
     ),
     region=options.SupportedRegion('asia-southeast1')
 )
-def add_images(req: https_fn.CallableRequest) -> any:
+def addImages(req: https_fn.CallableRequest) -> any:
     """Take the text parameter passed to this HTTP endpoint and insert it into
     a new document in the messages collection."""
     # Grab the text parameter.
@@ -198,7 +198,7 @@ def add_images(req: https_fn.CallableRequest) -> any:
     
     def predict_mango_ripeness(image_data):
         # Load the TFLite model
-        interpreter = tf.lite.Interpreter(model_path="mango_color.tflite")
+        interpreter = tf.lite.Interpreter(model_path="./mango_color.tflite")
         interpreter.allocate_tensors()
 
         # Get input and output tensors information
@@ -207,7 +207,7 @@ def add_images(req: https_fn.CallableRequest) -> any:
 
         # Prepare the input tensor
         input_tensor = np.expand_dims(image_data, axis=0)  # Add batch dimension
-        input_tensor = input_tensor.astype(np.float32) / 255.0  # Normalize to 0-1 range
+        input_tensor = input_tensor.astype(np.float32)
         interpreter.set_tensor(input_details[0]['index'], input_tensor)
 
         # Run inference
@@ -265,7 +265,7 @@ def add_images(req: https_fn.CallableRequest) -> any:
         return mango_height_cm, mango_width_cm, mango_mass_grams
 
     # Process images and call prediction function
-    image_h, image_w = 32, 32
+    image_h, image_w = 64, 64
 
     def remove_background(image):
         # Convert the image to grayscale
@@ -314,6 +314,7 @@ def add_images(req: https_fn.CallableRequest) -> any:
     number_of_blemishes = len(brown_spot_percentage_list)
     average_blemish = total_blemishes / number_of_blemishes
     
+    
     result_mango = ""
     another_note = ""
     if (predicted_result == "Yellow" and mango_mass_grams >= 450 and max_mango_blemishe <= 2 and average_blemish <= 10 ) :
@@ -325,10 +326,9 @@ def add_images(req: https_fn.CallableRequest) -> any:
     if (predicted_result == "Yellow" and 250 < mango_mass_grams <= 350 and max_mango_blemishe <= 5 and average_blemish <= 40 ) :
         result_mango = "ขั้นที่ 2"
         another_note = "มะม่วงมีขนาดและรูปร่างผิดปกติเล็กน้อย สีมะม่วงเหลืองทอง มีจุดตำหนิหรือจุดกระสีน้ำตาลปานกลาง"
-    if (predicted_result == "Not_Yellow" or mango_mass_grams <= 250 or max_mango_blemishe > 5 or average_blemish > 40 ) :
+    else :
         result_mango = "ไม่เข้าข่าย"
         another_note = "มะม่วงมีขนาดและรูปร่างผิดปกติปานกลางถึงมาก สีมะม่วงไม่เหลืองทองสวย มีจุดตำหนิหรือจุดกระสีน้ำตาลมาก"
-    
     ids = []
     status = ["Front", "Back", "Top", "Bottom"]
     print(type(mango_blemishes_list))

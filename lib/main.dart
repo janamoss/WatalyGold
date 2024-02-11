@@ -50,6 +50,7 @@ Future<void> main() async {
       title: "Wataly Gold",
       // home: const ResultPage(),
       home: BasePage(camera: cameras),
+      
     ),
   );
 }

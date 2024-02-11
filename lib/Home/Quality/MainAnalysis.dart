@@ -85,27 +85,38 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future Gallery() async {
     try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      print(image?.path);
-      if (image == null) return;
-      final imageTemporary = File(image.path);
+      final image = await ImagePicker().pickMultiImage(imageQuality: 4);
+      final List<String> ImagepathList = [];
+      // print(image?.path);
+      // if (image == null) return;
+      // final imageTemporary = File(image.path);
       setState(() {
-        capturedImages.add(imageTemporary);
+        for (int i = 0; i < image.length; i++) {
+          ImagepathList.add(image[i].path);
+        }
+        for (int i = 0; i < ImagepathList.length; i++) {
+          capturedImages.add(File(ImagepathList[i]));
+        }
       });
 
-      String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
-
-      Reference referenceRoot = FirebaseStorage.instance.ref();
-      Reference referenceDirImages = referenceRoot.child('image_analysis');
-
-      Reference referenceImagetoUpload = referenceDirImages.child(uniquename);
-
-      // แยก asynchronous operation ออกจาก setState
       Future uploadImageAndUpdateState() async {
-        await referenceImagetoUpload.putFile(File(image.path));
-        imageUrl = await referenceImagetoUpload.getDownloadURL();
-        print(imageUrl);
         if (capturedImages.length == 4) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: GPrimaryColor.withOpacity(0.6),
+              title: Center(
+                  child: Text(
+                'กำลังวิเคราะห์คุณภาพ . . .',
+                style: TextStyle(color: WhiteColor),
+              )),
+              content: Image.asset(
+                "assets/images/Loading_watalygold.png",
+                height: 70,
+              ),
+              actions: [],
+            ),
+          );
           // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
           String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -135,7 +146,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
           try {
             final result = await firebasefunctions
-                .httpsCallable("add_images")
+                .httpsCallable("addImages")
                 .call({"imagename": concatenatedString, "ip": _deviceId});
             print(result.data);
             final Map<String, dynamic> data =
@@ -156,6 +167,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
           // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
           if (allImagesUploaded) {
             print(imageuri);
+            Navigator.of(context).pop();
+            // ไปยังหน้าหลัก
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -187,17 +200,17 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     final storageRef =
         FirebaseStorage.instance.ref().child('image_analysis/$imageName');
 
-    // Set metadata to specify the content type
-    final metadata = SettableMetadata(
-        contentType: 'image/png'); // Adjust content type if needed
+    // เปลี่ยนประเภทเป็นรูป
+    final metadata = SettableMetadata(contentType: 'image/png');
 
-    // Upload file with metadata
     final uploadTask = storageRef.putFile(imageFile, metadata);
     final snapshot = await uploadTask;
 
     String downloadURL = await snapshot.ref.getDownloadURL();
     return imageName;
   }
+
+  late int flashstatus = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -233,12 +246,17 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     children: [
                       IconButton(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 15),
+                            horizontal: 10, vertical: 10),
                         onPressed: () {
                           if (widget.camera.length > 1) {
                             setState(() {
-                              selectedCamera = selectedCamera == 0 ? 1 : 0;
-                              initializeCamera(selectedCamera);
+                              if (flashstatus == 0) {
+                                _controller.setFlashMode(FlashMode.torch);
+                                flashstatus = 1;
+                              } else {
+                                _controller.setFlashMode(FlashMode.off);
+                                flashstatus = 0;
+                              }
                             });
                           } else {
                             ScaffoldMessenger.of(context)
@@ -256,7 +274,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                       ),
                       IconButton(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 15),
+                            horizontal: 10, vertical: 10),
                         onPressed: () {
                           if (widget.camera.length > 1) {
                             setState(() {
@@ -295,7 +313,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
-                            border: Border.all(color: WhiteColor, width: 4),
+                            // border: Border.all(color: WhiteColor, width: 4),
+                            border: capturedImages.isNotEmpty
+                                ? Border.all(color: GPrimaryColor, width: 4)
+                                : Border.all(color: WhiteColor, width: 4),
+                            color: Colors.white.withOpacity(0.4),
                             image: capturedImages.isNotEmpty
                                 ? DecorationImage(
                                     image: FileImage(capturedImages[0]),
@@ -309,7 +331,12 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
-                            border: Border.all(color: WhiteColor, width: 4),
+                            // border: Border.all(color: WhiteColor, width: 4),
+                            border: capturedImages.isNotEmpty &&
+                                    capturedImages.length >= 2
+                                ? Border.all(color: GPrimaryColor, width: 4)
+                                : Border.all(color: WhiteColor, width: 4),
+                            color: Colors.white.withOpacity(0.4),
                             image: capturedImages.isNotEmpty &&
                                     capturedImages.length > 1
                                 ? DecorationImage(
@@ -324,7 +351,12 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
-                            border: Border.all(color: WhiteColor, width: 4),
+                            // border: Border.all(color: WhiteColor, width: 4),
+                            border: capturedImages.isNotEmpty &&
+                                    capturedImages.length >= 3
+                                ? Border.all(color: GPrimaryColor, width: 4)
+                                : Border.all(color: WhiteColor, width: 4),
+                            color: Colors.white.withOpacity(0.4),
                             image: capturedImages.isNotEmpty &&
                                     capturedImages.length > 2
                                 ? DecorationImage(
@@ -339,7 +371,12 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           height: 50,
                           width: 50,
                           decoration: BoxDecoration(
-                            border: Border.all(color: WhiteColor, width: 4),
+                            // border: Border.all(color: WhiteColor, width: 4),
+                            border: capturedImages.isNotEmpty &&
+                                    capturedImages.length == 4
+                                ? Border.all(color: GPrimaryColor, width: 4)
+                                : Border.all(color: WhiteColor, width: 4),
+                            color: Colors.white.withOpacity(0.4),
                             image: capturedImages.isNotEmpty &&
                                     capturedImages.length > 3
                                 ? DecorationImage(
@@ -356,7 +393,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 60),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -378,6 +415,23 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                       capturedImages.add(File(xFile.path));
                     });
                     if (capturedImages.length == 4) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: GPrimaryColor.withOpacity(0.6),
+                          title: Center(
+                              child: Text(
+                            'กำลังวิเคราะห์คุณภาพ . . .',
+                            style: TextStyle(color: WhiteColor),
+                          )),
+                          content: Image.asset(
+                            "assets/images/Loading_watalygold.png",
+                            height: 70,
+                          ),
+                          actions: [],
+                        ),
+                      );
+
                       // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
                       String uniquename =
                           DateTime.now().millisecondsSinceEpoch.toString();
@@ -408,7 +462,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
                       try {
                         final result = await firebasefunctions
-                            .httpsCallable("add_images")
+                            .httpsCallable("addImages")
                             .call({
                           "imagename": concatenatedString,
                           "ip": _deviceId
@@ -431,6 +485,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                       // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
                       if (allImagesUploaded) {
                         print(imageuri);
+
+                        Navigator.of(context).pop();
+                        // ไปยังหน้าหลัก
                         Navigator.push(
                           context,
                           MaterialPageRoute(

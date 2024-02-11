@@ -50,15 +50,6 @@ class _Appbarmain_no_bottonsState extends State<Appbarmain_no_bottons> {
                 end: Alignment.centerRight,
                 colors: <Color>[Colors.cyan, Colors.green])),
       ),
-      leading: IconButton(
-        color: Colors.white,
-        icon: Appicons(
-          icon: Icons.arrow_back_rounded,
-        ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      ),
       title: Text(widget.name, style: TextStyle(color: Colors.white)),
       centerTitle: true,
     );

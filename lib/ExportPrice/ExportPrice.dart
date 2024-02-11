@@ -42,6 +42,30 @@ class _ExportPriceState extends State<ExportPrice> {
       initialDate: selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: GPrimaryColor, // header background color
+            // color of the buttons
+            colorScheme: ColorScheme.light(
+              primary: GPrimaryColor, // header background color
+              onPrimary: Colors.white, // text color on header background
+              surface: Colors.white, // dialog background color
+              onSurface: Colors.black, // text color on dialog background
+            ),
+            textTheme: TextTheme(
+              bodyText1: TextStyle(color: Colors.black), // text color
+              bodyText2: TextStyle(color: Colors.black), // text color
+            ),
+            buttonTheme: ButtonThemeData(
+              textTheme: ButtonTextTheme.primary, // button text color
+              colorScheme:
+                  ColorScheme.light(primary: GPrimaryColor), // button color
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
@@ -55,7 +79,7 @@ class _ExportPriceState extends State<ExportPrice> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xFFF2F6F5),
-        appBar: const Appbarmain_no_botton(name: 'ราคาตลาดกลาง'),
+        appBar: const Appbarmain_no_bottons(name: 'ราคาตลาดกลาง'),
         body: SingleChildScrollView(
           child: StreamBuilder<DocumentSnapshot>(
             stream: FirebaseFirestore.instance
@@ -133,7 +157,7 @@ class _ExportPriceState extends State<ExportPrice> {
                   ),
                   Container(
                     padding: EdgeInsets.only(
-                        left: 50, right: 50, top: 30, bottom: 20),
+                        left: 33, right: 29, top: 30, bottom: 20),
                     child: GestureDetector(
                       onTap: () => _selectDate(context),
                       child: AbsorbPointer(
@@ -163,7 +187,7 @@ class _ExportPriceState extends State<ExportPrice> {
                     ),
                   ),
                   Container(
-                    height: 160,
+                    height: 180,
                     width: 325,
                     padding: EdgeInsets.all(15),
                     margin: EdgeInsets.only(bottom: 25),
@@ -335,6 +359,21 @@ class _ExportPriceState extends State<ExportPrice> {
                             height: 5,
                             width: 5,
                           ),
+                        ),
+                        AreaSeries<NumericData, double>(
+                          name: 'ราคาต่ำสุด',
+                          dataSource: minDataList,
+                          xValueMapper: (NumericData data, _) => data.domain,
+                          yValueMapper: (NumericData data, _) => data.measure,
+                          enableTooltip: true,
+                          color: YPrimaryColor.withOpacity(0.2),
+                        ),
+                        AreaSeries<NumericData, double>(
+                          dataSource: maxDataList,
+                          xValueMapper: (NumericData data, _) => data.domain,
+                          yValueMapper: (NumericData data, _) => data.measure,
+                          enableTooltip: true,
+                          color: YPrimaryColor.withOpacity(0.2),
                         ),
                       ],
                       primaryXAxis: NumericAxis(
