@@ -1,5 +1,4 @@
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
@@ -8,7 +7,6 @@ import 'package:watalygold/Home/Quality/Result.dart';
 import 'Home/HomeApp.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
-import 'package:video_player/video_player.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -33,8 +31,8 @@ Future<void> main() async {
         GlobalWidgetsLocalizations.delegate,
       ],
       supportedLocales: [
-        const Locale('th', 'TH'), 
-        const Locale('en', 'US'), 
+        const Locale('th', 'TH'),
+        const Locale('en', 'US'),
       ],
       initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
       routes: {
@@ -50,7 +48,6 @@ Future<void> main() async {
       title: "Wataly Gold",
       // home: const ResultPage(),
       home: BasePage(camera: cameras),
-      
     ),
   );
 }

@@ -1,2 +1,0 @@
-functions/tflite_env/lib/python3.11/site-packages/clang/native/libclang.dylib filter=lfs diff=lfs merge=lfs -text
-functions/tflite_env/lib/python3.11/site-packages/tensorflow/libtensorflow_cc.2.dylib filter=lfs diff=lfs merge=lfs -text

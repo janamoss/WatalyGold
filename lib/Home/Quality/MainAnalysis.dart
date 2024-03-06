@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Home/Quality/Gallerypage.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
+import 'package:watalygold/Resource/camera_service.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:image/image.dart' as img;
@@ -32,7 +33,6 @@ class TakePictureScreen extends StatefulWidget {
 class TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
-
   late File model;
   String? _deviceId;
   int selectedIndex = 0;
@@ -63,7 +63,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   initializeCamera(int cameraIndex) async {
     _controller = CameraController(
       // Get a specific camera from the list of available camera.
-      widget.camera[cameraIndex],
+      widget.camera![cameraIndex],
       // Define the resolution to use.
       ResolutionPreset.medium,
     );
@@ -248,7 +248,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 10),
                         onPressed: () {
-                          if (widget.camera.length > 1) {
+                          if (widget.camera!.length > 1) {
                             setState(() {
                               if (flashstatus == 0) {
                                 _controller.setFlashMode(FlashMode.torch);
@@ -276,7 +276,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 10),
                         onPressed: () {
-                          if (widget.camera.length > 1) {
+                          if (widget.camera!.length > 1) {
                             setState(() {
                               selectedCamera = selectedCamera == 0 ? 1 : 0;
                               initializeCamera(selectedCamera);
@@ -308,83 +308,143 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      GestureDetector(
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            // border: Border.all(color: WhiteColor, width: 4),
-                            border: capturedImages.isNotEmpty
-                                ? Border.all(color: GPrimaryColor, width: 4)
-                                : Border.all(color: WhiteColor, width: 4),
-                            color: Colors.white.withOpacity(0.4),
-                            image: capturedImages.isNotEmpty
-                                ? DecorationImage(
-                                    image: FileImage(capturedImages[0]),
-                                    fit: BoxFit.cover)
-                                : null,
+                      Column(
+                        children: [
+                          GestureDetector(
+                            child: Container(
+                              height: 60,
+                              width: 60,
+                              decoration: BoxDecoration(
+                                // border: Border.all(color: WhiteColor, width: 4),
+                                border: capturedImages.isNotEmpty
+                                    ? Border.all(color: GPrimaryColor, width: 2)
+                                    : Border.all(color: WhiteColor, width: 2),
+                                color: Colors.white.withOpacity(0.4),
+                                image: capturedImages.isNotEmpty
+                                    ? DecorationImage(
+                                        image: FileImage(capturedImages[0]),
+                                        fit: BoxFit.cover)
+                                    : null,
+                              ),
+                            ),
                           ),
-                        ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Text(
+                                "ด้านหน้า",
+                                style: TextStyle(
+                                    color: GPrimaryColor, fontSize: 20),
+                              ),
+                            ),
+                          )
+                        ],
                       ),
-                      GestureDetector(
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            // border: Border.all(color: WhiteColor, width: 4),
-                            border: capturedImages.isNotEmpty &&
-                                    capturedImages.length >= 2
-                                ? Border.all(color: GPrimaryColor, width: 4)
-                                : Border.all(color: WhiteColor, width: 4),
-                            color: Colors.white.withOpacity(0.4),
-                            image: capturedImages.isNotEmpty &&
-                                    capturedImages.length > 1
-                                ? DecorationImage(
-                                    image: FileImage(capturedImages[1]),
-                                    fit: BoxFit.cover)
-                                : null,
+                      Column(
+                        children: [
+                          GestureDetector(
+                            child: Container(
+                              height: 60,
+                              width: 60,
+                              decoration: BoxDecoration(
+                                // border: Border.all(color: WhiteColor, width: 4),
+                                border: capturedImages.isNotEmpty &&
+                                        capturedImages.length >= 2
+                                    ? Border.all(color: GPrimaryColor, width: 2)
+                                    : Border.all(color: WhiteColor, width: 2),
+                                color: Colors.white.withOpacity(0.4),
+                                image: capturedImages.isNotEmpty &&
+                                        capturedImages.length > 1
+                                    ? DecorationImage(
+                                        image: FileImage(capturedImages[1]),
+                                        fit: BoxFit.cover)
+                                    : null,
+                              ),
+                            ),
                           ),
-                        ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Text(
+                                "ด้านหลัง",
+                                style: TextStyle(
+                                    color: GPrimaryColor, fontSize: 20),
+                              ),
+                            ),
+                          )
+                        ],
                       ),
-                      GestureDetector(
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            // border: Border.all(color: WhiteColor, width: 4),
-                            border: capturedImages.isNotEmpty &&
-                                    capturedImages.length >= 3
-                                ? Border.all(color: GPrimaryColor, width: 4)
-                                : Border.all(color: WhiteColor, width: 4),
-                            color: Colors.white.withOpacity(0.4),
-                            image: capturedImages.isNotEmpty &&
-                                    capturedImages.length > 2
-                                ? DecorationImage(
-                                    image: FileImage(capturedImages[2]),
-                                    fit: BoxFit.cover)
-                                : null,
+                      Column(
+                        children: [
+                          GestureDetector(
+                            child: Container(
+                              height: 60,
+                              width: 60,
+                              decoration: BoxDecoration(
+                                // border: Border.all(color: WhiteColor, width: 4),
+                                border: capturedImages.isNotEmpty &&
+                                        capturedImages.length >= 3
+                                    ? Border.all(color: GPrimaryColor, width: 2)
+                                    : Border.all(color: WhiteColor, width: 2),
+                                color: Colors.white.withOpacity(0.4),
+                                image: capturedImages.isNotEmpty &&
+                                        capturedImages.length > 2
+                                    ? DecorationImage(
+                                        image: FileImage(capturedImages[2]),
+                                        fit: BoxFit.cover)
+                                    : null,
+                              ),
+                            ),
                           ),
-                        ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Text(
+                                "ด้านล่าง",
+                                style: TextStyle(
+                                    color: GPrimaryColor, fontSize: 20),
+                              ),
+                            ),
+                          )
+                        ],
                       ),
-                      GestureDetector(
-                        child: Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            // border: Border.all(color: WhiteColor, width: 4),
-                            border: capturedImages.isNotEmpty &&
-                                    capturedImages.length == 4
-                                ? Border.all(color: GPrimaryColor, width: 4)
-                                : Border.all(color: WhiteColor, width: 4),
-                            color: Colors.white.withOpacity(0.4),
-                            image: capturedImages.isNotEmpty &&
-                                    capturedImages.length > 3
-                                ? DecorationImage(
-                                    image: FileImage(capturedImages[3]),
-                                    fit: BoxFit.cover)
-                                : null,
+                      Column(
+                        children: [
+                          GestureDetector(
+                            child: Container(
+                              height: 60,
+                              width: 60,
+                              decoration: BoxDecoration(
+                                // border: Border.all(color: WhiteColor, width: 4),
+                                border: capturedImages.isNotEmpty &&
+                                        capturedImages.length == 4
+                                    ? Border.all(color: GPrimaryColor, width: 2)
+                                    : Border.all(color: WhiteColor, width: 2),
+                                color: Colors.white.withOpacity(0.4),
+                                image: capturedImages.isNotEmpty &&
+                                        capturedImages.length > 3
+                                    ? DecorationImage(
+                                        image: FileImage(capturedImages[3]),
+                                        fit: BoxFit.cover)
+                                    : null,
+                              ),
+                            ),
                           ),
-                        ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 5),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Text(
+                                "ด้านบน",
+                                style: TextStyle(
+                                    color: GPrimaryColor, fontSize: 20),
+                              ),
+                            ),
+                          )
+                        ],
                       ),
                     ],
                   ),

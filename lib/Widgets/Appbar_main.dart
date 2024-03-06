@@ -50,6 +50,7 @@ class _AppbarMainsState extends State<AppbarMains> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading: false,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
             gradient: LinearGradient(

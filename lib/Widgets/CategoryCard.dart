@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:watalygold/models/category.dart';
-import 'package:watalygold/Home/Knowledge/Knowledge.dart';
+import 'package:watalygold/Home/Knowledge/MainKnowledge.dart';
 
 class CategoryCard extends StatelessWidget {
   final Category category;

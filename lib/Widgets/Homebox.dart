@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:watalygold/models/category.dart';
-import 'package:watalygold/Home/Knowledge/Knowledge.dart';
+import 'package:watalygold/Home/Knowledge/MainKnowledge.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
 import 'package:camera/camera.dart';
 import 'CategoryCard.dart';
@@ -39,8 +39,7 @@ class _HomeboxState extends State<Homebox> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                TakePictureScreen(camera: widget.camera)));
+                            builder: (context) => const KnowledgeMain()));
                   }
                   if (index == 1) {
                     Navigator.push(
@@ -58,7 +57,8 @@ class _HomeboxState extends State<Homebox> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const KnowledgeMain()));
+                            builder: (context) =>
+                                TakePictureScreen(camera: widget.camera)));
                   }
                 },
                 child: CategoryCard(
