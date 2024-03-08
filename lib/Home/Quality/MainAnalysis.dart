@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -8,15 +9,13 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Home/Quality/Gallerypage.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
-import 'package:watalygold/Resource/camera_service.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
-import 'package:image/image.dart' as img;
-
-const modelname = "Mango-Color";
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({
@@ -31,6 +30,11 @@ class TakePictureScreen extends StatefulWidget {
 }
 
 class TakePictureScreenState extends State<TakePictureScreen> {
+  late tfl.Interpreter _interpreter;
+  dynamic _probability = 0;
+  List<String>? _labels;
+  String? result;
+
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   late File model;
@@ -38,7 +42,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   int selectedIndex = 0;
   FirebaseModelDownloader downloader = FirebaseModelDownloader.instance;
   final List _predictions = [];
-  img.Image? inputImage;
   late String idResult;
   late List<String> ids;
 
@@ -52,9 +55,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   @override
   void initState() {
+    super.initState();
     initializeCamera(selectedCamera); //Initially selectedCamera = 0
     _getDeviceId();
-    super.initState();
+    loadmodel().then((_) => {
+          loadlabels().then((loadedLabels) {
+            setState(() {
+              _labels = loadedLabels;
+            });
+          })
+        });
   }
 
   int selectedCamera = 0;
@@ -76,12 +86,61 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   void dispose() {
     // Dispose of the controller when the widget is disposed.
     super.dispose();
+    _interpreter.close();
   }
 
   File? image;
   String imageUrl = '';
 
-  bool isModelLoaded = false;
+  Future<Uint8List> preProcessingImage(File capturedImages) async {
+    img.Image? Oimage = img.decodeImage(await capturedImages.readAsBytes());
+    img.Image? resizedImage = img.copyResize(Oimage!, width: 64, height: 64);
+
+    Uint8List bytes = resizedImage.getBytes();
+    return bytes;
+  }
+
+  Future<void> runInference() async {
+    if (_labels == null) {
+      return;
+    }
+
+    try {
+      Uint8List inputBytes = await preProcessingImage(capturedImages[0]);
+      var input = inputBytes.buffer.asUint8List().reshape([1, 64, 64, 3]);
+      var outputBuffer = List<int>.filled(1 * 2, 0).reshape([1, 2]);
+      _interpreter.run(input, outputBuffer);
+      List<double> output = outputBuffer[0];
+      debugPrint('Raw output $output');
+
+      double maxScore = output.reduce(max);
+      _probability = (maxScore / 255.0);
+
+      int highestProbIndex = output.indexOf(maxScore);
+      String classificationResult = _labels![highestProbIndex];
+      setState(() {
+        result = classificationResult;
+      });
+      debugPrint(result);
+    } catch (e) {
+      debugPrint('Error processing Image $e');
+    }
+  }
+
+  loadmodel() async {
+    try {
+      _interpreter =
+          await tfl.Interpreter.fromAsset("assets/mango_color.tflite");
+    } catch (e) {
+      debugPrint('error loadmodel $e');
+    }
+  }
+
+  Future<List<String>> loadlabels() async {
+    final lebelsData =
+        await DefaultAssetBundle.of(context).loadString('assets/lebels.txt');
+    return lebelsData.split('\n');
+  }
 
   Future Gallery() async {
     try {
@@ -98,101 +157,110 @@ class TakePictureScreenState extends State<TakePictureScreen> {
           capturedImages.add(File(ImagepathList[i]));
         }
       });
-
-      Future uploadImageAndUpdateState() async {
-        if (capturedImages.length == 4) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: GPrimaryColor.withOpacity(0.6),
-              title: Center(
-                  child: Text(
-                'กำลังวิเคราะห์คุณภาพ . . .',
-                style: TextStyle(color: WhiteColor),
-              )),
-              content: Image.asset(
-                "assets/images/Loading_watalygold.png",
-                height: 70,
-              ),
-              actions: [],
-            ),
-          );
-          // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
-          String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
-
-          // ชื่อของรูปภาพที่ต้องการ
-          List<String> imageNames = [
-            'Front_$uniquename',
-            'Back_$uniquename',
-            'Top_$uniquename',
-            'Bottom_$uniquename',
-          ];
-
-          bool allImagesUploaded = true;
-
-          List<String> imageuri = [];
-          for (int i = 0; i < capturedImages.length; i++) {
-            String imageUrl = await uploadImageToCloudStorage(
-                capturedImages[i], imageNames[i]);
-            imageuri.add(imageUrl);
-          }
-
-          String concatenatedString = imageuri.join(',');
-          // File first = capturedImages[0];
-          // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
-
-          var firebasefunctions =
-              FirebaseFunctions.instanceFor(region: 'asia-southeast1');
-
-          try {
-            final result = await firebasefunctions
-                .httpsCallable("addImages")
-                .call({"imagename": concatenatedString, "ip": _deviceId});
-            print(result.data);
-            final Map<String, dynamic> data =
-                Map<String, dynamic>.from(result.data);
-
-            idResult = data['ID_Result'];
-            ids = List<String>.from(data['IDs']);
-
-            // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-            print('ID_Result: $idResult');
-            print('IDs: $ids');
-          } on FirebaseFunctionsException catch (error) {
-            debugPrint(
-                'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-            rethrow;
-          }
-
-          // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
-          if (allImagesUploaded) {
-            print(imageuri);
-            Navigator.of(context).pop();
-            // ไปยังหน้าหลัก
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ResultPage(
-                  ID_Result: idResult,
-                  ID_Image: ids,
-                  capturedImage: capturedImages.reversed.toList(),
-                ),
-              ),
-            );
-            // ResizeandRectangleImages();
-          }
-        }
-        // loadModel();
-        // เรียก setState เพื่ออัพเดท UI หลังจากได้ imageUrl แล้ว
-        setState(() {
-          // detectImage(imageTemporary);
-        });
-      }
-
       uploadImageAndUpdateState();
     } on PlatformException catch (e) {
       print('ผิดพลาด $e');
     }
+  }
+
+  Future uploadImageAndUpdateState() async {
+    if (capturedImages.length == 4) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: GPrimaryColor.withOpacity(0.6),
+          title: Center(
+              child: Text(
+            'กำลังวิเคราะห์คุณภาพ . . .',
+            style: TextStyle(color: WhiteColor),
+          )),
+          content: Image.asset(
+            "assets/images/Loading_watalygold.png",
+            height: 70,
+          ),
+          actions: [],
+        ),
+      );
+
+      runInference();
+      print(result);
+      print(result);
+      print(result);
+      print(result);
+      print(result);
+      print(result);
+
+      // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
+      String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // ชื่อของรูปภาพที่ต้องการ
+      List<String> imageNames = [
+        'Front_$uniquename',
+        'Back_$uniquename',
+        'Top_$uniquename',
+        'Bottom_$uniquename',
+      ];
+
+      bool allImagesUploaded = true;
+
+      List<String> imageuri = [];
+      for (int i = 0; i < capturedImages.length; i++) {
+        String imageUrl =
+            await uploadImageToCloudStorage(capturedImages[i], imageNames[i]);
+        imageuri.add(imageUrl);
+      }
+
+      String concatenatedString = imageuri.join(',');
+      // File first = capturedImages[0];
+      // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
+      String results = result!;
+
+      var firebasefunctions =
+          FirebaseFunctions.instanceFor(region: 'asia-southeast1');
+
+      try {
+        final result = await firebasefunctions.httpsCallable("addImages").call({
+          "imagename": concatenatedString,
+          "ip": _deviceId,
+          "result": results
+        });
+        print(result.data);
+        final Map<String, dynamic> data =
+            Map<String, dynamic>.from(result.data);
+
+        idResult = data['ID_Result'];
+        ids = List<String>.from(data['IDs']);
+
+        // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
+        print('ID_Result: $idResult');
+        print('IDs: $ids');
+      } on FirebaseFunctionsException catch (error) {
+        debugPrint(
+            'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
+        rethrow;
+      }
+      // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
+      if (allImagesUploaded) {
+        print(imageuri);
+        Navigator.of(context).pop();
+        // ไปยังหน้าหลัก
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultPage(
+              ID_Result: idResult,
+              ID_Image: ids,
+              capturedImage: capturedImages.reversed.toList(),
+            ),
+          ),
+        );
+      }
+    }
+    // loadModel();
+    // เรียก setState เพื่ออัพเดท UI หลังจากได้ imageUrl แล้ว
+    setState(() {
+      // detectImage(imageTemporary);
+    });
   }
 
   Future<String> uploadImageToCloudStorage(
@@ -475,91 +543,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                       capturedImages.add(File(xFile.path));
                     });
                     if (capturedImages.length == 4) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          backgroundColor: GPrimaryColor.withOpacity(0.6),
-                          title: Center(
-                              child: Text(
-                            'กำลังวิเคราะห์คุณภาพ . . .',
-                            style: TextStyle(color: WhiteColor),
-                          )),
-                          content: Image.asset(
-                            "assets/images/Loading_watalygold.png",
-                            height: 70,
-                          ),
-                          actions: [],
-                        ),
-                      );
-
-                      // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
-                      String uniquename =
-                          DateTime.now().millisecondsSinceEpoch.toString();
-
-                      // ชื่อของรูปภาพที่ต้องการ
-                      List<String> imageNames = [
-                        'Front_$uniquename',
-                        'Back_$uniquename',
-                        'Top_$uniquename',
-                        'Bottom_$uniquename',
-                      ];
-
-                      bool allImagesUploaded = true;
-
-                      List<String> imageuri = [];
-                      for (int i = 0; i < capturedImages.length; i++) {
-                        String imageUrl = await uploadImageToCloudStorage(
-                            capturedImages[i], imageNames[i]);
-                        imageuri.add(imageUrl);
-                      }
-
-                      String concatenatedString = imageuri.join(',');
-                      // File first = capturedImages[0];
-                      // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
-
-                      var firebasefunctions = FirebaseFunctions.instanceFor(
-                          region: 'asia-southeast1');
-
-                      try {
-                        final result = await firebasefunctions
-                            .httpsCallable("addImages")
-                            .call({
-                          "imagename": concatenatedString,
-                          "ip": _deviceId
-                        });
-                        print(result.data);
-                        final Map<String, dynamic> data =
-                            Map<String, dynamic>.from(result.data);
-
-                        idResult = data['ID_Result'];
-                        ids = List<String>.from(data['IDs']);
-
-                        // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-                        print('ID_Result: $idResult');
-                        print('IDs: $ids');
-                      } on FirebaseFunctionsException catch (error) {
-                        debugPrint(
-                            'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-                        rethrow;
-                      }
-                      // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
-                      if (allImagesUploaded) {
-                        print(imageuri);
-
-                        Navigator.of(context).pop();
-                        // ไปยังหน้าหลัก
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ResultPage(
-                              ID_Result: idResult,
-                              ID_Image: ids,
-                              capturedImage: capturedImages.reversed.toList(),
-                            ),
-                          ),
-                        );
-                        // ResizeandRectangleImages();
-                      }
+                      uploadImageAndUpdateState();
                     }
                   },
                   child: Container(

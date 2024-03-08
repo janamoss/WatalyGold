@@ -1,2 +1,2 @@
-Ripe
-Not Ripe
+Not_Yellow
+Yellow

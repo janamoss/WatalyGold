@@ -3,6 +3,7 @@ import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/models/contents.dart';
 import 'package:watalygold/models/knowledge.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 class KnowledgePage extends StatefulWidget {
   final Knowledge? knowledge;
@@ -71,17 +72,33 @@ class _KnowledgePageState extends State<KnowledgePage> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      RichText(
-                        text: TextSpan(
-                          text: widget.knowledge != null
-                              ? widget.knowledge!.knowledgeDetail
-                              : widget.contents!.ContentDetail,
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.knowledge != null
+                              ? '''${widget.knowledge!.knowledgeDetail}'''
+                                  .replaceAll('n', '\n')
+                              : '''${widget.contents!.ContentDetail}'''
+                                  .replaceAll('n', '\n'),
                           style: TextStyle(color: Colors.black, fontSize: 15),
-                          children: <TextSpan>[
-                            TextSpan(text: '\n', style: TextStyle(height: 2.0)),
-                          ],
+                          textAlign: TextAlign.left,
+                          maxLines: 3,
                         ),
                       ),
+                      // HtmlWidget(
+                      //   widget.knowledge != null
+                      //       ? '${widget.knowledge!.knowledgeDetail}'
+                      //       : '${widget.contents!.ContentDetail}',
+                      //   textStyle: TextStyle(color: Colors.black, fontSize: 15),
+                      //   renderMode: RenderMode.column,
+                      //   customStylesBuilder: (element) {
+                      //     if (element.classes.contains('p')) {
+                      //       return {'color': 'red'};
+                      //     }
+
+                      //     return null;
+                      //   },
+                      // ),
                     ],
                   )
                 ],
