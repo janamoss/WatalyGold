@@ -1,10 +1,11 @@
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:watalygold/widget/Color.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
-
 
 void main() {}
 
@@ -32,6 +33,7 @@ class _ExportPriceState extends State<ExportPrice> {
   void initState() {
     super.initState();
     _tooltipBehavior = TooltipBehavior(enable: true);
+    fetchDataAndSaveToFirestore();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -40,15 +42,68 @@ class _ExportPriceState extends State<ExportPrice> {
       locale: const Locale("th", "TH"),
       initialDate: selectedDate,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      lastDate: DateTime.now(),
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
         _dateController.text = DateFormat('d/M/yyyy').format(picked);
       });
+      fetchDataAndSaveToFirestore() ;
     }
   }
+
+  // Future<void> fetchDataAndSaveToFirestore() async {
+  //   final apiUrl =
+  //       "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
+  //   try {
+  //     final response = await http.get(Uri.parse(apiUrl));
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       // ทำการเพิ่มข้อมูลลงใน Firestore ด้วย Firebase Firestore API
+  //       await FirebaseFirestore.instance
+  //           .collection('ExportPrice')
+  //           .doc('new_ExportPrice')
+  //           .set(data);
+  //       print('Data fetched from API and saved to Firestore successfully.');
+  //     } else {
+  //       print('Failed to fetch data from API: ${response.statusCode}');
+  //     }
+  //   } catch (error) {
+  //     print('Error fetching data from API: $error');
+  //   }
+  // }
+  Future<void> fetchDataAndSaveToFirestore() async {
+  final apiUrl =
+      "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
+  try {
+    final response = await http.get(Uri.parse(apiUrl));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // แปลงวันที่ในรูปแบบ timestamp เป็นรูปแบบ "1/3/2018"
+      final List<dynamic> priceList = data['price_list'];
+      for (int i = 0; i < priceList.length; i++) {
+        final DateTime dateTime = DateTime.parse(priceList[i]['date']);
+        final formattedDate = '${dateTime.month}/${dateTime.day}/${dateTime.year}';
+        priceList[i]['date'] = formattedDate;
+      }
+
+      // เพิ่มข้อมูลลงใน Firestore ด้วย Firebase Firestore API
+      await FirebaseFirestore.instance
+          .collection('ExportPrice')
+          .doc('new_ExportPrice')
+          .set(data);
+      
+      print('Data fetched from API and saved to Firestore successfully.');
+    } else {
+      print('Failed to fetch data from API: ${response.statusCode}');
+    }
+  } catch (error) {
+    print('Error fetching data from API: $error');
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +156,7 @@ class _ExportPriceState extends State<ExportPrice> {
             return NumericData(
               domain: itemDate.day.toDouble(),
               measure: (item['price_max'] ?? 0).toDouble(),
-              pointLabel: item['date'], 
+              pointLabel: item['date'],
             );
           }).toList();
 
@@ -110,7 +165,7 @@ class _ExportPriceState extends State<ExportPrice> {
             return NumericData(
               domain: itemDate.day.toDouble(),
               measure: (item['price_min'] ?? 0).toDouble(),
-              pointLabel: item['date'], 
+              pointLabel: item['date'],
             );
           }).toList();
 
@@ -284,7 +339,6 @@ class _ExportPriceState extends State<ExportPrice> {
                   ],
                 ),
               ),
-
               Row(children: <Widget>[
                 Expanded(
                     child: Divider(
@@ -307,7 +361,6 @@ class _ExportPriceState extends State<ExportPrice> {
                   thickness: 2.0,
                 )),
               ]),
-
               Padding(
                 padding: EdgeInsets.all(7),
                 child: SfCartesianChart(
@@ -344,16 +397,14 @@ class _ExportPriceState extends State<ExportPrice> {
                       ),
                     ),
                   ],
-                  primaryXAxis: NumericAxis(
-                    edgeLabelPlacement: EdgeLabelPlacement.shift,
-                  ),
-                  primaryYAxis: NumericAxis(
-                    labelFormat: '{value}',
-                  ),
+                  // primaryXAxis: NumericAxis(
+                  //   edgeLabelPlacement: EdgeLabelPlacement.shift,
+                  // ),
+                  // primaryYAxis: NumericAxis(
+                  //   labelFormat: '{value}',
+                  // ),
                 ),
               ),
-
-              
             ],
           );
         },

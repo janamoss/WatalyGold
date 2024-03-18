@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "watalygold"
-  }
+    "default": "watalygold",
+    "y": "watalygold",
+    "kamon": "watalygold"
+  },
+  "targets": {},
+  "etags": {}
 }
