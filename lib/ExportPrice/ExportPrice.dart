@@ -1,11 +1,12 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:watalygold/widget/Color.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
+import 'package:http/http.dart' as http;
 
 void main() {}
 
@@ -28,6 +29,11 @@ class _ExportPriceState extends State<ExportPrice> {
   TextEditingController _dateController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   late TooltipBehavior _tooltipBehavior;
+  String formattedDate = DateFormat('yyyy-M-d').format(DateTime.now());
+  // void _updateExportPrice() {
+  //   String formattedDate = DateFormat('yyyy-M-d').format(DateTime.now());
+  //   updateExportPrice(formattedDate);
+  // }
 
   @override
   void initState() {
@@ -43,6 +49,20 @@ class _ExportPriceState extends State<ExportPrice> {
       initialDate: selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData().copyWith(
+              colorScheme: ColorScheme.dark(
+              primary: GPrimaryColor, // header background color
+              onPrimary: YPrimaryColor, // text color on header background
+              surface: Colors.white, // dialog background color
+              onSurface: Colors.black, // text color on dialog background
+            ),
+           
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
@@ -52,28 +72,8 @@ class _ExportPriceState extends State<ExportPrice> {
       fetchDataAndSaveToFirestore() ;
     }
   }
-
-  // Future<void> fetchDataAndSaveToFirestore() async {
-  //   final apiUrl =
-  //       "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
-  //   try {
-  //     final response = await http.get(Uri.parse(apiUrl));
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       // ทำการเพิ่มข้อมูลลงใน Firestore ด้วย Firebase Firestore API
-  //       await FirebaseFirestore.instance
-  //           .collection('ExportPrice')
-  //           .doc('new_ExportPrice')
-  //           .set(data);
-  //       print('Data fetched from API and saved to Firestore successfully.');
-  //     } else {
-  //       print('Failed to fetch data from API: ${response.statusCode}');
-  //     }
-  //   } catch (error) {
-  //     print('Error fetching data from API: $error');
-  //   }
-  // }
-  Future<void> fetchDataAndSaveToFirestore() async {
+  
+ Future<void> fetchDataAndSaveToFirestore() async {
   final apiUrl =
       "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
   try {
@@ -103,7 +103,6 @@ class _ExportPriceState extends State<ExportPrice> {
     print('Error fetching data from API: $error');
   }
 }
-
 
   @override
   Widget build(BuildContext context) {
@@ -140,6 +139,7 @@ class _ExportPriceState extends State<ExportPrice> {
           }
 
           String? unit = data['unit'];
+
           List<dynamic> yourList = data['price_list'] ?? [];
 
           dynamic filteredItem = yourList.firstWhereOrNull((item) =>
@@ -193,7 +193,7 @@ class _ExportPriceState extends State<ExportPrice> {
               ),
               Container(
                 padding:
-                    EdgeInsets.only(left: 50, right: 50, top: 30, bottom: 20),
+                    EdgeInsets.only(left: 33, right: 29, top: 30, bottom: 20),
                 child: GestureDetector(
                   onTap: () => _selectDate(context),
                   child: AbsorbPointer(
@@ -381,6 +381,15 @@ class _ExportPriceState extends State<ExportPrice> {
                         width: 5,
                       ),
                     ),
+                    AreaSeries<NumericData, double>(
+                     name: 'ราคาสูงสุด',
+                      dataSource: maxDataList,
+                      xValueMapper: (NumericData data, _) => data.domain,
+                      yValueMapper: (NumericData data, _) => data.measure,
+                      enableTooltip: true,
+                      color: YPrimaryColor.withOpacity(0.2), 
+                     
+                    ),
                     LineSeries<NumericData, double>(
                       name: 'ราคาต่ำสุด',
                       dataSource: minDataList,
@@ -396,6 +405,25 @@ class _ExportPriceState extends State<ExportPrice> {
                         width: 5,
                       ),
                     ),
+                     AreaSeries<NumericData, double>(
+                      name: 'ราคาต่ำสุด',
+                      dataSource: minDataList,
+                      xValueMapper: (NumericData data, _) => data.domain,
+                      yValueMapper: (NumericData data, _) => data.measure,
+                      enableTooltip: true,
+                      color: YPrimaryColor.withOpacity(0.2), 
+                     
+                    ),
+                   
+                    // AreaSeries<NumericData, double>(
+                    //  name: 'ราคาสูงสุด',
+                    //   dataSource: maxDataList,
+                    //   xValueMapper: (NumericData data, _) => data.domain,
+                    //   yValueMapper: (NumericData data, _) => data.measure,
+                    //   enableTooltip: true,
+                    //   color: GPrimaryColor.withOpacity(0.2), 
+                     
+                    // ),
                   ],
                   // primaryXAxis: NumericAxis(
                   //   edgeLabelPlacement: EdgeLabelPlacement.shift,
