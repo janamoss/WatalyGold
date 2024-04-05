@@ -13,7 +13,7 @@ class Contents {
 
   factory Contents.fromFirestore(DocumentSnapshot doc) {
     return Contents(
-      ImageURL: doc['ImageURL'],
+      ImageURL: doc['image_url'],
       ContentName: doc['ContentName'],
       ContentDetail: doc['ContentDetail'],
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/models/contents.dart';
@@ -20,6 +21,27 @@ class _KnowledgePageState extends State<KnowledgePage> {
       widget.knowledge!.knowledgeDetail.replaceAll('\n', '\n\n');
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: Future.delayed(Duration(seconds: 3)),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: LoadingAnimationWidget.discreteCircle(
+              color: WhiteColor,
+              secondRingColor: GPrimaryColor,
+              thirdRingColor: YPrimaryColor,
+              size: 200,
+            ),
+          );
+        } else {
+          return _buildKnowledgePageContent(context);
+        }
+      },
+    );
+  }
+
+  Widget _buildKnowledgePageContent(BuildContext context) {
+    // Your existing KnowledgePage content goes here
     return Scaffold(
       backgroundColor: WhiteColor,
       appBar: Appbarmain(
@@ -62,7 +84,9 @@ class _KnowledgePageState extends State<KnowledgePage> {
                         style: TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
-                            fontSize: 25),
+                            fontSize: 18),
+                        maxLines: 1,
+                        overflow: TextOverflow.fade,
                       )
                     ],
                   ),

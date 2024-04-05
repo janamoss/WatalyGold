@@ -13,6 +13,7 @@ class Appbarmain_no_botton extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading: false,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
             gradient: LinearGradient(

@@ -1,10 +1,8 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:watalygold/Home/Quality/MainAnalysis.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:watalygold/Home/Quality/Result.dart';
-import 'Home/HomeApp.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,8 +13,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseFunctions.instanceFor(region: 'asia-southeast1')
-      .useFunctionsEmulator('127.0.0.1', 5001);
+  // FirebaseFunctions.instanceFor(region: 'asia-southeast1')
+  //     .useFunctionsEmulator('127.0.0.1', 5001);
   // Obtain a list of the available cameras on the device.
   final cameras = await availableCameras();
   if (cameras.isEmpty) {
@@ -38,9 +36,6 @@ Future<void> main() async {
       routes: {
         '/base': (context) => BasePage(camera: cameras),
         // '/base': (context) => const ResultPage(),
-        '/home': (context) =>
-            Homeapp(camera: cameras), // กำหนด route สำหรับ BasePage
-        // เพิ่ม routes อื่นๆ ตามต้องการ
       },
       theme: ThemeData(
         fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
@@ -48,6 +43,7 @@ Future<void> main() async {
       title: "Wataly Gold",
       // home: const ResultPage(),
       home: BasePage(camera: cameras),
+      builder: EasyLoading.init(),
     ),
   );
 }

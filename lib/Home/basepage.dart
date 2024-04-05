@@ -33,7 +33,13 @@ class _BasePageState extends State<BasePage> {
   }
 
   Widget _createHomeapp(List<CameraDescription> camera) {
-    return Homeapp(camera: camera);
+    return Homeapp(camera: camera, changeWidgetOption: changeWidgetOption,);
+  }
+
+  void changeWidgetOption(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
   }
 
   @override
@@ -64,4 +70,5 @@ class _BasePageState extends State<BasePage> {
       ),
     );
   }
+  
 }

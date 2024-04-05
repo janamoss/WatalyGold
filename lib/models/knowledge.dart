@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-final Map<String, IconData> iconMap = {
+Map<String, IconData> iconMap = {
+  'บ้าน': Icons.home,
   'ดอกไม้': Icons.yard,
-  // เพิ่มไอคอนอื่น ๆ
+  'บุคคล': Icons.person,
+  'น้ำ': Icons.water_drop_outlined,
+  'ระวัง': Icons.warning_rounded
 };
 
 class Knowledge {
@@ -24,13 +27,14 @@ class Knowledge {
   });
 
   factory Knowledge.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Knowledge(
       id: doc.id,
-      knowledgeName: doc['KnowledgeName'],
-      contents: doc['Content'].map((e) => e).cast<dynamic>().toList(),
-      knowledgeDetail: doc['KnowledgeDetail'],
-      knowledgeIcons: iconMap[doc['KnowledgeIcons']] ?? Icons.question_mark,
-      knowledgeImg: doc['KnowledgeImg'],
+      knowledgeName: data['KnowledgeName'] ?? '',
+      contents: data['Content']?.map((e) => e).cast<dynamic>().toList() ?? [],
+      knowledgeDetail: data['KnowledgeDetail'] ?? '',
+      knowledgeIcons: iconMap[data['KnowledgeIcons']] ?? Icons.question_mark,
+      knowledgeImg: data['KnowledgeImg'] ?? '',
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:watalygold/ExportPrice/ExportPrice.dart';
 import 'package:watalygold/models/category.dart';
 import 'package:watalygold/Home/Knowledge/MainKnowledge.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
@@ -8,7 +9,10 @@ import 'CategoryCard.dart';
 
 class Homebox extends StatefulWidget {
   final List<CameraDescription> camera;
-  const Homebox({Key? key, required this.camera}) : super(key: key);
+  final Function(int) changeWidgetOption;
+  const Homebox(
+      {Key? key, required this.camera, required this.changeWidgetOption})
+      : super(key: key);
 
   @override
   State<Homebox> createState() => _HomeboxState();
@@ -42,10 +46,7 @@ class _HomeboxState extends State<Homebox> {
                             builder: (context) => const KnowledgeMain()));
                   }
                   if (index == 1) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const KnowledgeMain()));
+                    widget.changeWidgetOption(1);
                   }
                   if (index == 2) {
                     Navigator.push(

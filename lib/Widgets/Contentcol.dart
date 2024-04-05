@@ -24,7 +24,7 @@ class _ContentcolState extends State<Contentcol> {
       return Contents(
         ContentName: data!['ContentName'].toString(),
         ContentDetail: data['ContentDetail'].toString(),
-        ImageURL: data['ImageUrl'].toString(),
+        ImageURL: data['image_url'].toString(),
       );
     } else {
       throw Exception('Document not found with ID: $documentId');

@@ -8,8 +8,11 @@ void main() {}
 
 class Homeapp extends StatefulWidget {
   final List<CameraDescription> camera;
+  final Function(int) changeWidgetOption;
 
-  const Homeapp({Key? key, required this.camera}) : super(key: key);
+  const Homeapp(
+      {Key? key, required this.camera, required this.changeWidgetOption})
+      : super(key: key);
 
   @override
   State<Homeapp> createState() => _HomeappState();
@@ -53,6 +56,7 @@ class _HomeappState extends State<Homeapp> {
         children: [
           Homebox(
             camera: widget.camera,
+            changeWidgetOption: widget.changeWidgetOption,
           )
         ],
       ),

@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:platform_device_id/platform_device_id.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   dynamic _probability = 0;
   List<String>? _labels;
   String? result;
+
+  final ImagePicker picker = ImagePicker();
 
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
@@ -72,11 +75,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   initializeCamera(int cameraIndex) async {
     _controller = CameraController(
-      // Get a specific camera from the list of available camera.
-      widget.camera![cameraIndex],
-      // Define the resolution to use.
-      ResolutionPreset.medium,
-    );
+        // Get a specific camera from the list of available camera.
+        widget.camera![cameraIndex],
+        // Define the resolution to use.
+        ResolutionPreset.max, // new resolution
+        enableAudio: false);
 
     // Next, initialize the controller. This returns a Future.
     _initializeControllerFuture = _controller.initialize();
@@ -144,7 +147,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future Gallery() async {
     try {
-      final image = await ImagePicker().pickMultiImage(imageQuality: 4);
+      final image = await ImagePicker().pickMultiImage(imageQuality: 60);
       final List<String> ImagepathList = [];
       // print(image?.path);
       // if (image == null) return;
@@ -167,27 +170,35 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     if (capturedImages.length == 4) {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: GPrimaryColor.withOpacity(0.6),
-          title: Center(
-              child: Text(
-            'กำลังวิเคราะห์คุณภาพ . . .',
-            style: TextStyle(color: WhiteColor),
-          )),
-          content: Image.asset(
-            "assets/images/Loading_watalygold.png",
-            height: 70,
+        builder: (context) => Center(
+          child: AlertDialog(
+            backgroundColor: GPrimaryColor.withOpacity(0.6),
+            contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            title: Column(
+              children: [
+                Text(
+                  'กำลังวิเคราะห์คุณภาพ . . .',
+                  style: TextStyle(color: WhiteColor),
+                  textAlign: TextAlign
+                      .center, // Add this line to center the title text
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                LoadingAnimationWidget.discreteCircle(
+                  color: WhiteColor,
+                  secondRingColor: GPrimaryColor,
+                  thirdRingColor: YPrimaryColor,
+                  size: 70,
+                ),
+              ],
+            ),
+            actions: [],
           ),
-          actions: [],
         ),
       );
 
       runInference();
-      print(result);
-      print(result);
-      print(result);
-      print(result);
-      print(result);
       print(result);
 
       // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
@@ -269,7 +280,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         FirebaseStorage.instance.ref().child('image_analysis/$imageName');
 
     // เปลี่ยนประเภทเป็นรูป
-    final metadata = SettableMetadata(contentType: 'image/png');
+    final metadata = SettableMetadata(contentType: 'image/jpg');
 
     final uploadTask = storageRef.putFile(imageFile, metadata);
     final snapshot = await uploadTask;
@@ -282,6 +293,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: const AppbarMains(name: 'วิเคราะห์คุณภาพ'),
       // You must wait until the controller is initialized before displaying the
@@ -289,300 +301,382 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       // controller has finished initializing.
       body: Column(
         children: [
-          Stack(
-            children: [
-              FutureBuilder<void>(
-                future: _initializeControllerFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    // If the Future is complete, display the preview.
-                    return CameraPreview(_controller);
-                  } else {
-                    // Otherwise, display a loading indicator.
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                },
-              ),
-              Positioned(
-                top: 0,
-                right: 0,
-                left: 0,
-                child: Container(
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
-                        onPressed: () {
-                          if (widget.camera!.length > 1) {
-                            setState(() {
-                              if (flashstatus == 0) {
-                                _controller.setFlashMode(FlashMode.torch);
-                                flashstatus = 1;
-                              } else {
-                                _controller.setFlashMode(FlashMode.off);
-                                flashstatus = 0;
-                              }
-                            });
-                          } else {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(
-                              content: Text('No secondary camera found'),
-                              duration: Duration(seconds: 2),
-                            ));
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.flash_on_rounded,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ),
-                      IconButton(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
-                        onPressed: () {
-                          if (widget.camera!.length > 1) {
-                            setState(() {
-                              selectedCamera = selectedCamera == 0 ? 1 : 0;
-                              initializeCamera(selectedCamera);
-                            });
-                          } else {
-                            ScaffoldMessenger.of(context)
-                                .showSnackBar(const SnackBar(
-                              content: Text('No secondary camera found'),
-                              duration: Duration(seconds: 2),
-                            ));
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.flip_camera_ios_rounded,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 25,
-                right: 0,
-                left: 0,
-                child: Container(
-                  color: Colors.transparent,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Column(
-                        children: [
-                          GestureDetector(
-                            child: Container(
-                              height: 60,
-                              width: 60,
-                              decoration: BoxDecoration(
-                                // border: Border.all(color: WhiteColor, width: 4),
-                                border: capturedImages.isNotEmpty
-                                    ? Border.all(color: GPrimaryColor, width: 2)
-                                    : Border.all(color: WhiteColor, width: 2),
-                                color: Colors.white.withOpacity(0.4),
-                                image: capturedImages.isNotEmpty
-                                    ? DecorationImage(
-                                        image: FileImage(capturedImages[0]),
-                                        fit: BoxFit.cover)
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Text(
-                                "ด้านหน้า",
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 20),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          GestureDetector(
-                            child: Container(
-                              height: 60,
-                              width: 60,
-                              decoration: BoxDecoration(
-                                // border: Border.all(color: WhiteColor, width: 4),
-                                border: capturedImages.isNotEmpty &&
-                                        capturedImages.length >= 2
-                                    ? Border.all(color: GPrimaryColor, width: 2)
-                                    : Border.all(color: WhiteColor, width: 2),
-                                color: Colors.white.withOpacity(0.4),
-                                image: capturedImages.isNotEmpty &&
-                                        capturedImages.length > 1
-                                    ? DecorationImage(
-                                        image: FileImage(capturedImages[1]),
-                                        fit: BoxFit.cover)
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Text(
-                                "ด้านหลัง",
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 20),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          GestureDetector(
-                            child: Container(
-                              height: 60,
-                              width: 60,
-                              decoration: BoxDecoration(
-                                // border: Border.all(color: WhiteColor, width: 4),
-                                border: capturedImages.isNotEmpty &&
-                                        capturedImages.length >= 3
-                                    ? Border.all(color: GPrimaryColor, width: 2)
-                                    : Border.all(color: WhiteColor, width: 2),
-                                color: Colors.white.withOpacity(0.4),
-                                image: capturedImages.isNotEmpty &&
-                                        capturedImages.length > 2
-                                    ? DecorationImage(
-                                        image: FileImage(capturedImages[2]),
-                                        fit: BoxFit.cover)
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Text(
-                                "ด้านล่าง",
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 20),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          GestureDetector(
-                            child: Container(
-                              height: 60,
-                              width: 60,
-                              decoration: BoxDecoration(
-                                // border: Border.all(color: WhiteColor, width: 4),
-                                border: capturedImages.isNotEmpty &&
-                                        capturedImages.length == 4
-                                    ? Border.all(color: GPrimaryColor, width: 2)
-                                    : Border.all(color: WhiteColor, width: 2),
-                                color: Colors.white.withOpacity(0.4),
-                                image: capturedImages.isNotEmpty &&
-                                        capturedImages.length > 3
-                                    ? DecorationImage(
-                                        image: FileImage(capturedImages[3]),
-                                        fit: BoxFit.cover)
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Text(
-                                "ด้านบน",
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 20),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Expanded(
+            child: Stack(
               children: [
-                IconButton(
-                  onPressed: () {
-                    Gallery();
-                  },
-                  icon: const Icon(
-                    Icons.image_rounded,
-                    color: GPrimaryColor,
-                    size: 40,
+                SizedBox(
+                  child: FutureBuilder<void>(
+                    future: _initializeControllerFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        // If the Future is complete, display the preview.
+                        return Container(
+                            width: size.width,
+                            height: size.height * 0.5,
+                            child: FittedBox(
+                              fit: BoxFit.cover,
+                              child: Container(
+                                  width:
+                                      100, // the actual width is not important here
+                                  child: CameraPreview(_controller!)),
+                            ));
+                      } else {
+                        // Otherwise, display a loading indicator.
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    },
                   ),
                 ),
-                GestureDetector(
-                  onTap: () async {
-                    await _initializeControllerFuture;
-                    var xFile = await _controller.takePicture();
-                    setState(() {
-                      capturedImages.add(File(xFile.path));
-                    });
-                    if (capturedImages.length == 4) {
-                      uploadImageAndUpdateState();
-                    }
-                  },
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  left: 0,
                   child: Container(
-                    height: 60,
-                    width: 60,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: GPrimaryColor,
+                    color: Colors.transparent,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
+                          onPressed: () {
+                            if (widget.camera!.length > 1) {
+                              setState(() {
+                                if (flashstatus == 0) {
+                                  _controller.setFlashMode(FlashMode.torch);
+                                  flashstatus = 1;
+                                } else {
+                                  _controller.setFlashMode(FlashMode.off);
+                                  flashstatus = 0;
+                                }
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                content: Text('No secondary camera found'),
+                                duration: Duration(seconds: 2),
+                              ));
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.flash_on_rounded,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                        IconButton(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
+                          onPressed: () {
+                            if (widget.camera!.length > 1) {
+                              setState(() {
+                                selectedCamera = selectedCamera == 0 ? 1 : 0;
+                                initializeCamera(selectedCamera);
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                content: Text('No secondary camera found'),
+                                duration: Duration(seconds: 2),
+                              ));
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.flip_camera_ios_rounded,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    if (capturedImages.isEmpty) return;
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => GalleryScreen(
-                                images: capturedImages.reversed.toList())));
-                  },
+                capturedImages.length >= 2
+                    ? Positioned(
+                        bottom: 180,
+                        left: 50,
+                        child: Container(
+                          width: 300,
+                          height: 300,
+                          decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              border: Border.all(
+                                color: WhiteColor,
+                                width: 3,
+                              )),
+                        ),
+                      )
+                    : Positioned(
+                        bottom: 160,
+                        left: 100,
+                        child: Container(
+                          width: 200,
+                          height: 350,
+                          decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              border: Border.all(
+                                color: WhiteColor,
+                                width: 3,
+                              )),
+                        ),
+                      ),
+                Positioned(
+                  bottom: 10,
+                  right: 0,
+                  left: 0,
                   child: Container(
-                    height: 60,
-                    width: 60,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: GPrimaryColor, width: 4),
-                      image: capturedImages.isNotEmpty
-                          ? DecorationImage(
-                              image: FileImage(capturedImages.last),
-                              fit: BoxFit.cover)
-                          : null,
+                    color: Colors.transparent,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          children: [
+                            GestureDetector(
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                decoration: BoxDecoration(
+                                  // border: Border.all(color: WhiteColor, width: 4),
+                                  border: capturedImages.isNotEmpty
+                                      ? Border.all(
+                                          color: GPrimaryColor, width: 2)
+                                      : Border.all(color: WhiteColor, width: 2),
+                                  color: Colors.white.withOpacity(0.4),
+                                  image: capturedImages.isNotEmpty
+                                      ? DecorationImage(
+                                          image: FileImage(capturedImages[0]),
+                                          fit: BoxFit.cover)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Text(
+                                  "ด้านหน้า",
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 20),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            GestureDetector(
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                decoration: BoxDecoration(
+                                  // border: Border.all(color: WhiteColor, width: 4),
+                                  border: capturedImages.isNotEmpty &&
+                                          capturedImages.length >= 2
+                                      ? Border.all(
+                                          color: GPrimaryColor, width: 2)
+                                      : Border.all(color: WhiteColor, width: 2),
+                                  color: Colors.white.withOpacity(0.4),
+                                  image: capturedImages.isNotEmpty &&
+                                          capturedImages.length > 1
+                                      ? DecorationImage(
+                                          image: FileImage(capturedImages[1]),
+                                          fit: BoxFit.cover)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Text(
+                                  "ด้านหลัง",
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 20),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            GestureDetector(
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                decoration: BoxDecoration(
+                                  // border: Border.all(color: WhiteColor, width: 4),
+                                  border: capturedImages.isNotEmpty &&
+                                          capturedImages.length >= 3
+                                      ? Border.all(
+                                          color: GPrimaryColor, width: 2)
+                                      : Border.all(color: WhiteColor, width: 2),
+                                  color: Colors.white.withOpacity(0.4),
+                                  image: capturedImages.isNotEmpty &&
+                                          capturedImages.length > 2
+                                      ? DecorationImage(
+                                          image: FileImage(capturedImages[2]),
+                                          fit: BoxFit.cover)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Text(
+                                  "ด้านล่าง",
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 20),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            GestureDetector(
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                decoration: BoxDecoration(
+                                  // border: Border.all(color: WhiteColor, width: 4),
+                                  border: capturedImages.isNotEmpty &&
+                                          capturedImages.length == 4
+                                      ? Border.all(
+                                          color: GPrimaryColor, width: 2)
+                                      : Border.all(color: WhiteColor, width: 2),
+                                  color: Colors.white.withOpacity(0.4),
+                                  image: capturedImages.isNotEmpty &&
+                                          capturedImages.length > 3
+                                      ? DecorationImage(
+                                          image: FileImage(capturedImages[3]),
+                                          fit: BoxFit.cover)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5),
+                              child: Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Text(
+                                  "ด้านบน",
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 20),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ],
             ),
+            flex: 8,
           ),
-          const Spacer(),
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        "พยายามให้ลูกมะม่วงของคุณ\nอยู่ภายในระยะกรอบสีขาว",
+                        maxLines: 3,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: GPrimaryColor),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Gallery();
+                          },
+                          icon: const Icon(
+                            Icons.image_rounded,
+                            color: GPrimaryColor,
+                            size: 40,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            await _initializeControllerFuture;
+                            var xFile = await _controller.takePicture();
+                            setState(() {
+                              capturedImages.add(File(xFile.path));
+                            });
+                            if (capturedImages.length == 4) {
+                              uploadImageAndUpdateState();
+                            }
+                          },
+                          child: Container(
+                            height: 60,
+                            width: 60,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: GPrimaryColor,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            if (capturedImages.isEmpty) return;
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => GalleryScreen(
+                                        images:
+                                            capturedImages.reversed.toList())));
+                          },
+                          child: Container(
+                            height: 60,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              border:
+                                  Border.all(color: GPrimaryColor, width: 4),
+                              image: capturedImages.isNotEmpty
+                                  ? DecorationImage(
+                                      image: FileImage(capturedImages.last),
+                                      fit: BoxFit.cover)
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            flex: 3,
+          ),
         ],
       ),
     );
+  }
+}
+
+class _MediaSizeClipper extends CustomClipper<Rect> {
+  final Size mediaSize;
+  const _MediaSizeClipper(this.mediaSize);
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTWH(0, 0, mediaSize.width, mediaSize.height);
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Rect> oldClipper) {
+    return true;
   }
 }
