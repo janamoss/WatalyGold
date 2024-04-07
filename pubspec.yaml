@@ -58,6 +58,8 @@ dependencies:
   d_chart: ^2.6.4
   community_charts_flutter: ^1.0.2
   tflite_flutter: ^0.10.4
+  sqflite: ^2.3.3
+  path: ^1.9.0
   
   flutter_localizations:
     sdk: flutter 
