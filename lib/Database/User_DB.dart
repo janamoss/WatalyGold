@@ -17,7 +17,26 @@ class User_db {
     """);
   }
 
+  Future<User?> fetchByIpAddress(String ipAddress) async {
+    final database = await DatabaseService().database;
+    final users = await database.query(
+      tablename,
+      where: 'user_ipaddress = ?',
+      whereArgs: [ipAddress],
+      limit: 1,
+    );
+    if (users.isNotEmpty) {
+      return User.fromSqfliteDatabase(users.first);
+    }
+    return null;
+  }
+
   Future<int> create({required String user_ipaddress}) async {
+    final existingUser = await fetchByIpAddress(user_ipaddress);
+    if (existingUser != null) {
+      // ถ้ามี IP อยู่แล้ว
+      return 0;
+    }
     final database = await DatabaseService().database;
     return await database.rawInsert(
       '''INSERT INTO $tablename (user_ipaddress,created_at) VALUES (?,?)''',

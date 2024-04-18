@@ -3,13 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:platform_device_id/platform_device_id.dart';
+import 'package:watalygold/Database/Databasesqlite.dart';
+import 'package:watalygold/Database/User_DB.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+String? _deviceId;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  _deviceId = await PlatformDeviceId.getDeviceId;
+  await DatabaseService().database;
+  if (await DatabaseService().isDatabaseExists()) {
+    final results = await User_db().create(user_ipaddress: _deviceId!);
+    print(results);
+    print('Database exists!');
+  } else {
+    print('Database does not exist.');
+  }
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

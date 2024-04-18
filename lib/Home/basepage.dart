@@ -1,4 +1,6 @@
 import 'package:watalygold/ExportPrice/ExportPrice.dart';
+import 'package:watalygold/Home/Collection/Homecollection.dart';
+import 'package:watalygold/Home/Collection/baseColoorHis.dart';
 
 import 'HomeApp.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +29,7 @@ class _BasePageState extends State<BasePage> {
       _createHomeapp(widget.camera),
       const ExportPrice(),
       TakePictureScreen(camera: widget.camera),
-      _createHomeapp(widget.camera),
+      const BaseHisorCol(),
       _createHomeapp(widget.camera),
     ];
   }

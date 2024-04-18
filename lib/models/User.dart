@@ -19,7 +19,10 @@ class User {
         user_ipaddress: map['user_ipaddress'] ?? '',
         created_at: DateTime.fromMillisecondsSinceEpoch(map['created_at'])
             .toIso8601String(),
-        updated_at: DateTime.fromMillisecondsSinceEpoch(map['updated_at'])
-            .toIso8601String(),
+        updated_at: map['updated_at'] != null
+      ? (map['updated_at'] is int
+          ? DateTime.fromMillisecondsSinceEpoch(map['updated_at']).toIso8601String()
+          : map['updated_at'] as String)
+      : null,
       );
 }
