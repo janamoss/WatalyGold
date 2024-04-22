@@ -36,10 +36,14 @@ class Result {
         weight: map['weight']?.toInt() ?? 0,
         width: map['width']?.toInt() ?? 0,
         quality: map['quality'] ?? '',
-        created_at: DateTime.fromMillisecondsSinceEpoch(map['created_at'])
+        created_at: DateTime.fromMicrosecondsSinceEpoch(map['created_at'])
             .toIso8601String(),
-        updated_at: DateTime.fromMillisecondsSinceEpoch(map['updated_at'])
-            .toIso8601String(),
+        updated_at: map['updated_at'] != null
+            ? (map['updated_at'] is int
+                ? DateTime.fromMicrosecondsSinceEpoch(map['updated_at'])
+                    .toIso8601String()
+                : map['updated_at'] as String)
+            : null,
       );
 
 }

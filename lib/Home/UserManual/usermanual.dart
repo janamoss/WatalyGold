@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class UserManual extends StatefulWidget {
@@ -11,11 +10,9 @@ class UserManual extends StatefulWidget {
 class _UserManualState extends State<UserManual> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Column(
-        children: [
-          
-        ],
+        children: [],
       ),
     );
   }

@@ -1,4 +1,4 @@
-class Image {
+class Images {
   final int image_id;
   final int result_id;
 
@@ -16,7 +16,7 @@ class Image {
   final String? updated_at;
   final String? deleted_at;
 
-  const Image({
+  const Images({
     required this.image_id,
     required this.result_id,
     required this.image_status,
@@ -32,4 +32,26 @@ class Image {
     this.updated_at,
     this.deleted_at,
   });
+
+  factory Images.fromSqfliteDatabase(Map<String, dynamic> map) => Images(
+        image_id: map['image_id']?.toInt() ?? 0,
+        result_id: map['result_id']?.toInt() ?? 0,
+        image_status: map['image_status'] ?? '',
+        image_name: map['image_name'] ?? '',
+        image_url: map['image_url'] ?? '',
+        image_lenght: map['length']?.toDouble() ?? 0,
+        image_width: map['weight']?.toDouble() ?? 0,
+        image_weight: map['width']?.toDouble() ?? 0,
+        flaws_percent: map['quality']?.toDouble() ?? 0,
+        brown_spot: map['quality']?.toDouble() ?? 0,
+        color: map['quality'] ?? '',
+        created_at: DateTime.fromMicrosecondsSinceEpoch(map['created_at'])
+            .toIso8601String(),
+        updated_at: map['updated_at'] != null
+            ? (map['updated_at'] is int
+                ? DateTime.fromMicrosecondsSinceEpoch(map['updated_at'])
+                    .toIso8601String()
+                : map['updated_at'] as String)
+            : null,
+      );
 }

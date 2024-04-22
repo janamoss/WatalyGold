@@ -4,6 +4,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:watalygold/Database/Image_DB.dart';
+import 'package:watalygold/Database/Result_DB.dart';
+import 'package:watalygold/Database/User_DB.dart';
 import 'package:watalygold/Widgets/Appbar_main_exit.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
@@ -12,11 +15,13 @@ class ResultPage extends StatefulWidget {
       {super.key,
       required this.ID_Result,
       required this.ID_Image,
-      required this.capturedImage});
+      required this.capturedImage,
+      required this.ListImagePath});
 
   final String ID_Result;
   final List<String> ID_Image;
   final List<File> capturedImage;
+  final List<String> ListImagePath;
 
   @override
   State<ResultPage> createState() => _ResultPageState();
@@ -24,7 +29,7 @@ class ResultPage extends StatefulWidget {
 
 class _ResultPageState extends State<ResultPage> {
   bool _loading = true;
-
+  int? user_id;
   late String grade = ''; // Initialize grade with a default value
   late String anotherNote = '';
   late double weight = 0.0;
@@ -34,7 +39,38 @@ class _ResultPageState extends State<ResultPage> {
   @override
   void initState() {
     super.initState();
+    _fetchUserId();
     _fetchData();
+  }
+
+  Future<void> _fetchUserId() async {
+    // ดึง user_id จากฐานข้อมูล
+    final users = await User_db().fetchAll();
+    if (users.isNotEmpty) {
+      setState(() {
+        user_id = users.first.user_id;
+      });
+    }
+  }
+
+  Future<void> _insertImage(int resultId) async {
+    for (int i = 0; i < widget.capturedImage.length; i++) {
+      final results = FirebaseFirestore.instance.collection('Image');
+      final document = await results.doc(widget.ID_Image[i]).get();
+      await Image_DB().create(
+          result_id: resultId,
+          image_status: document["img_status"].toString(),
+          image_name: widget.ID_Image[i].toString(),
+          image_url: widget.ListImagePath[i].toString(),
+          image_lenght: document["mango_length"].toDouble(),
+          image_width: document["img_status"].toDouble(),
+          image_weight: document["mango_weight"].toDouble(),
+          flaws_percent: document["mango_width"].toDouble(),
+          brown_spot: document["brown_spot"].toDouble(),
+          color: document["color"]);
+      print("สร้างข้อมูลรูปภาพเสด");
+      setState(() {});
+    }
   }
 
   Future<void> _fetchData() async {
@@ -49,6 +85,16 @@ class _ResultPageState extends State<ResultPage> {
       length = document['Length'];
       width = document['Width'];
       anotherNote = document['Another_note'];
+      final resultId = await Result_DB().create(
+          user_id: user_id!,
+          another_note: anotherNote,
+          quality: grade,
+          lenght: length,
+          width: width,
+          weight: weight);
+      print("เสร็จสิ้นสร้าง result");
+      await _insertImage(resultId);
+      print("เสร็จสิ้น");
       setState(() {
         _loading = false;
       }); // อัพเดตการแสดงผล
@@ -332,7 +378,6 @@ class _ResultPageState extends State<ResultPage> {
         ));
   }
 }
-
 
 //           Container(
 //             alignment: Alignment.topCenter,

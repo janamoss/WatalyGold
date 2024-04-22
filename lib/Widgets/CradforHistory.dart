@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:watalygold/Database/Image_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/models/Result_ana.dart';
+import 'package:watalygold/models/Image.dart';
 
 class CradforHistory extends StatefulWidget {
   final String name;
@@ -19,8 +21,27 @@ class CradforHistory extends StatefulWidget {
 }
 
 class _CradforHistoryState extends State<CradforHistory> {
+  List<Images> _results = [];
+
+  Future<void> fetchImage(int result_id) async {
+    _results = await Image_DB().fetchImageinResult(result_id);
+    print(_results.length);
+    return;
+  }
+
   @override
+  void initState() {
+    super.initState();
+    fetchImage(int.parse(widget.name));
+  }
+
   Widget build(BuildContext context) {
+    const Map<String, Color> gradeColor = {
+      "ขั้นพิเศษ": Color(0xFF42BD41),
+      "ขั้นที่ 1": Color(0xFF86BD41),
+      "ขั้นที่ 2": Color(0xFFB6AC55),
+      "ไม่เข้าข่าย": Color(0xFFB68955),
+    };
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
@@ -42,7 +63,7 @@ class _CradforHistoryState extends State<CradforHistory> {
               decoration:
                   BoxDecoration(borderRadius: BorderRadius.circular(20)),
               child: Image.asset(
-                "assets/images/WatalyGold.png",
+                _results.first.image_url ?? "assets/images/WatalyGold.png",
                 fit: BoxFit.cover,
               ),
             ),
@@ -53,26 +74,57 @@ class _CradforHistoryState extends State<CradforHistory> {
                   // mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "รายการที่ xx",
-                      style: TextStyle(
-                        color: GPrimaryColor,
-                        fontSize: 15,
-                      ),
-                      textAlign: TextAlign.start,
+                    Row(
+                      children: [
+                        Text(
+                          'รายการที่ ${widget.name}',
+                          style: const TextStyle(
+                            color: GPrimaryColor,
+                            fontSize: 15,
+                          ),
+                          textAlign: TextAlign.start,
+                        ),
+                        Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: ElevatedButton.icon(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Colors.green.shade400),
+                                surfaceTintColor: MaterialStateProperty.all(
+                                    Colors.green.shade400),
+                                padding: MaterialStateProperty.all(
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5)),
+                                minimumSize: MaterialStateProperty.all(
+                                    const Size(50, 25)),
+                              ),
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.collections_rounded,
+                                color: WhiteColor,
+                                size: 20,
+                              ),
+                              label: const Icon(
+                                Icons.add,
+                                color: WhiteColor,
+                                size: 10,
+                              )),
+                        ),
+                      ],
                     ),
                     const Spacer(),
-                    const Row(
+                    Row(
                       children: [
                         Text(
                           "ระดับ",
                           style: TextStyle(color: GPrimaryColor, fontSize: 15),
                         ),
-                        SizedBox(width: 15), // เว้นระยะห่างระหว่างข้อความ
+                        const SizedBox(width: 15), // เว้นระยะห่างระหว่างข้อความ
                         Text(
-                          "คุณภาพพิเศษ",
+                          widget.result,
                           style: TextStyle(
-                              color: G2PrimaryColor,
+                              color: gradeColor[widget.result],
                               fontSize: 20,
                               fontWeight: FontWeight.bold),
                         ),
@@ -82,57 +134,32 @@ class _CradforHistoryState extends State<CradforHistory> {
                     Row(
                       children: [
                         Text(
-                          "วันที่ 16 ส.ค 2023",
+                          "วันที่ ${widget.date}",
                           style: TextStyle(
                               color: Colors.grey.shade500, fontSize: 12),
                         ),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        ElevatedButton.icon(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Colors.green.shade400),
-                              surfaceTintColor: MaterialStateProperty.all(
-                                  Colors.green.shade400),
-                              padding: MaterialStateProperty.all(
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5)),
-                              minimumSize:
-                                  MaterialStateProperty.all(const Size(50, 25)),
-                            ),
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.collections_rounded,
-                              color: WhiteColor,
-                              size: 20,
-                            ),
-                            label: const Icon(
-                              Icons.add,
-                              color: WhiteColor,
-                              size: 10,
-                            )),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Colors.red.shade400),
-                              surfaceTintColor: MaterialStateProperty.all(
-                                  Colors.red.shade400),
-                              padding: MaterialStateProperty.all(
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5)),
-                              minimumSize:
-                                  MaterialStateProperty.all(const Size(30, 30)),
-                            ),
-                            onPressed: () {},
-                            child: const Icon(
-                              Icons.delete_rounded,
-                              color: WhiteColor,
-                              size: 20,
-                            ))
+                        Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Colors.red.shade400),
+                                surfaceTintColor: MaterialStateProperty.all(
+                                    Colors.red.shade400),
+                                padding: MaterialStateProperty.all(
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5)),
+                                minimumSize: MaterialStateProperty.all(
+                                    const Size(30, 30)),
+                              ),
+                              onPressed: () {},
+                              child: const Icon(
+                                Icons.delete_rounded,
+                                color: WhiteColor,
+                                size: 20,
+                              )),
+                        )
                       ],
                     ),
                   ],

@@ -4,6 +4,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platform_device_id/platform_device_id.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/User_DB.dart';
 import 'Home/basepage.dart';
@@ -19,7 +20,7 @@ Future<void> main() async {
   await DatabaseService().database;
   if (await DatabaseService().isDatabaseExists()) {
     final results = await User_db().create(user_ipaddress: _deviceId!);
-    print(results);
+    // DatabaseService().deleteDatabase(await getDatabasesPath());
     print('Database exists!');
   } else {
     print('Database does not exist.');
@@ -27,8 +28,8 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // FirebaseFunctions.instanceFor(region: 'asia-southeast1')
-  //     .useFunctionsEmulator('127.0.0.1', 5001);
+  FirebaseFunctions.instanceFor(region: 'asia-southeast1')
+      .useFunctionsEmulator('127.0.0.1', 5001);
   // Obtain a list of the available cameras on the device.
   final cameras = await availableCameras();
   if (cameras.isEmpty) {

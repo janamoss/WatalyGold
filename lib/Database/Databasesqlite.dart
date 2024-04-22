@@ -48,4 +48,8 @@ class DatabaseService {
     await Result_DB().createtable(database);
     await Image_DB().createtable(database);
   }
+
+  Future<void> deleteDatabase(String path) =>
+    databaseFactory.deleteDatabase(path);
+
 }

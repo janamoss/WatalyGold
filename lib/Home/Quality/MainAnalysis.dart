@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:platform_device_id/platform_device_id.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
@@ -145,6 +146,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     return lebelsData.split('\n');
   }
 
+  Future<void> uploadImageinphone(File imageFile, String imageName) async {
+    return;
+  }
+
   Future Gallery() async {
     try {
       final image = await ImagePicker().pickMultiImage(imageQuality: 60);
@@ -215,12 +220,19 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       bool allImagesUploaded = true;
 
       List<String> imageuri = [];
+      List<String> downloaduri = [];
+      List<String> listImagepath = [];
       for (int i = 0; i < capturedImages.length; i++) {
-        String imageUrl =
+        final result =
             await uploadImageToCloudStorage(capturedImages[i], imageNames[i]);
-        imageuri.add(imageUrl);
+        final imagePath =
+            await saveImageToDevice(capturedImages[i], imageNames[i]);
+        print('Saved image path: $imagePath');
+        listImagepath.add(imagePath.toString());
+        downloaduri.add(result['downloadURL']!);
+        imageuri.add(result['imageName']!);
       }
-
+      String downloadurl = downloaduri.join(',');
       String concatenatedString = imageuri.join(',');
       // File first = capturedImages[0];
       // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
@@ -231,6 +243,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       try {
         final result = await firebasefunctions.httpsCallable("addImages").call({
+          'downloadurl': downloadurl,
           "imagename": concatenatedString,
           "ip": _deviceId,
           "result": results
@@ -262,6 +275,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               ID_Result: idResult,
               ID_Image: ids,
               capturedImage: capturedImages.reversed.toList(),
+              ListImagePath: listImagepath,
             ),
           ),
         );
@@ -274,7 +288,15 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     });
   }
 
-  Future<String> uploadImageToCloudStorage(
+  Future<String> saveImageToDevice(File imageFile, String imageName) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path = directory.path;
+    final fileName = '$path/$imageName';
+    final savedImage = await imageFile.copy(fileName);
+    return savedImage.path;
+  }
+
+  Future<Map<String, String>> uploadImageToCloudStorage(
       File imageFile, String imageName) async {
     final storageRef =
         FirebaseStorage.instance.ref().child('image_analysis/$imageName');
@@ -286,7 +308,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     final snapshot = await uploadTask;
 
     String downloadURL = await snapshot.ref.getDownloadURL();
-    return imageName;
+    final result = {'downloadURL': downloadURL, 'imageName': imageName};
+    return result;
   }
 
   late int flashstatus = 0;

@@ -17,12 +17,13 @@ class User {
   factory User.fromSqfliteDatabase(Map<String, dynamic> map) => User(
         user_id: map['user_id']?.toInt() ?? 0,
         user_ipaddress: map['user_ipaddress'] ?? '',
-        created_at: DateTime.fromMillisecondsSinceEpoch(map['created_at'])
+        created_at: DateTime.fromMicrosecondsSinceEpoch(map['created_at'])
             .toIso8601String(),
         updated_at: map['updated_at'] != null
-      ? (map['updated_at'] is int
-          ? DateTime.fromMillisecondsSinceEpoch(map['updated_at']).toIso8601String()
-          : map['updated_at'] as String)
-      : null,
+            ? (map['updated_at'] is int
+                ? DateTime.fromMicrosecondsSinceEpoch(map['updated_at'])
+                    .toIso8601String()
+                : map['updated_at'] as String)
+            : null,
       );
 }
