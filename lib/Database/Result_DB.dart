@@ -10,7 +10,7 @@ class Result_DB {
     CREATE TABLE IF NOT EXISTS $tablename (
       result_id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
-      collection_id INTEGER ,
+      collection_id INTEGER,
       another_note TEXT NOT NULL,
       quality TEXT NOT NULL,
       lenght INTEGER NOT NULL,
@@ -18,7 +18,13 @@ class Result_DB {
       weight INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      deleted_at DATETIME
+      deleted_at DATETIME,
+      FOREIGN KEY (user_id) REFERENCES user(user_id)
+      ON DELETE CASCADE
+      ON UPDATE NO ACTION,
+      FOREIGN KEY (collection_id) REFERENCES collection(collection_id)      
+      ON DELETE CASCADE
+      ON UPDATE NO ACTION
     );
     """);
   }
@@ -31,8 +37,14 @@ class Result_DB {
       required double width,
       required double weight}) async {
     final database = await DatabaseService().database;
-    final id = await database.rawInsert(
-      '''INSERT INTO $tablename (user_id,another_note,quality,lenght,width,weight,created_at) VALUES (?,?,?,?,?,?,?)''',
+    print(await DatabaseService().database);
+    // print("ทำงานอยู่จ้า");
+    // print(user_id);
+    // print(another_note);
+    // print(quality);
+    // print(lenght);
+    return await database.rawInsert(
+      '''INSERT INTO $tablename (user_id,another_note,quality,lenght,width,weight,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)''',
       [
         user_id,
         another_note,
@@ -41,9 +53,12 @@ class Result_DB {
         width,
         weight,
         DateTime.now().microsecondsSinceEpoch,
+        DateTime.now().microsecondsSinceEpoch,
       ],
     );
-    return id;
+    // return
+    // print(id);
+    //  id;
   }
 
   Future<List<Result>> fetchAll() async {

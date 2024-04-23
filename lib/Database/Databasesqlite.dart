@@ -49,7 +49,10 @@ class DatabaseService {
     await Image_DB().createtable(database);
   }
 
-  Future<void> deleteDatabase(String path) =>
-    databaseFactory.deleteDatabase(path);
-
+  Future<void> deleteDatabases(String path) async {
+    final path = await fullpath;
+    // _databaseExists = await databaseExists(path);
+    (await openDatabase(path)).close();
+    await deleteDatabase(path);
+  }
 }

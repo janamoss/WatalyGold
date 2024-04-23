@@ -30,6 +30,7 @@ class ResultPage extends StatefulWidget {
 class _ResultPageState extends State<ResultPage> {
   bool _loading = true;
   int? user_id;
+  int? resultId;
   late String grade = ''; // Initialize grade with a default value
   late String anotherNote = '';
   late double weight = 0.0;
@@ -41,6 +42,7 @@ class _ResultPageState extends State<ResultPage> {
     super.initState();
     _fetchUserId();
     _fetchData();
+    // print("เสร็จสิ้น");
   }
 
   Future<void> _fetchUserId() async {
@@ -54,30 +56,31 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Future<void> _insertImage(int resultId) async {
-    for (int i = 0; i < widget.capturedImage.length; i++) {
-      final results = FirebaseFirestore.instance.collection('Image');
+    print(resultId);
+    final results = FirebaseFirestore.instance.collection('Image');
+    for (int i = 0; i < widget.ID_Image.length; i++) {
+      print("1234");
       final document = await results.doc(widget.ID_Image[i]).get();
-      await Image_DB().create(
-          result_id: resultId,
+      print(document["img_status"].toString());
+      await Image_DB().insertdata(
+          result_id: resultId.toInt(),
           image_status: document["img_status"].toString(),
           image_name: widget.ID_Image[i].toString(),
           image_url: widget.ListImagePath[i].toString(),
           image_lenght: document["mango_length"].toDouble(),
-          image_width: document["img_status"].toDouble(),
+          image_width: document["mango_width"].toDouble(),
           image_weight: document["mango_weight"].toDouble(),
-          flaws_percent: document["mango_width"].toDouble(),
+          flaws_percent: document["flaws_percent"].toDouble(),
           brown_spot: document["brown_spot"].toDouble(),
-          color: document["color"]);
+          color: document["color"].toString());
       print("สร้างข้อมูลรูปภาพเสด");
       setState(() {});
     }
   }
 
   Future<void> _fetchData() async {
-    setState(() {
-      _loading = true;
-    });
     try {
+      print("step 1");
       final results = FirebaseFirestore.instance.collection('Result');
       final document = await results.doc(widget.ID_Result).get();
       grade = document['Quality'];
@@ -85,16 +88,16 @@ class _ResultPageState extends State<ResultPage> {
       length = document['Length'];
       width = document['Width'];
       anotherNote = document['Another_note'];
-      final resultId = await Result_DB().create(
+      print("ทำงานอยู่จ้าเด้อ");
+      resultId = await Result_DB().create(
           user_id: user_id!,
           another_note: anotherNote,
           quality: grade,
-          lenght: length,
-          width: width,
-          weight: weight);
+          lenght: length.toDouble(),
+          width: width.toDouble(),
+          weight: weight.toDouble());
       print("เสร็จสิ้นสร้าง result");
-      await _insertImage(resultId);
-      print("เสร็จสิ้น");
+      await _insertImage(resultId!);
       setState(() {
         _loading = false;
       }); // อัพเดตการแสดงผล
