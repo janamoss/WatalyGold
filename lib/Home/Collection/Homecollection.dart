@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Widgets/Appbar_Histion.dart';
 import 'package:watalygold/Widgets/Color.dart';
+import 'package:watalygold/Widgets/DialogCollection.dart';
 
 class HomeCollection extends StatefulWidget {
   const HomeCollection({super.key});
@@ -22,10 +28,25 @@ class _HomeCollectionState extends State<HomeCollection> {
         elevation: 3,
         backgroundColor: WhiteColor,
         tooltip: 'Increment',
-        onPressed: () {},
-        child: const Icon(Icons.add_to_photos_rounded,
-            color: GPrimaryColor, size: 30),
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return DialogCollection();
+            },
+          );
+        },
+        child: SvgPicture.asset(
+          "assets/images/collections-add-svgrepo-com.svg",
+          colorFilter: ColorFilter.mode(GPrimaryColor, BlendMode.srcIn),
+          semanticsLabel: 'A red up arrow',
+          height: 40,
+          width: 40,
+        ),
       ),
+      //   child: const Icon(Icons.add_to_photos_rounded,
+      //       color: GPrimaryColor, size: 30),
+      // ),
       body: Container(
         child: Padding(
           padding: EdgeInsets.all(15),
