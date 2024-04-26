@@ -1,13 +1,15 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:watalygold/Widgets/Appbar_Histion.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
+import 'package:watalygold/Widgets/CradforCollection.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
+import 'package:watalygold/models/Collection.dart';
 
 class HomeCollection extends StatefulWidget {
   const HomeCollection({super.key});
@@ -17,6 +19,41 @@ class HomeCollection extends StatefulWidget {
 }
 
 class _HomeCollectionState extends State<HomeCollection> {
+  List<Collection> _collection = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCollections();
+  }
+
+  Future<void> _showToast() async {
+    await Fluttertoast.showToast(
+      msg: "This is a toast",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+    );
+
+    // รอ 2 วินาทีก่อนดำเนินการต่อ
+    await Future.delayed(Duration(seconds: 3));
+
+    // ทำสิ่งอื่นๆ ต่อ
+  }
+
+  Future<void> _loadCollections() async {
+    _collection = await Collection_DB().fetchAll();
+    print(_collection.length);
+    setState(() {});
+  }
+
+  void refreshDialogCollection() {
+    setState(() {}); // refresh state of DialogCollection
+  }
+
+  void refreshList() {
+    _loadCollections(); // เรียกใช้ฟังก์ชันนี้เพื่ออัปเดตรายการ
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,13 +65,29 @@ class _HomeCollectionState extends State<HomeCollection> {
         elevation: 3,
         backgroundColor: WhiteColor,
         tooltip: 'Increment',
-        onPressed: () {
-          showDialog(
+        onPressed: () async {
+          _showToast();
+          await showGeneralDialog(
             context: context,
-            builder: (context) {
+            barrierDismissible: true,
+            barrierLabel:
+                MaterialLocalizations.of(context).modalBarrierDismissLabel,
+            transitionDuration: Duration(milliseconds: 500),
+            transitionBuilder: (context, animation, secondaryAnimation, child) {
+              final tween = Tween(begin: 0.0, end: 1.0).chain(
+                CurveTween(curve: Curves.bounceOut),
+              );
+              return ScaleTransition(
+                scale: animation.drive(tween),
+                child: child,
+              );
+            },
+            pageBuilder: (context, animation, secondaryAnimation) {
               return DialogCollection();
             },
           );
+          setState(() {});
+          _loadCollections();
         },
         child: SvgPicture.asset(
           "assets/images/collections-add-svgrepo-com.svg",
@@ -106,23 +159,33 @@ class _HomeCollectionState extends State<HomeCollection> {
                   });
                 },
               ),
-              // Expanded(
-              //   child: ListView.builder(
-              //     itemCount: _results.length,
-              //     itemBuilder: (context, index) {
-              //       final result = _results[index];
-              //       DateTime createdAt = DateTime.parse(result.created_at);
-              //       final formattedDate =
-              //           DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);
-              //       return CradforHistory(
-              //         name: result.result_id
-              //             .toString(), // หรือข้อมูลอื่นๆ ที่ต้องการแสดง
-              //         result: result.quality.toString(),
-              //         date: formattedDate,
-              //       );
-              //     },
-              //   ),
-              // )
+              SizedBox(
+                height: 10,
+              ),
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // จำนวนคอลัมน์
+                    childAspectRatio: 3 / 4, // อัตราส่วน width ต่อ height
+                  ),
+                  itemCount: _collection.length,
+                  itemBuilder: (context, index) {
+                    final collection = _collection[index];
+                    return SizedBox(
+                      child: CradforColletion(
+                          collections: collection,
+                          refreshCallback: refreshList),
+                    );
+                  },
+                ),
+                // ListView.builder(
+                //   itemCount: _collection.length,
+                //   itemBuilder: (context, index) {
+                //     final collection = _collection[index];
+
+                //   },
+                // ),
+              )
             ],
           ),
         ),

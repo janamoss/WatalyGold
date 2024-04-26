@@ -16,18 +16,24 @@ class Collection_DB {
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       deleted_at DATETIME,
       FOREIGN KEY (user_id) REFERENCES user(user_id)
-      ON DELETE CASCADE
-      ON UPDATE NO ACTION
     );
     """);
   }
 
-
-  Future<int> create({required String user_ipaddress}) async {
+  Future<int> create(
+      {required int user_id,
+      required String collection_name,
+      required String collection_image}) async {
     final database = await DatabaseService().database;
     return await database.rawInsert(
-      '''INSERT INTO $tablename (user_ipaddress,created_at) VALUES (?,?)''',
-      [user_ipaddress, DateTime.now().microsecondsSinceEpoch],
+      '''INSERT INTO $tablename (user_id,collection_name,collection_image,created_at,updated_at) VALUES (?,?,?,?,?)''',
+      [
+        user_id,
+        collection_name,
+        collection_image,
+        DateTime.now().microsecondsSinceEpoch,
+        DateTime.now().microsecondsSinceEpoch
+      ],
     );
   }
 
@@ -35,6 +41,15 @@ class Collection_DB {
     final database = await DatabaseService().database;
     final collections = await database.rawQuery(
         '''SELECT * FROM $tablename ORDER BY COALESCE(updated_at,created_at)''');
-    return collections.map((collection) => Collection.fromSqfliteDatabase(collection)).toList();
+    return collections
+        .map((collection) => Collection.fromSqfliteDatabase(collection))
+        .toList();
+  }
+
+  Future<void> delete(int collection_id) async {
+    final database = await DatabaseService().database;
+    await database.rawDelete(
+      """DELETE FROM $tablename WHERE collection_id = ? """,[collection_id]
+    );
   }
 }

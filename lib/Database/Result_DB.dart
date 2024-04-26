@@ -19,12 +19,8 @@ class Result_DB {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       deleted_at DATETIME,
-      FOREIGN KEY (user_id) REFERENCES user(user_id)
-      ON DELETE CASCADE
-      ON UPDATE NO ACTION,
-      FOREIGN KEY (collection_id) REFERENCES collection(collection_id)      
-      ON DELETE CASCADE
-      ON UPDATE NO ACTION
+      FOREIGN KEY (user_id) REFERENCES user(user_id),
+      FOREIGN KEY (collection_id) REFERENCES collection(collection_id)
     );
     """);
   }

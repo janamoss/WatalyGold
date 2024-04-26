@@ -19,29 +19,32 @@ class User_db {
 
   Future<User?> fetchByIpAddress(String ipAddress) async {
     final database = await DatabaseService().database;
-    final users = await database.query(
-      tablename,
-      where: 'user_ipaddress = ?',
-      whereArgs: [ipAddress],
-      limit: 1,
+    final results = await database.rawQuery(
+      'SELECT * FROM $tablename WHERE user_ipaddress = ? LIMIT 1',
+      [ipAddress],
     );
-    if (users.isNotEmpty) {
-      return User.fromSqfliteDatabase(users.first);
+    if (results.isNotEmpty) {
+      return User.fromSqfliteDatabase(results.first);
     }
     return null;
   }
 
   Future<int> create({required String user_ipaddress}) async {
     final existingUser = await fetchByIpAddress(user_ipaddress);
-    if (existingUser != null) {
-      // ถ้ามี IP อยู่แล้ว
-      return 0;
+    if (existingUser == null) {
+      // ตรวจสอบว่า existingUser เป็น null หรือไม่
+      final database = await DatabaseService().database;
+      return await database.rawInsert(
+        '''INSERT INTO $tablename (user_ipaddress, created_at,updated_at) VALUES (?, ?, ?)''',
+        [
+          user_ipaddress,
+          DateTime.now().microsecondsSinceEpoch,
+          DateTime.now().microsecondsSinceEpoch
+        ],
+      );
     }
-    final database = await DatabaseService().database;
-    return await database.rawInsert(
-      '''INSERT INTO $tablename (user_ipaddress,created_at) VALUES (?,?)''',
-      [user_ipaddress, DateTime.now().microsecondsSinceEpoch],
-    );
+    // ถ้ามี IP อยู่แล้ว ไม่ต้องทำอะไร
+    return 0;
   }
 
   Future<List<User>> fetchAll() async {

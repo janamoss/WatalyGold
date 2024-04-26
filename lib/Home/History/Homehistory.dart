@@ -92,6 +92,9 @@ class _HomeHistoryState extends State<HomeHistory> {
                   });
                 },
               ),
+              SizedBox(
+                height: 10,
+              ),
               Expanded(
                 child: ListView.builder(
                   itemCount: _results.length,

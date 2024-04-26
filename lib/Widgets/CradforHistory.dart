@@ -49,9 +49,8 @@ class _CradforHistoryState extends State<CradforHistory> {
     return ValueListenableBuilder(
       valueListenable: _imageList,
       builder: (context, images, child) {
-        if (images.isNotEmpty) {
-          print(images.first.image_url.toString());
-
+        if (images.isEmpty) {
+          // print(images.first.image_url.toString());
           return Card(
             clipBehavior: Clip.antiAlias,
             margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
@@ -73,11 +72,17 @@ class _CradforHistoryState extends State<CradforHistory> {
                     clipBehavior: Clip.antiAlias,
                     decoration:
                         BoxDecoration(borderRadius: BorderRadius.circular(20)),
-                    child: Image(
-                      image: FileImage(File(
-                          images.first.image_url.toString())), // ใช้ FileImage
-                      fit: BoxFit.cover,
-                    ),
+                    child: images.isEmpty
+                        ? Image(
+                            image: AssetImage(
+                                "assets/images/plain-grey-background-ydlwqztavi78gl24.jpg"), // ใช้ FileImage
+                            fit: BoxFit.cover,
+                          )
+                        : Image(
+                            image: FileImage(File(images.first.image_url
+                                .toString())), // ใช้ FileImage
+                            fit: BoxFit.cover,
+                          ),
                   ),
                   Expanded(
                     child: Padding(
