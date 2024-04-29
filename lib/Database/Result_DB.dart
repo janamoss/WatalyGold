@@ -21,6 +21,7 @@ class Result_DB {
       deleted_at DATETIME,
       FOREIGN KEY (user_id) REFERENCES user(user_id),
       FOREIGN KEY (collection_id) REFERENCES collection(collection_id)
+      ON DELETE SET NULL
     );
     """);
   }
@@ -61,6 +62,39 @@ class Result_DB {
     final database = await DatabaseService().database;
     final results = await database.rawQuery(
         '''SELECT * FROM $tablename ORDER BY COALESCE(updated_at,created_at)''');
+    return results.map((result) => Result.fromSqfliteDatabase(result)).toList();
+  }
+
+  Future<Result> fetchsomeresult(int result_id) async {
+    final database = await DatabaseService().database;
+    final results = await database.rawQuery(
+        '''SELECT * FROM $tablename WHERE result_id = ? ''', [result_id]);
+    return Result.fromSqfliteDatabase(results.first);
+  }
+
+  Future<void> delete(int result_id) async {
+    final database = await DatabaseService().database;
+    await database.rawDelete(
+        """DELETE FROM $tablename WHERE result_id = ? """, [result_id]);
+  }
+
+  Future<int> updatecollection(int collection_id, int result_id) async {
+    final database = await DatabaseService().database;
+    return await database.update(
+      tablename,
+      {
+        'collection_id': collection_id != 0 ? collection_id : null
+      }, // ตรวจสอบว่า collection_id ไม่ใช่ 0 ก่อนอัปเดต
+      where: 'result_id = ?',
+      whereArgs: [result_id],
+    );
+  }
+
+  Future<List<Result>> fetchCountReinCol(int collection_id) async {
+    final database = await DatabaseService().database;
+    final results = await database.rawQuery(
+        '''SELECT * FROM $tablename WHERE collection_id = ? ORDER BY COALESCE(updated_at,created_at)''',
+        [collection_id]);
     return results.map((result) => Result.fromSqfliteDatabase(result)).toList();
   }
 }

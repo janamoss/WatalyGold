@@ -3,12 +3,18 @@ import 'dart:io';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Image_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Database/User_DB.dart';
 import 'package:watalygold/Widgets/Appbar_main_exit.dart';
 import 'package:watalygold/Widgets/Color.dart';
+import 'package:watalygold/Widgets/DialogCollection.dart';
+import 'package:watalygold/models/Collection.dart';
 
 class ResultPage extends StatefulWidget {
   const ResultPage(
@@ -28,9 +34,13 @@ class ResultPage extends StatefulWidget {
 }
 
 class _ResultPageState extends State<ResultPage> {
+  List<Collection>? collection;
   bool _loading = true;
   int? user_id;
   int? resultId;
+
+  int? status = 0;
+
   late String grade = ''; // Initialize grade with a default value
   late String anotherNote = '';
   late double weight = 0.0;
@@ -42,7 +52,14 @@ class _ResultPageState extends State<ResultPage> {
     super.initState();
     _fetchUserId();
     _fetchData();
+    _loadCollections();
     // print("เสร็จสิ้น");
+  }
+
+  Future<void> _loadCollections() async {
+    collection = await Collection_DB().fetchAll();
+    print(collection!.length);
+    setState(() {});
   }
 
   Future<void> _fetchUserId() async {
@@ -78,6 +95,17 @@ class _ResultPageState extends State<ResultPage> {
     }
   }
 
+  Future<void> _showToastUpdate() async {
+    await Fluttertoast.showToast(
+        msg: "บันทึกลงคอลเลคชันเรียบร้อย",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green.shade300,
+        textColor: WhiteColor,
+        fontSize: 15);
+    await Future.delayed(Duration(seconds: 3));
+  }
+
   Future<void> _fetchData() async {
     try {
       print("step 1");
@@ -99,6 +127,7 @@ class _ResultPageState extends State<ResultPage> {
       print("เสร็จสิ้นสร้าง result");
       await _insertImage(resultId!);
       setState(() {
+        resultId = resultId;
         _loading = false;
       }); // อัพเดตการแสดงผล
     } catch (error) {
@@ -253,15 +282,32 @@ class _ResultPageState extends State<ResultPage> {
                           Padding(
                             padding: const EdgeInsets.all(10),
                             child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(
-                                      color: Color(0xff069D73), width: 2)),
-                              onPressed: () {},
-                              child: const Text(
-                                "บันทึกลงคอลเลคชั่นของคุณ",
+                              style: ButtonStyle(
+                                  surfaceTintColor: status == 1
+                                      ? MaterialStateProperty.all(
+                                          Color(0xff069D73))
+                                      : MaterialStateProperty.all(Colors.white),
+                                  backgroundColor: status == 1
+                                      ? MaterialStateProperty.all(
+                                          Color(0xff069D73))
+                                      : MaterialStateProperty.all(Colors.white),
+                                  side: MaterialStateProperty.all(BorderSide(
+                                      color: Color(0xff069D73), width: 2))),
+                              onPressed: status == 1
+                                  ? null
+                                  : () async {
+                                      await _displaybottomsheet(context);
+                                      setState(() {});
+                                    },
+                              child: Text(
+                                status == 1
+                                    ? "คุณได้บันทึกลงคอลเลคชันเรียบร้อย"
+                                    : "บันทึกลงคอลเลคชั่นของคุณ",
                                 style: TextStyle(
-                                    color: Color(0xff069D73), fontSize: 15),
+                                    color: status == 1
+                                        ? WhiteColor
+                                        : Color(0xff069D73),
+                                    fontSize: 15),
                               ),
                             ),
                           )
@@ -379,6 +425,119 @@ class _ResultPageState extends State<ResultPage> {
                   ],
                 ),
         ));
+  }
+
+  Future _displaybottomsheet(BuildContext context) {
+    return showMaterialModalBottomSheet(
+      context: context,
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(35))),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text(
+                  "บันทึกลงคอลเลคชันของคุณ",
+                  style: TextStyle(
+                      color: GPrimaryColor,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
+                ),
+                // Spacer(),
+                IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(Icons.close),
+                )
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                for (int i = 0; i < collection!.length; i++)
+                  ListTile(
+                    leading: new Icon(
+                      Icons.collections_rounded,
+                      color: Colors.grey.shade700,
+                      size: 30,
+                    ),
+                    title: Text(
+                      collection![i].collection_name,
+                      style: TextStyle(
+                          fontSize: 17,
+                          color: Colors.grey.shade800,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () async {
+                      _showToastUpdate();
+                      final s = await Result_DB().updatecollection(
+                          collection![i].collection_id, resultId!);
+                      print("$s จ้าาาาาาา");
+                      print(collection![i].collection_id);
+                      setState(() {
+                        status = 1;
+                      });
+                      Navigator.pop(context);
+                      // widget.refreshCallback();
+                    },
+                  ),
+                ListTile(
+                  leading: SvgPicture.asset(
+                    "assets/images/collections-add-svgrepo-com.svg",
+                    colorFilter:
+                        ColorFilter.mode(Colors.grey.shade700, BlendMode.srcIn),
+                    semanticsLabel: 'A red up arrow',
+                    height: 30,
+                    width: 30,
+                  ),
+                  title: Text(
+                    'สร้างคอลเลคชัน',
+                    style: TextStyle(
+                        fontSize: 17,
+                        color: Colors.grey.shade800,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  onTap: () async {
+                    await showGeneralDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      barrierLabel: MaterialLocalizations.of(context)
+                          .modalBarrierDismissLabel,
+                      transitionDuration: Duration(milliseconds: 500),
+                      transitionBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        final tween = Tween(begin: 0.0, end: 1.0).chain(
+                          CurveTween(curve: Curves.bounceOut),
+                        );
+                        return ScaleTransition(
+                          scale: animation.drive(tween),
+                          child: child,
+                        );
+                      },
+                      pageBuilder: (context, animation, secondaryAnimation) {
+                        return DialogCollection();
+                      },
+                    );
+                    Navigator.pop(context);
+                    // widget.refreshCallback();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

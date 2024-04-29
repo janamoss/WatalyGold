@@ -19,8 +19,10 @@ class HomeCollection extends StatefulWidget {
 }
 
 class _HomeCollectionState extends State<HomeCollection> {
-  List<Collection> _collection = [];
+  TextEditingController _controller = TextEditingController();
 
+  List<Collection> _collection = [];
+  List<Collection> _originalCollection = [];
   @override
   void initState() {
     super.initState();
@@ -40,8 +42,9 @@ class _HomeCollectionState extends State<HomeCollection> {
     // ทำสิ่งอื่นๆ ต่อ
   }
 
-  Future<void> _loadCollections() async {
-    _collection = await Collection_DB().fetchAll();
+  Future _loadCollections() async {
+    _originalCollection = await Collection_DB().fetchAll();
+    _collection = _originalCollection;
     print(_collection.length);
     setState(() {});
   }
@@ -105,59 +108,28 @@ class _HomeCollectionState extends State<HomeCollection> {
           padding: EdgeInsets.all(15),
           child: Column(
             children: [
-              SearchAnchor(
-                builder: (BuildContext context, SearchController controller) {
-                  return Column(
-                    children: [
-                      Center(
-                        child: SearchBar(
-                          constraints: BoxConstraints(
-                            minWidth: 100,
-                            minHeight: 45,
-                            maxWidth: 300,
-                            maxHeight: 60,
-                          ),
-                          elevation: MaterialStateProperty.all(2),
-                          shape: MaterialStateProperty.all<OutlinedBorder>(
-                              RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          )),
-                          controller: controller,
-                          hintText: "ค้นหาคอลเลคชันของคุณ",
-                          surfaceTintColor:
-                              MaterialStateProperty.all<Color>(Colors.white),
-                          overlayColor:
-                              MaterialStateProperty.all<Color>(Colors.white),
-                          backgroundColor:
-                              MaterialStateProperty.all<Color>(Colors.white),
-                          padding: MaterialStatePropertyAll<EdgeInsets>(
-                              EdgeInsets.symmetric(horizontal: 15)),
-                          // onTap: () {
-                          //   controller.openView();
-                          // },
-                          // onChanged: (_) {
-                          //   controller.openView();
-                          // },
-                          leading: Icon(Icons.search),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                suggestionsBuilder:
-                    (BuildContext context, SearchController controller) {
-                  return List<ListTile>.generate(5, (int index) {
-                    final String item = 'item $index';
-                    return ListTile(
-                      title: Text(item),
-                      onTap: () {
-                        setState(() {
-                          controller.closeView(item);
-                        });
-                      },
-                    );
-                  });
-                },
+              Container(
+                margin: EdgeInsets.all(5),
+                width: MediaQuery.of(context).size.width * 0.85,
+                height: 50,
+                child: TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.all(10),
+                    fillColor: WhiteColor,
+                    filled: true,
+                    hintText: "ค้นหาการวิเคราะห์",
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: Color(0xff767676),
+                      size: 30,
+                    ),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none),
+                  ),
+                  onChanged: searchCollection,
+                ),
               ),
               SizedBox(
                 height: 10,
@@ -166,7 +138,7 @@ class _HomeCollectionState extends State<HomeCollection> {
                 child: GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2, // จำนวนคอลัมน์
-                    childAspectRatio: 3 / 4, // อัตราส่วน width ต่อ height
+                    childAspectRatio: 2.8 / 4, // อัตราส่วน width ต่อ height
                   ),
                   itemCount: _collection.length,
                   itemBuilder: (context, index) {
@@ -191,5 +163,18 @@ class _HomeCollectionState extends State<HomeCollection> {
         ),
       ),
     );
+  }
+
+  void searchCollection(String query) {
+    if (query.isEmpty) {
+      setState(() => _collection = _originalCollection);
+    } else {
+      final suggestions = _originalCollection.where((collection) {
+        final collections = collection.collection_name.toString();
+        final input = query.toLowerCase();
+        return collections.toLowerCase().contains(input);
+      }).toList();
+      setState(() => _collection = suggestions);
+    }
   }
 }

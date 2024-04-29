@@ -36,8 +36,10 @@ class Appbarmain extends StatelessWidget implements PreferredSizeWidget {
 
 class AppbarMains extends StatefulWidget implements PreferredSizeWidget {
   final String name;
+  final VoidCallback? refresh;
 
-  const AppbarMains({Key? key, required this.name}) : super(key: key);
+  const AppbarMains({Key? key, required this.name, this.refresh})
+      : super(key: key);
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -65,6 +67,7 @@ class _AppbarMainsState extends State<AppbarMains> {
         ),
         onPressed: () {
           Navigator.pop(context);
+          widget.refresh!();
         },
       ),
       title: Text(widget.name, style: TextStyle(color: Colors.white)),

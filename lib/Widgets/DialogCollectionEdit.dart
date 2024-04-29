@@ -9,15 +9,21 @@ import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/User_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
-class DialogCollection extends StatefulWidget {
-  const DialogCollection({
+class DialogCollectionEdit extends StatefulWidget {
+  final String edit_name;
+  final String edit_image;
+  final int collection_id;
+  const DialogCollectionEdit({
     super.key,
+    required this.edit_name,
+    required this.edit_image,
+    required this.collection_id,
   });
   @override
-  State<DialogCollection> createState() => _DialogCollectionState();
+  State<DialogCollectionEdit> createState() => _DialogCollectionEditState();
 }
 
-class _DialogCollectionState extends State<DialogCollection> {
+class _DialogCollectionEditState extends State<DialogCollectionEdit> {
   File? capturedImages;
   TextEditingController nameController = TextEditingController();
 
@@ -25,6 +31,17 @@ class _DialogCollectionState extends State<DialogCollection> {
   int? user_id;
 
   Future<void> _showToastUpdate() async {
+    await Fluttertoast.showToast(
+        msg: "คอลเลคชันถูกแก้ไขเรียบร้อย",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green.shade300,
+        textColor: WhiteColor,
+        fontSize: 15);
+    await Future.delayed(Duration(seconds: 3));
+  }
+
+  Future<void> _showToastwarning() async {
     await Fluttertoast.showToast(
         msg: "ชื่อ ${nameController.text.toString()} ถูกใช้ไปแล้ว กรุณาลองใหม่",
         toastLength: Toast.LENGTH_SHORT,
@@ -35,19 +52,23 @@ class _DialogCollectionState extends State<DialogCollection> {
     await Future.delayed(Duration(seconds: 3));
   }
 
-  Future InsertCollection() async {
+  Future UpdateCollection() async {
     try {
       if (nameController.text.isNotEmpty) {
-        final s = await Collection_DB().create(
-          user_id: user_id!.toInt(),
+        final s = await Collection_DB().updateCollection(
+          collection_id: widget.collection_id.toInt(),
           collection_name: nameController.text.toString(),
           collection_image: capturedImages!.path.toString(),
+          user_id: user_id!.toInt(),
         );
         print(s.toString());
         if (s == 0) {
+          _showToastwarning();
+          Navigator.of(context).pop();
+        } else {
           _showToastUpdate();
+          Navigator.of(context).pop();
         }
-        Navigator.of(context).pop();
       } else {
         setState(() {
           _isNotValidate = true;
@@ -72,8 +93,9 @@ class _DialogCollectionState extends State<DialogCollection> {
   void initState() {
     super.initState();
     _fetchUserId();
-    capturedImages = File(
-        "assets/images/Collection.png"); // กำหนดค่าเริ่มต้นของ capturedImages ในนี้
+    capturedImages =
+        File(widget.edit_image); // กำหนดค่าเริ่มต้นของ capturedImages ในนี้
+    nameController.text = widget.edit_name;
   }
 
   Future Gallery() async {
@@ -96,7 +118,7 @@ class _DialogCollectionState extends State<DialogCollection> {
       surfaceTintColor: WhiteColor,
       elevation: 2,
       title: Text(
-        "เพิ่มคอลเลคชัน",
+        "แก้ไขคอลเลคชัน",
         style: TextStyle(fontSize: 15),
       ),
       content: Container(
@@ -117,22 +139,13 @@ class _DialogCollectionState extends State<DialogCollection> {
                 height: 120,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: GPrimaryColor,
-                    width: 2,
-                  ),
-                  image: capturedImages != null
-                      ? capturedImages!.path == "assets/images/Collection.png"
-                          ? DecorationImage(
-                              image: AssetImage(capturedImages!.path),
-                              fit: BoxFit.cover,
-                            )
-                          : DecorationImage(
-                              image: FileImage(capturedImages!),
-                              fit: BoxFit.cover,
-                            )
+                  image: capturedImages!.path == "assets/images/Collection.png"
+                      ? DecorationImage(
+                          image: AssetImage(capturedImages!.path),
+                          fit: BoxFit.cover,
+                        )
                       : DecorationImage(
-                          image: AssetImage("assets/images/Collection.png"),
+                          image: FileImage(capturedImages!),
                           fit: BoxFit.cover,
                         ),
                 ),
@@ -203,16 +216,18 @@ class _DialogCollectionState extends State<DialogCollection> {
             ),
             ElevatedButton(
               onPressed: () {
-                InsertCollection();
+                UpdateCollection();
               },
               child: Text(
-                "เพิ่มคอลเลคชัน",
+                "แก้ไขคอลเลคชัน",
                 style: TextStyle(color: WhiteColor),
               ),
               style: ButtonStyle(
                   elevation: MaterialStateProperty.all(2),
-                  backgroundColor: MaterialStateProperty.all(G2PrimaryColor),
-                  surfaceTintColor: MaterialStateProperty.all(G2PrimaryColor)),
+                  backgroundColor:
+                      MaterialStateProperty.all(Colors.orange.shade300),
+                  surfaceTintColor:
+                      MaterialStateProperty.all(Colors.orange.shade300)),
             ),
           ],
         ),
