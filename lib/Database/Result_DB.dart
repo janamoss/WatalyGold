@@ -65,6 +65,13 @@ class Result_DB {
     return results.map((result) => Result.fromSqfliteDatabase(result)).toList();
   }
 
+  Future<List<Result>> fetchResultinCol() async {
+    final database = await DatabaseService().database;
+    final results = await database.rawQuery(
+        '''SELECT * FROM $tablename WHERE collection_id IS NULL ORDER BY COALESCE(updated_at,created_at)''');
+    return results.map((result) => Result.fromSqfliteDatabase(result)).toList();
+  }
+
   Future<Result> fetchsomeresult(int result_id) async {
     final database = await DatabaseService().database;
     final results = await database.rawQuery(

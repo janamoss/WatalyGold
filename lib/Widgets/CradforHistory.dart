@@ -22,7 +22,10 @@ class CradforHistory extends StatefulWidget {
   final int? statusdelete;
   final int? number;
   final Map<int, List<Images>>? resultimage;
+  final int? statusSelect;
   final VoidCallback refreshCallback;
+  final bool? isChecked;
+  final VoidCallback? onCheckChanged;
   const CradforHistory({
     super.key,
     required this.date,
@@ -32,6 +35,9 @@ class CradforHistory extends StatefulWidget {
     this.statusdelete,
     this.number,
     this.resultimage,
+    this.statusSelect,
+    this.isChecked,
+    this.onCheckChanged,
   });
 
   @override
@@ -39,6 +45,8 @@ class CradforHistory extends StatefulWidget {
 }
 
 class _CradforHistoryState extends State<CradforHistory> {
+  bool isCheck = false;
+
   Collection? collections;
   List<Images> _results = [];
   final ValueNotifier<List<Images>> _imageList = ValueNotifier([]);
@@ -137,62 +145,84 @@ class _CradforHistoryState extends State<CradforHistory> {
                               ),
                               Spacer(),
                               widget.number == null
-                                  ? Padding(
-                                      padding: const EdgeInsets.only(right: 10),
-                                      child: ElevatedButton.icon(
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                widget.results.collection_id ==
+                                  ? widget.statusSelect != null
+                                      ? IconButton(
+                                          onPressed: () {
+                                            widget.onCheckChanged!();
+                                          },
+                                          icon: widget.isChecked!
+                                              ? Icon(
+                                                  Icons.check_circle_rounded,
+                                                  color: GPrimaryColor,
+                                                  size: 25,
+                                                )
+                                              : Icon(
+                                                  Icons
+                                                      .check_circle_outline_rounded,
+                                                  color: Colors.grey.shade400,
+                                                  size: 25,
+                                                ),
+                                        )
+                                      : Padding(
+                                          padding: EdgeInsets.only(right: 10),
+                                          child: ElevatedButton.icon(
+                                              style: ButtonStyle(
+                                                backgroundColor: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? MaterialStateProperty.all(
                                                         Colors.green.shade400)
                                                     : MaterialStateProperty.all(
                                                         Colors.transparent),
-                                            surfaceTintColor:
-                                                widget.results.collection_id ==
+                                                surfaceTintColor: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? MaterialStateProperty.all(
                                                         Colors.green.shade400)
                                                     : MaterialStateProperty.all(
                                                         Colors.transparent),
-                                            padding: MaterialStateProperty.all(
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 5)),
-                                            minimumSize:
-                                                MaterialStateProperty.all(
-                                                    const Size(50, 25)),
-                                          ),
-                                          onPressed: widget
-                                                      .results.collection_id ==
-                                                  0
-                                              ? () {
-                                                  _displaybottomsheet(context);
-                                                }
-                                              : () {
-                                                  // _displaybottomsheet(context);
-                                                },
-                                          icon: Icon(
-                                            Icons.collections_rounded,
-                                            color:
-                                                widget.results.collection_id ==
+                                                padding:
+                                                    MaterialStateProperty.all(
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 5)),
+                                                minimumSize:
+                                                    MaterialStateProperty.all(
+                                                        const Size(50, 25)),
+                                              ),
+                                              onPressed: widget.results
+                                                          .collection_id ==
+                                                      0
+                                                  ? () {
+                                                      _displaybottomsheet(
+                                                          context);
+                                                    }
+                                                  : () {
+                                                      // _displaybottomsheet(context);
+                                                    },
+                                              icon: Icon(
+                                                Icons.collections_rounded,
+                                                color: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? WhiteColor
                                                     : Colors.grey.shade100,
-                                            size: 20,
-                                          ),
-                                          label: Icon(
-                                            widget.results.collection_id == 0
-                                                ? Icons.add
-                                                : Icons.check,
-                                            color:
+                                                size: 20,
+                                              ),
+                                              label: Icon(
                                                 widget.results.collection_id ==
+                                                        0
+                                                    ? Icons.add
+                                                    : Icons.check,
+                                                color: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? WhiteColor
                                                     : Colors.grey.shade100,
-                                            size: 10,
-                                          )),
-                                    )
+                                                size: 10,
+                                              )),
+                                        )
                                   : SizedBox(),
                             ],
                           ),
@@ -391,62 +421,84 @@ class _CradforHistoryState extends State<CradforHistory> {
                               ),
                               Spacer(),
                               widget.number == null
-                                  ? Padding(
-                                      padding: const EdgeInsets.only(right: 10),
-                                      child: ElevatedButton.icon(
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                widget.results.collection_id ==
+                                  ? widget.statusSelect != null
+                                      ? IconButton(
+                                          onPressed: () {
+                                            widget.onCheckChanged!();
+                                          },
+                                          icon: widget.isChecked!
+                                              ? Icon(
+                                                  Icons.check_circle_rounded,
+                                                  color: GPrimaryColor,
+                                                  size: 25,
+                                                )
+                                              : Icon(
+                                                  Icons
+                                                      .check_circle_outline_rounded,
+                                                  color: Colors.grey.shade400,
+                                                  size: 25,
+                                                ),
+                                        )
+                                      : Padding(
+                                          padding: EdgeInsets.only(right: 10),
+                                          child: ElevatedButton.icon(
+                                              style: ButtonStyle(
+                                                backgroundColor: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? MaterialStateProperty.all(
                                                         Colors.green.shade400)
                                                     : MaterialStateProperty.all(
                                                         Colors.transparent),
-                                            surfaceTintColor:
-                                                widget.results.collection_id ==
+                                                surfaceTintColor: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? MaterialStateProperty.all(
                                                         Colors.green.shade400)
                                                     : MaterialStateProperty.all(
                                                         Colors.transparent),
-                                            padding: MaterialStateProperty.all(
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 5)),
-                                            minimumSize:
-                                                MaterialStateProperty.all(
-                                                    const Size(50, 25)),
-                                          ),
-                                          onPressed: widget
-                                                      .results.collection_id ==
-                                                  0
-                                              ? () {
-                                                  _displaybottomsheet(context);
-                                                }
-                                              : () {
-                                                  // _displaybottomsheet(context);
-                                                },
-                                          icon: Icon(
-                                            Icons.collections_rounded,
-                                            color:
-                                                widget.results.collection_id ==
+                                                padding:
+                                                    MaterialStateProperty.all(
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 5)),
+                                                minimumSize:
+                                                    MaterialStateProperty.all(
+                                                        const Size(50, 25)),
+                                              ),
+                                              onPressed: widget.results
+                                                          .collection_id ==
+                                                      0
+                                                  ? () {
+                                                      _displaybottomsheet(
+                                                          context);
+                                                    }
+                                                  : () {
+                                                      // _displaybottomsheet(context);
+                                                    },
+                                              icon: Icon(
+                                                Icons.collections_rounded,
+                                                color: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? WhiteColor
                                                     : Colors.grey.shade100,
-                                            size: 20,
-                                          ),
-                                          label: Icon(
-                                            widget.results.collection_id == 0
-                                                ? Icons.add
-                                                : Icons.check,
-                                            color:
+                                                size: 20,
+                                              ),
+                                              label: Icon(
                                                 widget.results.collection_id ==
+                                                        0
+                                                    ? Icons.add
+                                                    : Icons.check,
+                                                color: widget.results
+                                                            .collection_id ==
                                                         0
                                                     ? WhiteColor
                                                     : Colors.grey.shade100,
-                                            size: 10,
-                                          )),
-                                    )
+                                                size: 10,
+                                              )),
+                                        )
                                   : SizedBox(),
                             ],
                           ),

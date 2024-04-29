@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
+import 'package:watalygold/Home/Collection/SelectResultmuti.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforHistory.dart';
@@ -71,6 +72,22 @@ class _SelectCollectionState extends State<SelectCollection> {
       appBar: AppbarMains(
         name: widget.collect.collection_name,
         refresh: widget.refreshs!,
+      ),
+      floatingActionButton: FloatingActionButton(
+        splashColor: GPrimaryColor.withOpacity(0.2),
+        shape:
+            ContinuousRectangleBorder(borderRadius: BorderRadius.circular(80)),
+        elevation: 3,
+        backgroundColor: WhiteColor,
+        tooltip: 'Increment',
+        onPressed: () async {
+          Navigator.of(context).push(_createRoute());
+        },
+        child: Icon(
+          Icons.add_rounded,
+          size: 40,
+          color: GPrimaryColor,
+        ),
       ),
       backgroundColor: Color(0xffF2F6F5),
       body: Padding(
@@ -166,6 +183,28 @@ class _SelectCollectionState extends State<SelectCollection> {
           mainAxisSize: MainAxisSize.min,
         ),
       ),
+    );
+  }
+
+  Route _createRoute() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => SelectResult(
+        collections: widget.collect,
+        refreshs: () => _loadResultinColletion(),
+      ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.ease;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
     );
   }
 }
