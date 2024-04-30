@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
+import 'package:watalygold/Home/Collection/SelectResultmuti.dart';
 import 'package:watalygold/Home/Collection/Selectcollection.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogCollectionEdit.dart';
@@ -48,6 +49,7 @@ class _CradforColletionState extends State<CradforColletion> {
 
   void refreshresult() {
     fetchCountResult(widget.collections.collection_id);
+    widget.refreshCallback();
   }
 
   @override
@@ -146,7 +148,8 @@ class _CradforColletionState extends State<CradforColletion> {
                     return [
                       PopupMenuItem(
                         onTap: () {
-                          _showToast();
+                          // _showToast();
+                          Navigator.of(context).push(_createRoute());
                         },
                         child: Text(
                           "เพิ่มผลการวิเคราะห์",
@@ -244,79 +247,26 @@ class _CradforColletionState extends State<CradforColletion> {
       ),
     );
   }
+
+  Route _createRoute() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => SelectResult(
+        collections: widget.collections,
+        refreshs: () => refreshresult(),
+      ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.ease;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+  }
 }
-
-
-
-// const Spacer(),
-                    // Row(
-                    //   children: [
-                    //     Text(
-                    //       "ระดับ",
-                    //       style: TextStyle(color: GPrimaryColor, fontSize: 15),
-                    //     ),
-                    //     const SizedBox(width: 15), // เว้นระยะห่างระหว่างข้อความ
-                    //     Text(
-                    //       widget.result,
-                    //       style: TextStyle(
-                    //           color: gradeColor[widget.result],
-                    //           fontSize: 20,
-                    //           fontWeight: FontWeight.bold),
-                    //     ),
-                    //   ],
-                    // ),
-                    // const Spacer(),
-                    // Row(
-                    //   children: [
-                    //     Text(
-                    //       "วันที่ ${widget.date}",
-                    //       style: TextStyle(
-                    //           color: Colors.grey.shade500, fontSize: 12),
-                    //     ),
-                    //     Spacer(),
-                    //     Padding(
-                    //       padding: const EdgeInsets.only(right: 10),
-                    //       child: ElevatedButton(
-                    //           style: ButtonStyle(
-                    //             backgroundColor: MaterialStateProperty.all(
-                    //                 Colors.red.shade400),
-                    //             surfaceTintColor: MaterialStateProperty.all(
-                    //                 Colors.red.shade400),
-                    //             padding: MaterialStateProperty.all(
-                    //                 const EdgeInsets.symmetric(
-                    //                     horizontal: 10, vertical: 5)),
-                    //             minimumSize: MaterialStateProperty.all(
-                    //                 const Size(30, 30)),
-                    //           ),
-                    //           onPressed: () {},
-                    //           child: const Icon(
-                    //             Icons.delete_rounded,
-                    //             color: WhiteColor,
-                    //             size: 20,
-                    //           )),
-                    //     )
-                    //   ],
-                    // ),
-                    // ElevatedButton.icon(
-                    //     style: ButtonStyle(
-                    //       backgroundColor: MaterialStateProperty.all(
-                    //           Colors.green.shade400),
-                    //       surfaceTintColor: MaterialStateProperty.all(
-                    //           Colors.green.shade400),
-                    //       padding: MaterialStateProperty.all(
-                    //           const EdgeInsets.symmetric(
-                    //               horizontal: 10, vertical: 5)),
-                    //       minimumSize: MaterialStateProperty.all(
-                    //           const Size(50, 25)),
-                    //     ),
-                    //     onPressed: () {},
-                    //     icon: const Icon(
-                    //       Icons.collections_rounded,
-                    //       color: WhiteColor,
-                    //       size: 20,
-                    //     ),
-                    //     label: const Icon(
-                    //       Icons.add,
-                    //       color: WhiteColor,
-                    //       size: 10,
-                    //     )),

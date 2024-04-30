@@ -198,7 +198,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 ),
               ],
             ),
-            actions: [],
+            // actions: [],
           ),
         ),
       );

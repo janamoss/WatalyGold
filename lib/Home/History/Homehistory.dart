@@ -8,6 +8,7 @@ import 'package:watalygold/Database/Image_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforHistory.dart';
+import 'package:watalygold/Widgets/DialogLoading.dart';
 import 'package:watalygold/models/Collection.dart';
 import 'package:watalygold/models/Image.dart';
 import 'package:watalygold/models/Result_ana.dart';

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
 import 'package:watalygold/Widgets/DialogDelete.dart';
+import 'package:watalygold/Widgets/DialogLoading.dart';
 import 'package:watalygold/models/Collection.dart';
 import 'package:watalygold/models/Result_ana.dart';
 import 'package:watalygold/models/Image.dart';
@@ -66,6 +68,24 @@ class _CradforHistoryState extends State<CradforHistory> {
         textColor: WhiteColor,
         fontSize: 15);
     await Future.delayed(Duration(seconds: 3));
+  }
+
+  Future<void> _dialogloading() async {
+    // Show the dialog on a separate thread
+    await Future(() async {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return DialogLoading();
+        },
+      );
+    });
+
+    // Wait for 1 second on the main thread
+    await Future.delayed(Duration(seconds: 1));
+
+    // Dismiss the dialog
+    Navigator.pop(context);
   }
 
   void DeleteResult() async {
@@ -307,6 +327,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                                           },
                                         );
                                         widget.refreshCallback();
+
                                         setState(() {});
                                         print('ไม่มีค่า statusdelete');
                                       } else {
@@ -346,6 +367,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                                           },
                                         );
                                         widget.refreshCallback();
+
                                         setState(() {});
                                       }
                                     },
@@ -583,6 +605,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                                           },
                                         );
                                         widget.refreshCallback();
+
                                         setState(() {});
                                         print('ไม่มีค่า statusdelete');
                                       } else {
@@ -622,6 +645,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                                           },
                                         );
                                         widget.refreshCallback();
+
                                         setState(() {});
                                       }
                                     },
@@ -833,6 +857,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                       print("$s จ้าาาาาาา");
                       print(widget.collection![i].collection_id);
                       Navigator.pop(context);
+
                       widget.refreshCallback();
                     },
                   ),
@@ -874,6 +899,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                       },
                     );
                     Navigator.pop(context);
+
                     widget.refreshCallback();
                   },
                 ),
