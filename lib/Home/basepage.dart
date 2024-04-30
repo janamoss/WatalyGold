@@ -19,28 +19,46 @@ class BasePage extends StatefulWidget {
 
 class _BasePageState extends State<BasePage> {
   int selectedIndex = 0;
+  int tabviews = 0;
 
   late List<Widget> _widgetOption;
 
   @override
   void initState() {
     super.initState();
+    _updateWidgetOption();
+  }
+
+  void _updateWidgetOption() {
     _widgetOption = [
       _createHomeapp(widget.camera),
       const ExportPrice(),
       TakePictureScreen(camera: widget.camera),
-      const BaseHisorCol(),
+      BaseHisorCol(initialIndex: tabviews),
       _createHomeapp(widget.camera),
     ];
   }
 
   Widget _createHomeapp(List<CameraDescription> camera) {
-    return Homeapp(camera: camera, changeWidgetOption: changeWidgetOption,);
+    return Homeapp(
+      camera: camera,
+      changeWidgetOption: changeWidgetOption,
+      changeTabView: changeTabviews,
+    );
   }
 
   void changeWidgetOption(int index) {
     setState(() {
       selectedIndex = index;
+      _updateWidgetOption();
+    });
+  }
+
+  void changeTabviews(int tabview) {
+    setState(() {
+      tabviews = tabview;
+      selectedIndex = 3;
+      _updateWidgetOption(); // เรียกใช้ _updateWidgetOption() อีกครั้งเมื่อ tabviews เปลี่ยน
     });
   }
 
@@ -72,5 +90,4 @@ class _BasePageState extends State<BasePage> {
       ),
     );
   }
-  
 }

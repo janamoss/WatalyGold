@@ -6,7 +6,8 @@ import 'package:watalygold/Home/History/Homehistory.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
 class BaseHisorCol extends StatefulWidget implements PreferredSizeWidget {
-  const BaseHisorCol({super.key});
+  final int initialIndex;
+  const BaseHisorCol({super.key, required this.initialIndex});
 
   @override
   State<BaseHisorCol> createState() => _BaseHisorColState();
@@ -26,8 +27,16 @@ class BaseHisorCol extends StatefulWidget implements PreferredSizeWidget {
 
 class _BaseHisorColState extends State<BaseHisorCol> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print("${widget.initialIndex} เปลี่ยนหน้าแล้ว");
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
+      initialIndex: widget.initialIndex,
       length: 2,
       child: Scaffold(
         appBar: AppBar(

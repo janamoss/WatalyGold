@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:watalygold/ExportPrice/ExportPrice.dart';
+import 'package:watalygold/Home/Collection/Homecollection.dart';
+import 'package:watalygold/Home/History/Homehistory.dart';
 import 'package:watalygold/models/category.dart';
 import 'package:watalygold/Home/Knowledge/MainKnowledge.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
@@ -10,8 +12,12 @@ import 'CategoryCard.dart';
 class Homebox extends StatefulWidget {
   final List<CameraDescription> camera;
   final Function(int) changeWidgetOption;
+  final Function(int) changeTabView;
   const Homebox(
-      {Key? key, required this.camera, required this.changeWidgetOption})
+      {Key? key,
+      required this.camera,
+      required this.changeWidgetOption,
+      required this.changeTabView})
       : super(key: key);
 
   @override
@@ -19,6 +25,8 @@ class Homebox extends StatefulWidget {
 }
 
 class _HomeboxState extends State<Homebox> {
+  int selectedTabIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -49,17 +57,10 @@ class _HomeboxState extends State<Homebox> {
                     widget.changeWidgetOption(1);
                   }
                   if (index == 2) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const KnowledgeMain()));
+                    widget.changeTabView(1);
                   }
                   if (index == 3) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                TakePictureScreen(camera: widget.camera)));
+                    widget.changeTabView(0);
                   }
                 },
                 child: CategoryCard(

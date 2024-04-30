@@ -65,10 +65,15 @@ class _AppbarMainsState extends State<AppbarMains> {
         icon: Appicons(
           icon: Icons.arrow_back_rounded,
         ),
-        onPressed: () {
-          Navigator.pop(context);
-          widget.refresh!();
-        },
+        onPressed: widget.refresh == null
+            ? () {
+                Navigator.pop(context);
+                // widget.refresh!();
+              }
+            : () {
+                Navigator.pop(context);
+                widget.refresh!();
+              },
       ),
       title: Text(widget.name, style: TextStyle(color: Colors.white)),
       centerTitle: true,
