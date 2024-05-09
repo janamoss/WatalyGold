@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -32,7 +34,7 @@ class _SelectResultState extends State<SelectResult> {
           false; // เริ่มต้นให้ทุก Result ไม่ถูกเลือก
     }
 
-    print(_selectedResults); // ตรวจสอบค่าของ _selectedResults
+    stdout.writeln(_selectedResults); // ตรวจสอบค่าของ _selectedResults
     setState(() {});
   }
 
@@ -50,7 +52,7 @@ class _SelectResultState extends State<SelectResult> {
   }
 
   void selectresult(int resultId) {
-    print("ทำงาน");
+    stdout.writeln("ทำงาน");
     setState(() {
       // Update the selected value for the specific result
       if (_selectedResults[resultId] == true) {
@@ -104,7 +106,7 @@ class _SelectResultState extends State<SelectResult> {
           IconButton(
             onPressed: isDone
                 ? () async {
-                    print(_selectedResults);
+                    stdout.writeln(_selectedResults);
                     await _updateresulttocollection();
                     Navigator.pop(context);
                     widget.refreshs!();
@@ -122,7 +124,7 @@ class _SelectResultState extends State<SelectResult> {
         itemCount: _results.length,
         itemBuilder: (context, index) {
           final result = _results[index];
-          print("${result.collection_id} คือ id ของคอ");
+          stdout.writeln("${result.collection_id} คือ id ของคอ");
           DateTime createdAt = DateTime.parse(result.created_at);
           final formattedDate =
               DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);

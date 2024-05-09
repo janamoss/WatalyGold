@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/Contentcol.dart';
@@ -37,7 +39,7 @@ class _KnowlegdeColState extends State<KnowlegdeCol> {
               setState(() {
                 _showDropdown = !_showDropdown;
               });
-              print("tap");
+              stdout.writeln("tap");
               widget.onTap?.call();
             },
             child: Container(

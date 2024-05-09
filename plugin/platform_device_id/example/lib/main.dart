@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -39,7 +41,7 @@ class _MyAppState extends State<MyApp> {
 
     setState(() {
       _deviceId = deviceId;
-      print("deviceId->$_deviceId");
+      stdout.writeln("deviceId->$_deviceId");
     });
   }
 

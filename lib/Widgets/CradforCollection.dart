@@ -27,8 +27,8 @@ class _CradforColletionState extends State<CradforColletion> {
 
   Future<void> fetchCountResult(int collection_id) async {
     _resultlist = await Result_DB().fetchCountReinCol(collection_id);
-    print(_resultlist.length); // ตรงนี้จะแสดงค่าที่ถูกต้อง
-    print("$collection_id ค่าาาา");
+    stdout.writeln(_resultlist.length); // ตรงนี้จะแสดงค่าที่ถูกต้อง
+    stdout.writeln("$collection_id ค่าาาา");
     setState(() {}); // เรียกรีเฟรช UI
     widget.refreshCallback;
     return;

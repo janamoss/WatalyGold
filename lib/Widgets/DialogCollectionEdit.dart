@@ -61,7 +61,7 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
           collection_image: capturedImages!.path.toString(),
           user_id: user_id!.toInt(),
         );
-        print(s.toString());
+        stdout.writeln(s.toString());
         if (s == 0) {
           _showToastwarning();
           Navigator.of(context).pop();
@@ -75,7 +75,7 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
         });
       }
     } catch (e) {
-      print(e);
+      stdout.writeln(e);
     }
   }
 
@@ -107,7 +107,7 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
         });
       }
     } on PlatformException catch (e) {
-      print('ผิดพลาด $e');
+      stdout.writeln('ผิดพลาด $e');
     }
   }
 
@@ -152,7 +152,7 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
               ),
               onTap: () {
                 Gallery();
-                print("กดแล้ว");
+                stdout.writeln("กดแล้ว");
               },
             ),
             SizedBox(

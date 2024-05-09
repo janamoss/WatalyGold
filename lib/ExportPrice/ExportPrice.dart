@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -96,12 +97,12 @@ class _ExportPriceState extends State<ExportPrice> {
             .doc('new_ExportPrice')
             .set(data);
 
-        print('Data fetched from API and saved to Firestore successfully.');
+        stdout.writeln('Data fetched from API and saved to Firestore successfully.');
       } else {
-        print('Failed to fetch data from API: ${response.statusCode}');
+        stdout.writeln('Failed to fetch data from API: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching data from API: $error');
+      stdout.writeln('Error fetching data from API: $error');
     }
   }
 

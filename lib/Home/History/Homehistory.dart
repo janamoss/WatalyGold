@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -36,14 +38,14 @@ class _HomeHistoryState extends State<HomeHistory> {
 
   Future<void> _loadCollections() async {
     _collection = await Collection_DB().fetchAll();
-    print(_collection.length);
+    stdout.writeln(_collection.length);
     setState(() {});
   }
 
   Future<void> _loadResults() async {
     _originalresults = await Result_DB().fetchAll();
     _results = _originalresults;
-    print(_results.length);
+    stdout.writeln(_results.length);
     setState(() {});
   }
 
@@ -92,7 +94,7 @@ class _HomeHistoryState extends State<HomeHistory> {
                   itemCount: _results.length,
                   itemBuilder: (context, index) {
                     final result = _results[index];
-                    print("${result.collection_id} คือ id ของคอ");
+                    stdout.writeln("${result.collection_id} คือ id ของคอ");
                     DateTime createdAt = DateTime.parse(result.created_at);
                     final formattedDate =
                         DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/models/Collection.dart';
@@ -42,7 +44,7 @@ class Image_DB {
       required double brown_spot,
       required String color}) async {
     final database = await DatabaseService().database;
-    print(database);
+    stdout.writeln(database);
     return await database.rawInsert(
       '''INSERT INTO $tablename (result_id,image_status,image_name,image_url,image_lenght,image_width,image_weight,flaws_percent,brown_spot,color,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''',
       [
@@ -73,7 +75,7 @@ class Image_DB {
 
   Future<List<Images>> fetchImageinResult(int result_id) async {
     final database = await DatabaseService().database;
-    print(database);
+    stdout.writeln(database);
     final images = await database.query(
       tablename,
       where: 'result_id = ?',

@@ -77,7 +77,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   initializeCamera(int cameraIndex) async {
     _controller = CameraController(
         // Get a specific camera from the list of available camera.
-        widget.camera![cameraIndex],
+        widget.camera[cameraIndex],
         // Define the resolution to use.
         ResolutionPreset.max, // new resolution
         enableAudio: false);
@@ -167,7 +167,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       });
       uploadImageAndUpdateState();
     } on PlatformException catch (e) {
-      print('ผิดพลาด $e');
+      stdout.writeln('ผิดพลาด $e');
     }
   }
 
@@ -178,16 +178,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         builder: (context) => Center(
           child: AlertDialog(
             backgroundColor: GPrimaryColor.withOpacity(0.6),
-            contentPadding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
             title: Column(
               children: [
-                Text(
+                const Text(
                   'กำลังวิเคราะห์คุณภาพ . . .',
                   style: TextStyle(color: WhiteColor),
                   textAlign: TextAlign
                       .center, // Add this line to center the title text
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 15,
                 ),
                 LoadingAnimationWidget.discreteCircle(
@@ -204,7 +204,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       );
 
       runInference();
-      print(result);
+      stdout.writeln(result);
 
       // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
       String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
@@ -227,7 +227,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             await uploadImageToCloudStorage(capturedImages[i], imageNames[i]);
         final imagePath =
             await saveImageToDevice(capturedImages[i], imageNames[i]);
-        print('Saved image path: $imagePath');
+        stdout.writeln('Saved image path: $imagePath');
         listImagepath.add(imagePath.toString());
         downloaduri.add(result['downloadURL']!);
         imageuri.add(result['imageName']!);
@@ -248,7 +248,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
           "ip": _deviceId,
           "result": results
         });
-        print(result.data);
+        stdout.writeln(result.data);
         final Map<String, dynamic> data =
             Map<String, dynamic>.from(result.data);
 
@@ -256,8 +256,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         ids = List<String>.from(data['IDs']);
 
         // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-        print('ID_Result: $idResult');
-        print('IDs: $ids');
+        stdout.writeln('ID_Result: $idResult');
+        stdout.writeln('IDs: $ids');
       } on FirebaseFunctionsException catch (error) {
         debugPrint(
             'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
@@ -265,7 +265,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       }
       // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
       if (allImagesUploaded) {
-        print(imageuri);
+        stdout.writeln(imageuri);
         Navigator.of(context).pop();
         // ไปยังหน้าหลัก
         Navigator.push(
@@ -325,6 +325,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       body: Column(
         children: [
           Expanded(
+            flex: 8,
             child: Stack(
               children: [
                 SizedBox(
@@ -333,15 +334,15 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.done) {
                         // If the Future is complete, display the preview.
-                        return Container(
+                        return SizedBox(
                             width: size.width,
                             height: size.height * 0.5,
                             child: FittedBox(
                               fit: BoxFit.cover,
-                              child: Container(
+                              child: SizedBox(
                                   width:
                                       100, // the actual width is not important here
-                                  child: CameraPreview(_controller!)),
+                                  child: CameraPreview(_controller)),
                             ));
                       } else {
                         // Otherwise, display a loading indicator.
@@ -363,7 +364,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 10),
                           onPressed: () {
-                            if (widget.camera!.length > 1) {
+                            if (widget.camera.length > 1) {
                               setState(() {
                                 if (flashstatus == 0) {
                                   _controller.setFlashMode(FlashMode.torch);
@@ -391,7 +392,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 10),
                           onPressed: () {
-                            if (widget.camera!.length > 1) {
+                            if (widget.camera.length > 1) {
                               setState(() {
                                 selectedCamera = selectedCamera == 0 ? 1 : 0;
                                 initializeCamera(selectedCamera);
@@ -473,7 +474,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 ),
                               ),
                             ),
-                            Padding(
+                            const Padding(
                               padding: EdgeInsets.symmetric(vertical: 5),
                               child: Align(
                                 alignment: Alignment.bottomCenter,
@@ -509,7 +510,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 ),
                               ),
                             ),
-                            Padding(
+                            const Padding(
                               padding: EdgeInsets.symmetric(vertical: 5),
                               child: Align(
                                 alignment: Alignment.bottomCenter,
@@ -545,7 +546,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 ),
                               ),
                             ),
-                            Padding(
+                            const Padding(
                               padding: EdgeInsets.symmetric(vertical: 5),
                               child: Align(
                                 alignment: Alignment.bottomCenter,
@@ -581,7 +582,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 ),
                               ),
                             ),
-                            Padding(
+                            const Padding(
                               padding: EdgeInsets.symmetric(vertical: 5),
                               child: Align(
                                 alignment: Alignment.bottomCenter,
@@ -600,9 +601,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 ),
               ],
             ),
-            flex: 8,
           ),
           Expanded(
+            flex: 3,
             child: Align(
               alignment: Alignment.topCenter,
               child: Padding(
@@ -610,8 +611,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                 child: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 10),
                       child: Text(
                         "พยายามให้ลูกมะม่วงของคุณ\nอยู่ภายในระยะกรอบสีขาว",
                         maxLines: 3,
@@ -682,7 +683,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 ),
               ),
             ),
-            flex: 3,
           ),
         ],
       ),

@@ -43,7 +43,7 @@ class _DialogCollectionState extends State<DialogCollection> {
           collection_name: nameController.text.toString(),
           collection_image: capturedImages!.path.toString(),
         );
-        print(s.toString());
+        stdout.writeln(s.toString());
         if (s == 0) {
           _showToastUpdate();
         }
@@ -54,7 +54,7 @@ class _DialogCollectionState extends State<DialogCollection> {
         });
       }
     } catch (e) {
-      print(e);
+      stdout.writeln(e);
     }
   }
 
@@ -85,7 +85,7 @@ class _DialogCollectionState extends State<DialogCollection> {
         });
       }
     } on PlatformException catch (e) {
-      print('ผิดพลาด $e');
+      stdout.writeln('ผิดพลาด $e');
     }
   }
 
@@ -139,7 +139,7 @@ class _DialogCollectionState extends State<DialogCollection> {
               ),
               onTap: () {
                 Gallery();
-                print("กดแล้ว");
+                stdout.writeln("กดแล้ว");
               },
             ),
             SizedBox(

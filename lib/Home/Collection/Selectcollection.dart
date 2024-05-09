@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -33,12 +35,12 @@ class _SelectCollectionState extends State<SelectCollection> {
   Future<void> _loadResultinColletion() async {
     _resultincollection =
         await Result_DB().fetchCountReinCol(widget.collect.collection_id);
-    print(_resultincollection!.length);
+    stdout.writeln(_resultincollection!.length);
     setState(() {});
   }
 
   void refresh() {
-    print('Refreshing data...');
+    stdout.writeln('Refreshing data...');
     _loadResultinColletion();
   }
 
@@ -119,7 +121,7 @@ class _SelectCollectionState extends State<SelectCollection> {
                       itemCount: _resultincollection.length,
                       itemBuilder: (context, index) {
                         final result = _resultincollection[index];
-                        print("${result.collection_id} คือ id ของคอ");
+                        stdout.writeln("${result.collection_id} คือ id ของคอ");
                         DateTime createdAt = DateTime.parse(result.created_at);
                         final formattedDate = DateFormat('dd MMM yyyy', 'th_TH')
                             .format(createdAt);

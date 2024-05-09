@@ -45,7 +45,7 @@ class _HomeCollectionState extends State<HomeCollection> {
   Future _loadCollections() async {
     _originalCollection = await Collection_DB().fetchAll();
     _collection = _originalCollection;
-    print(_collection.length);
+    stdout.writeln(_collection.length);
     setState(() {});
   }
 

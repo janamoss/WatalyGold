@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/models/Result_ana.dart';
@@ -34,7 +36,7 @@ class Result_DB {
       required double width,
       required double weight}) async {
     final database = await DatabaseService().database;
-    print(await DatabaseService().database);
+    stdout.writeln(await DatabaseService().database);
     // print("ทำงานอยู่จ้า");
     // print(user_id);
     // print(another_note);

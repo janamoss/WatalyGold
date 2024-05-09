@@ -30,7 +30,6 @@ class _BaseHisorColState extends State<BaseHisorCol> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("${widget.initialIndex} เปลี่ยนหน้าแล้ว");
   }
 
   @override

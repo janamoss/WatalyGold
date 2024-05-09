@@ -53,12 +53,12 @@ class _ResultPageState extends State<ResultPage> {
     _fetchUserId();
     _fetchData();
     _loadCollections();
-    // print("เสร็จสิ้น");
+    // stdout.writeln("เสร็จสิ้น");
   }
 
   Future<void> _loadCollections() async {
     collection = await Collection_DB().fetchAll();
-    print(collection!.length);
+    stdout.writeln(collection!.length);
     setState(() {});
   }
 
@@ -73,12 +73,12 @@ class _ResultPageState extends State<ResultPage> {
   }
 
   Future<void> _insertImage(int resultId) async {
-    print(resultId);
+    stdout.writeln(resultId);
     final results = FirebaseFirestore.instance.collection('Image');
     for (int i = 0; i < widget.ID_Image.length; i++) {
-      print("1234");
+      stdout.writeln("1234");
       final document = await results.doc(widget.ID_Image[i]).get();
-      print(document["img_status"].toString());
+      stdout.writeln(document["img_status"].toString());
       await Image_DB().insertdata(
           result_id: resultId.toInt(),
           image_status: document["img_status"].toString(),
@@ -90,7 +90,7 @@ class _ResultPageState extends State<ResultPage> {
           flaws_percent: document["flaws_percent"].toDouble(),
           brown_spot: document["brown_spot"].toDouble(),
           color: document["color"].toString());
-      print("สร้างข้อมูลรูปภาพเสด");
+      stdout.writeln("สร้างข้อมูลรูปภาพเสด");
       setState(() {});
     }
   }
@@ -108,7 +108,7 @@ class _ResultPageState extends State<ResultPage> {
 
   Future<void> _fetchData() async {
     try {
-      print("step 1");
+      stdout.writeln("step 1");
       final results = FirebaseFirestore.instance.collection('Result');
       final document = await results.doc(widget.ID_Result).get();
       grade = document['Quality'];
@@ -116,7 +116,7 @@ class _ResultPageState extends State<ResultPage> {
       length = document['Length'];
       width = document['Width'];
       anotherNote = document['Another_note'];
-      print("ทำงานอยู่จ้าเด้อ");
+      stdout.writeln("ทำงานอยู่จ้าเด้อ");
       resultId = await Result_DB().create(
           user_id: user_id!,
           another_note: anotherNote,
@@ -124,7 +124,7 @@ class _ResultPageState extends State<ResultPage> {
           lenght: length.toDouble(),
           width: width.toDouble(),
           weight: weight.toDouble());
-      print("เสร็จสิ้นสร้าง result");
+      stdout.writeln("เสร็จสิ้นสร้าง result");
       await _insertImage(resultId!);
       setState(() {
         resultId = resultId;
@@ -482,8 +482,8 @@ class _ResultPageState extends State<ResultPage> {
                       _showToastUpdate();
                       final s = await Result_DB().updatecollection(
                           collection![i].collection_id, resultId!);
-                      print("$s จ้าาาาาาา");
-                      print(collection![i].collection_id);
+                      stdout.writeln("$s จ้าาาาาาา");
+                      stdout.writeln(collection![i].collection_id);
                       setState(() {
                         status = 1;
                       });

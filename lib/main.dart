@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -18,7 +20,7 @@ String? _deviceId;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _deviceId = await PlatformDeviceId.getDeviceId;
-  print(_deviceId);
+  stdout.writeln(_deviceId);
   await DatabaseService().database;
   // await DatabaseService().deleteDatabases(await getDatabasesPath());
   if (await DatabaseService().isDatabaseExists()) {
@@ -31,13 +33,13 @@ Future<void> main() async {
     //       lenght: 1.toDouble(),
     //       width: 2.toDouble(),
     //       weight: 3.toDouble());
-    //   print(r_id);
+    //   stdout.writeln(r_id);
     // } on Exception catch (e) {
-    //   print(e);
+    //   stdout.writeln(e);
     // }
-    print('Database exists!');
+    stdout.writeln('Database exists!');
   } else {
-    print('Database does not exist.');
+    stdout.writeln('Database does not exist.');
   }
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -48,7 +50,7 @@ Future<void> main() async {
   final cameras = await availableCameras();
   if (cameras.isEmpty) {
     // Handle the case where no cameras are available
-    print('No cameras available');
+    stdout.writeln('No cameras available');
     return;
   }
   runApp(
