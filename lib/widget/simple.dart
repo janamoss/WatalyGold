@@ -392,8 +392,9 @@
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:watalygold/widget/Color.dart';
-import 'package:watalygold/widget/appcolor.dart';
+import 'package:watalyGold/widget/Color.dart';
+import 'package:watalyGold/widget/appcolor.dart';
+
 
 class _LineChart extends StatelessWidget {
   const _LineChart({required this.isShowingMainData});

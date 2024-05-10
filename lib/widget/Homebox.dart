@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:watalygold/models/category.dart';
+import 'package:watalyGold/models/category.dart';
 import 'CategoryCard.dart';
 
 class Homebox extends StatefulWidget {

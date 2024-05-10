@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:watalygold/widget/Color.dart';
-import 'package:watalygold/widget/knowledge/ExpansionTile.dart';
+import 'package:watalyGold/widget/Color.dart';
+import 'package:watalyGold/widget/knowledge/ExpansionTile.dart';
+
 
 void main() {}
 

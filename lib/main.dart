@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:watalyGold/UserManual.dart';
+
 import 'ExportPrice/ExportPrice.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -34,7 +36,8 @@ class myApp extends StatelessWidget {
         const Locale('th', 'TH'), 
         const Locale('en', 'US'), 
       ],
-      home: const ExportPrice(),
+      //  home: const ExportPrice(),
+      home: const UserManual(),
       
     );
   }

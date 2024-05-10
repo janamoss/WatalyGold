@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:watalygold/widget/Color.dart';
+
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:watalyGold/widget/Color.dart';
 
 void main() {}
 
@@ -52,7 +53,7 @@ class _ExportPriceState extends State<ExportPrice> {
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData().copyWith(
-              colorScheme: ColorScheme.dark(
+              colorScheme: const ColorScheme.dark(
               primary: GPrimaryColor, // header background color
               onPrimary: YPrimaryColor, // text color on header background
               surface: Colors.white, // dialog background color
@@ -74,7 +75,7 @@ class _ExportPriceState extends State<ExportPrice> {
   }
   
  Future<void> fetchDataAndSaveToFirestore() async {
-  final apiUrl =
+  const apiUrl =
       "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
   try {
     final response = await http.get(Uri.parse(apiUrl));
@@ -109,7 +110,7 @@ class _ExportPriceState extends State<ExportPrice> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F6F5),
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "ราคาตลาดกลาง",
           style: TextStyle(
               fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
@@ -128,14 +129,14 @@ class _ExportPriceState extends State<ExportPrice> {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text('Loading...');
+            return const Text('Loading...');
           }
 
           Map<String, dynamic>? data =
               snapshot.data?.data() as Map<String, dynamic>?;
 
           if (data == null || data.isEmpty) {
-            return Text('No data available');
+            return const Text('No data available');
           }
 
           String? unit = data['unit'];
@@ -173,16 +174,8 @@ class _ExportPriceState extends State<ExportPrice> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
-                child: Text(
-                  "ราคาตลาดกลาง",
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                margin: EdgeInsets.only(top: 20),
-                decoration: BoxDecoration(
+                margin: const EdgeInsets.only(top: 20),
+                decoration: const BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
                       color: GPrimaryColor,
@@ -190,26 +183,34 @@ class _ExportPriceState extends State<ExportPrice> {
                     ),
                   ),
                 ),
+                child: const Text(
+                  "ราคาตลาดกลาง",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               Container(
                 padding:
-                    EdgeInsets.only(left: 33, right: 29, top: 30, bottom: 20),
+                    const EdgeInsets.only(left: 33, right: 29, top: 30, bottom: 20),
                 child: GestureDetector(
                   onTap: () => _selectDate(context),
                   child: AbsorbPointer(
                     child: TextField(
                       controller: _dateController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'เลือกวันที่',
                         labelStyle: TextStyle(
-                          color: const Color(0xFF767676),
+                          color: Color(0xFF767676),
                           fontSize: 18,
                         ),
                         filled: true,
                         fillColor: Colors.white,
                         prefixIcon: Icon(
                           Icons.calendar_today,
-                          color: const Color(0xFF767676),
+                          color: Color(0xFF767676),
                         ),
                         enabledBorder:
                             OutlineInputBorder(borderSide: BorderSide.none),
@@ -225,8 +226,8 @@ class _ExportPriceState extends State<ExportPrice> {
               Container(
                 height: 160,
                 width: 325,
-                padding: EdgeInsets.all(15),
-                margin: EdgeInsets.only(bottom: 25),
+                padding: const EdgeInsets.all(15),
+                margin: const EdgeInsets.only(bottom: 25),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -234,7 +235,7 @@ class _ExportPriceState extends State<ExportPrice> {
                       color: Colors.black.withOpacity(0.2),
                       spreadRadius: 0.2,
                       blurRadius: 1,
-                      offset: Offset(0, 1),
+                      offset: const Offset(0, 1),
                     ),
                   ],
                   borderRadius: BorderRadius.circular(5),
@@ -244,9 +245,9 @@ class _ExportPriceState extends State<ExportPrice> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(bottom: 15, left: 60),
+                      padding: const EdgeInsets.only(bottom: 15, left: 60),
                       child: Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
                               color: GPrimaryColor,
@@ -256,7 +257,7 @@ class _ExportPriceState extends State<ExportPrice> {
                         ),
                         child: Text(
                           "ราคาวันที่ ${_dateController.text}",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Colors.black,
                           ),
@@ -265,40 +266,40 @@ class _ExportPriceState extends State<ExportPrice> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(bottom: 5, left: 20),
+                      padding: const EdgeInsets.only(bottom: 5, left: 20),
                       child: Text(
                         "ราคา  ${filteredItem?['price_max'] ?? ' '} - ${filteredItem?['price_min'] ?? ' '} ${unit ?? ' '}",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           color: Colors.black,
                         ),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: 20),
+                      padding: const EdgeInsets.only(left: 20),
                       child: RichText(
                         text: TextSpan(
                           style: DefaultTextStyle.of(context).style,
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "ราคาสูงสุด ",
                               style: TextStyle(
                                 fontSize: 18,
-                                color: const Color.fromARGB(255, 5, 5, 5),
+                                color: Color.fromARGB(255, 5, 5, 5),
                               ),
                             ),
                             TextSpan(
                               text: "${filteredItem?['price_max'] ?? ' '} ",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 18,
                                 color: GPrimaryColor,
                               ),
                             ),
                             TextSpan(
                               text: "${unit ?? ' '}",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 18,
-                                color: const Color.fromARGB(255, 2, 5, 5),
+                                color: Color.fromARGB(255, 2, 5, 5),
                               ),
                             ),
                           ],
@@ -306,30 +307,30 @@ class _ExportPriceState extends State<ExportPrice> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: 20),
+                      padding: const EdgeInsets.only(left: 20),
                       child: RichText(
                         text: TextSpan(
                           style: DefaultTextStyle.of(context).style,
                           children: [
-                            TextSpan(
+                            const TextSpan(
                               text: "ราคาต่ำสุด ",
                               style: TextStyle(
                                 fontSize: 18,
-                                color: const Color.fromARGB(255, 5, 5, 5),
+                                color: Color.fromARGB(255, 5, 5, 5),
                               ),
                             ),
                             TextSpan(
                               text: "${filteredItem?['price_min'] ?? ' '} ",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 18,
-                                color: const Color(0xFFFBBD17),
+                                color: Color(0xFFFBBD17),
                               ),
                             ),
                             TextSpan(
                               text: "${unit ?? ' '}",
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 18,
-                                color: const Color.fromARGB(255, 2, 5, 5),
+                                color: Color.fromARGB(255, 2, 5, 5),
                               ),
                             ),
                           ],
@@ -339,7 +340,7 @@ class _ExportPriceState extends State<ExportPrice> {
                   ],
                 ),
               ),
-              Row(children: <Widget>[
+              const Row(children: <Widget>[
                 Expanded(
                     child: Divider(
                   color: GPrimaryColor,
@@ -362,7 +363,7 @@ class _ExportPriceState extends State<ExportPrice> {
                 )),
               ]),
               Padding(
-                padding: EdgeInsets.all(7),
+                padding: const EdgeInsets.all(7),
                 child: SfCartesianChart(
                   tooltipBehavior: _tooltipBehavior,
                   series: <ChartSeries>[
@@ -373,7 +374,7 @@ class _ExportPriceState extends State<ExportPrice> {
                       yValueMapper: (NumericData data, _) => data.measure,
                       enableTooltip: true,
                       color: GPrimaryColor,
-                      markerSettings: MarkerSettings(
+                      markerSettings: const MarkerSettings(
                         isVisible: true,
                         shape: DataMarkerType.circle,
                         color: GPrimaryColor,
@@ -397,7 +398,7 @@ class _ExportPriceState extends State<ExportPrice> {
                       yValueMapper: (NumericData data, _) => data.measure,
                       enableTooltip: true,
                       color: yellowColor,
-                      markerSettings: MarkerSettings(
+                      markerSettings: const MarkerSettings(
                         isVisible: true,
                         shape: DataMarkerType.circle,
                         color: yellowColor,
