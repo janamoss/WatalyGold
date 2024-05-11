@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:watalyGold/widget/Color.dart';
 
-
 class Manualphoto extends StatefulWidget {
   const Manualphoto({super.key});
 
@@ -68,9 +67,10 @@ class _ManualphotoState extends State<Manualphoto> {
                   Column(
                     children: [
                       Container(
-                    width:70,
+                        width: 70,
+                        height: 70,
                         child: Image.asset(
-                          "assets/images/front.png",
+                          "assets/images/Extrafront.jpg",
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -92,9 +92,10 @@ class _ManualphotoState extends State<Manualphoto> {
                   Column(
                     children: [
                       Container(
-                    width:70,
+                        width: 70,
+                        height: 70,
                         child: Image.asset(
-                          "assets/images/front.png",
+                          "assets/images/Extratop.jpg",
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -115,10 +116,11 @@ class _ManualphotoState extends State<Manualphoto> {
                   ),
                   Column(
                     children: [
-                     Container(
-                    width:70,
+                      Container(
+                        width: 70,
+                        height: 70,
                         child: Image.asset(
-                          "assets/images/front.png",
+                          "assets/images/Extraback.jpg",
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -140,9 +142,10 @@ class _ManualphotoState extends State<Manualphoto> {
                   Column(
                     children: [
                       Container(
-                    width:70,
+                        width: 70,
+                        height: 70,
                         child: Image.asset(
-                          "assets/images/front.png",
+                          "assets/images/Extrabottom.jpg",
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -200,13 +203,14 @@ class _ManualphotoState extends State<Manualphoto> {
                       ),
                     ],
                   ),
-                   Container(
-                    width: 100,
-                        child: Image.asset(
-                          "assets/images/front.png",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                  Container(
+                    width: 300,
+                    height: 200,
+                    child: Image.asset(
+                      "assets/images/mango30cm.jpg",
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ],
               ),
             ],
