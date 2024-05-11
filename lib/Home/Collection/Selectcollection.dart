@@ -35,12 +35,12 @@ class _SelectCollectionState extends State<SelectCollection> {
   Future<void> _loadResultinColletion() async {
     _resultincollection =
         await Result_DB().fetchCountReinCol(widget.collect.collection_id);
-    stdout.writeln(_resultincollection!.length);
+    // debugPrint("${_resultincollection!.length}");
     setState(() {});
   }
 
   void refresh() {
-    stdout.writeln('Refreshing data...');
+    // debugPrint('Refreshing data...');
     _loadResultinColletion();
   }
 
@@ -76,6 +76,7 @@ class _SelectCollectionState extends State<SelectCollection> {
         refresh: widget.refreshs!,
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "select-collection-fab",
         splashColor: GPrimaryColor.withOpacity(0.2),
         shape:
             ContinuousRectangleBorder(borderRadius: BorderRadius.circular(80)),
@@ -121,7 +122,7 @@ class _SelectCollectionState extends State<SelectCollection> {
                       itemCount: _resultincollection.length,
                       itemBuilder: (context, index) {
                         final result = _resultincollection[index];
-                        stdout.writeln("${result.collection_id} คือ id ของคอ");
+                        // debugPrint("${result.collection_id} คือ id ของคอ");
                         DateTime createdAt = DateTime.parse(result.created_at);
                         final formattedDate = DateFormat('dd MMM yyyy', 'th_TH')
                             .format(createdAt);
