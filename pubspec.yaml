@@ -69,7 +69,9 @@ dependencies:
   flutter_easyloading: ^3.0.5
   loading_animation_widget: ^1.2.1
   fluttertoast: ^8.2.5
-  photo_manager: ^3.1.0
+  share_plus: ^9.0.0
+  font_awesome_flutter: ^10.7.0
+  screenshot: ^2.3.0
     
 dev_dependencies:
   flutter_test:

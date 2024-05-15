@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/models/User.dart';
@@ -33,6 +35,7 @@ class User_db {
     final existingUser = await fetchByIpAddress(user_ipaddress);
     if (existingUser == null) {
       // ตรวจสอบว่า existingUser เป็น null หรือไม่
+      log("ไม่เจอ ID");
       final database = await DatabaseService().database;
       return await database.rawInsert(
         '''INSERT INTO $tablename (user_ipaddress, created_at,updated_at) VALUES (?, ?, ?)''',
@@ -44,6 +47,7 @@ class User_db {
       );
     }
     // ถ้ามี IP อยู่แล้ว ไม่ต้องทำอะไร
+    log("เจอ ID");
     return 0;
   }
 

@@ -1,6 +1,6 @@
 import 'package:watalygold/ExportPrice/ExportPrice.dart';
-import 'package:watalygold/Home/Collection/Homecollection.dart';
 import 'package:watalygold/Home/Collection/baseColoorHis.dart';
+import 'package:watalygold/Home/UserManual/usermanual.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
 import 'HomeApp.dart';
@@ -36,7 +36,7 @@ class _BasePageState extends State<BasePage> {
       const ExportPrice(),
       TakePictureScreen(camera: widget.camera),
       BaseHisorCol(initialIndex: tabviews),
-      _createHomeapp(widget.camera),
+      const UserManual(),
     ];
   }
 

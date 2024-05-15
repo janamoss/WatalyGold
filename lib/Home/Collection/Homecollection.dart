@@ -63,8 +63,9 @@ class _HomeCollectionState extends State<HomeCollection> {
       backgroundColor: Color(0xffF2F6F5),
       floatingActionButton: FloatingActionButton(
         splashColor: GPrimaryColor.withOpacity(0.2),
-        shape:
-            ContinuousRectangleBorder(borderRadius: BorderRadius.circular(80)),
+        shape: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(100),
+            borderSide: BorderSide.none),
         elevation: 3,
         backgroundColor: WhiteColor,
         tooltip: 'Increment',
@@ -138,7 +139,7 @@ class _HomeCollectionState extends State<HomeCollection> {
                 child: GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2, // จำนวนคอลัมน์
-                    childAspectRatio: 2.8 / 4, // อัตราส่วน width ต่อ height
+                    childAspectRatio: 2.6 / 4, // อัตราส่วน width ต่อ height
                   ),
                   itemCount: _collection.length,
                   itemBuilder: (context, index) {

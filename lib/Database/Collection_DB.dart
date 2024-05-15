@@ -70,7 +70,11 @@ class Collection_DB {
     });
   }
 
-  Future<int> updateCollection({required int collection_id,required String collection_name,required String collection_image,required int user_id}) async {
+  Future<int> updateCollection(
+      {required int collection_id,
+      required String collection_name,
+      required String collection_image,
+      required int user_id}) async {
     final database = await DatabaseService().database;
 
     final existingCollection = await database.rawQuery(
@@ -85,7 +89,7 @@ class Collection_DB {
     return await database.update(
       tablename,
       {
-        'collection_name': collection_name ,
+        'collection_name': collection_name,
         'collection_image': collection_image
       }, // ตรวจสอบว่า collection_id ไม่ใช่ 0 ก่อนอัปเดต
       where: 'collection_id = ?',
@@ -93,4 +97,21 @@ class Collection_DB {
     );
   }
 
+  Future<int> updatecolletiononlyImage({
+    required int collection_id,
+    required String collection_name,
+    required String collection_image,
+    required int user_id,
+  }) async {
+    final database = await DatabaseService().database;
+
+    return await database.update(
+      tablename,
+      {
+        'collection_image': collection_image,
+      },
+      where: 'collection_id = ?',
+      whereArgs: [collection_id],
+    );
+  }
 }

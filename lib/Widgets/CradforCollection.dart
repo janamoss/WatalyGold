@@ -85,7 +85,7 @@ class _CradforColletionState extends State<CradforColletion> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              margin: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(top: 10),
               // width: 120,
               // height: 120,
               clipBehavior: Clip.antiAlias,

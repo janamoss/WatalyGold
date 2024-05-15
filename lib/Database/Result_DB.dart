@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/models/Result_ana.dart';
@@ -36,12 +37,14 @@ class Result_DB {
       required double width,
       required double weight}) async {
     final database = await DatabaseService().database;
-    stdout.writeln(await DatabaseService().database);
-    // print("ทำงานอยู่จ้า");
-    // print(user_id);
-    // print(another_note);
-    // print(quality);
-    // print(lenght);
+    debugPrint("$database");
+    debugPrint("ทำงานอยู่จ้า");
+    debugPrint("$user_id");
+    debugPrint(another_note);
+    debugPrint(quality);
+    debugPrint("$lenght ความยาว");
+    debugPrint("$weight น้ำหนัก");
+    debugPrint("$width ความกว้าง");
     return await database.rawInsert(
       '''INSERT INTO $tablename (user_id,another_note,quality,lenght,width,weight,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)''',
       [

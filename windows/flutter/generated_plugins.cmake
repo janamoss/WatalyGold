@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_core
   firebase_storage
   platform_device_id_windows
+  share_plus
   url_launcher_windows
 )
 

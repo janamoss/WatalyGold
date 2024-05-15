@@ -96,33 +96,27 @@ class _KnowledgePageState extends State<KnowledgePage> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          widget.knowledge != null
-                              ? '''${widget.knowledge!.knowledgeDetail}'''
-                                  .replaceAll('n', '\n')
-                              : '''${widget.contents!.ContentDetail}'''
-                                  .replaceAll('n', '\n'),
-                          style: TextStyle(color: Colors.black, fontSize: 15),
-                          textAlign: TextAlign.left,
-                          maxLines: 3,
-                        ),
-                      ),
-                      // HtmlWidget(
-                      //   widget.knowledge != null
-                      //       ? '${widget.knowledge!.knowledgeDetail}'
-                      //       : '${widget.contents!.ContentDetail}',
-                      //   textStyle: TextStyle(color: Colors.black, fontSize: 15),
-                      //   renderMode: RenderMode.column,
-                      //   customStylesBuilder: (element) {
-                      //     if (element.classes.contains('p')) {
-                      //       return {'color': 'red'};
-                      //     }
-
-                      //     return null;
-                      //   },
+                      // Align(
+                      //   alignment: Alignment.centerLeft,
+                      //   child: Text(
+                      //     widget.knowledge != null
+                      //         ? '''${widget.knowledge!.knowledgeDetail}'''
+                      //             .replaceAll('n', '\n')
+                      //         : '''${widget.contents!.ContentDetail}'''
+                      //             .replaceAll('n', '\n'),
+                      //     style: TextStyle(color: Colors.black, fontSize: 15),
+                      //     textAlign: TextAlign.left,
+                      //     maxLines: 3,
+                      //   ),
                       // ),
+                      HtmlWidget(
+                        widget.knowledge != null
+                            ? '${widget.knowledge!.knowledgeDetail}'
+                            : '${widget.contents!.ContentDetail}',
+                        textStyle: TextStyle(color: Colors.black, fontSize: 15),
+                        renderMode: RenderMode.column,
+                        customStylesBuilder: (element) {},
+                      ),
                     ],
                   )
                 ],

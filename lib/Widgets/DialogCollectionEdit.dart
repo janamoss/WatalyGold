@@ -54,14 +54,18 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
 
   Future UpdateCollection() async {
     try {
-      if (nameController.text.isNotEmpty) {
+      final isImageChanged =
+          capturedImages!.path.toString() != widget.edit_image;
+      final isNameChanged = nameController.text.toString() != widget.edit_name;
+
+      if (isNameChanged && isImageChanged) {
+        // กรณีที่เปลี่ยนทั้งรูปภาพและชื่อ
         final s = await Collection_DB().updateCollection(
           collection_id: widget.collection_id.toInt(),
           collection_name: nameController.text.toString(),
           collection_image: capturedImages!.path.toString(),
           user_id: user_id!.toInt(),
         );
-        stdout.writeln(s.toString());
         if (s == 0) {
           _showToastwarning();
           Navigator.of(context).pop();
@@ -69,7 +73,18 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
           _showToastUpdate();
           Navigator.of(context).pop();
         }
+      } else if (isImageChanged) {
+        // กรณีที่เปลี่ยนแค่รูปภาพ
+        final s = await Collection_DB().updatecolletiononlyImage(
+          collection_id: widget.collection_id.toInt(),
+          collection_name: widget.edit_name, // ใช้ชื่อเดิม
+          collection_image: capturedImages!.path.toString(),
+          user_id: user_id!.toInt(),
+        );
+        _showToastUpdate();
+        Navigator.of(context).pop();
       } else {
+        // กรณีที่ไม่มีการเปลี่ยนแปลง
         setState(() {
           _isNotValidate = true;
         });
