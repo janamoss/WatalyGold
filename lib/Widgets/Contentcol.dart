@@ -70,10 +70,27 @@ class ContentDisplay extends StatelessWidget {
                       contents: contents,
                     )));
       },
-      title: Text(
-        contents.ContentName,
-        style: TextStyle(
-            color: GPrimaryColor, fontSize: 14, fontWeight: FontWeight.bold),
+      title: Padding(
+        padding: const EdgeInsets.only(left: 15),
+        child: Row(
+          children: [
+            Icon(
+              Icons.fiber_manual_record_rounded,
+              color: YPrimaryColor,
+              size: 15,
+            ),
+            SizedBox(
+              width: 15,
+            ),
+            Text(
+              contents.ContentName,
+              style: TextStyle(
+                  color: GPrimaryColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
       trailing: RotatedBox(
         quarterTurns: 1,

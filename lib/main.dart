@@ -1,15 +1,11 @@
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platform_device_id/platform_device_id.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
-import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Database/User_DB.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
@@ -54,6 +50,7 @@ Future<void> main() async {
     log('No cameras available');
     return;
   }
+
   runApp(
     MaterialApp(
       localizationsDelegates: [

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:watalygold/Home/Settings/settingPage.dart';
+import 'package:watalygold/Widgets/Color.dart';
 import 'icon_app.dart';
 
 class Appbarmain_no_botton extends StatelessWidget
     implements PreferredSizeWidget {
   final String name;
+  final int? statusoption;
 
-  const Appbarmain_no_botton({required this.name});
+  const Appbarmain_no_botton({required this.name, this.statusoption});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -22,6 +25,37 @@ class Appbarmain_no_botton extends StatelessWidget
                 colors: <Color>[Colors.cyan, Colors.green])),
       ),
       title: Text(name, style: TextStyle(color: Colors.white)),
+      actions: statusoption == 1
+          ? [
+              IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        transitionDuration: const Duration(
+                            milliseconds: 200), // กำหนดระยะเวลา transition
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          final animationTween = Tween<Offset>(
+                            begin: Offset(1.0, 0.0), // เริ่มต้นจากขวา
+                            end: Offset(0.0, 0.0), // สิ้นสุดที่ตรงกลาง
+                          );
+                          return SlideTransition(
+                            position: animationTween.animate(animation),
+                            child: child,
+                          );
+                        },
+                        pageBuilder: (context, _, __) => SettingPages(),
+                      ),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.settings_rounded,
+                    color: WhiteColor,
+                    size: 30,
+                  ))
+            ]
+          : null,
       centerTitle: true,
     );
   }

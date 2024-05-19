@@ -17,7 +17,8 @@ class _UserManualState extends State<UserManual> {
     return Scaffold(
       backgroundColor: GreyColor45,
       appBar: Appbarmain_no_botton(
-        name: "คู่มือการใช้งาน",
+        name: "เพิ่มเติม",
+        statusoption: 1,
       ),
       body: SingleChildScrollView(
         child: Padding(
