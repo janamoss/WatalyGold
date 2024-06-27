@@ -23,7 +23,10 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
 
   Future<List<Knowledge>> getKnowledges() async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    final querySnapshot = await firestore.collection('Knowledge').where('deleted_at', isNull: true).get();
+    final querySnapshot = await firestore
+        .collection('Knowledge')
+        .where('deleted_at', isNull: true)
+        .get();
     return querySnapshot.docs
         .map((doc) => Knowledge.fromFirestore(doc))
         .toList();
@@ -43,7 +46,9 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
       });
 
       for (var knowledge in knowledgelist) {
-        stdout.writeln('Knowledge : ${knowledge.contents}');
+        debugPrint('Knowledge : ${knowledge.knowledgeImg}');
+        debugPrint('Knowledge : ${knowledge.knowledgeDetail}');
+        debugPrint('Contents : ${knowledge.contents}');
       }
     });
   }

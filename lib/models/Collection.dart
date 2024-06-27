@@ -18,7 +18,8 @@ class Collection {
     this.deleted_at,
   });
 
-  factory Collection.fromSqfliteDatabase(Map<String, dynamic> map) => Collection(
+  factory Collection.fromSqfliteDatabase(Map<String, dynamic> map) =>
+      Collection(
         collection_id: map['collection_id']?.toInt() ?? 0,
         user_id: map['user_id']?.toInt() ?? 0,
         collection_name: map['collection_name'] ?? '',
@@ -28,5 +29,4 @@ class Collection {
         updated_at: DateTime.fromMillisecondsSinceEpoch(map['updated_at'])
             .toIso8601String(),
       );
-
 }

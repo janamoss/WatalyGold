@@ -83,6 +83,21 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
         );
         _showToastUpdate();
         Navigator.of(context).pop();
+      } else if (isNameChanged) {
+        // กรณีที่เปลี่ยนแค่ชื่อ
+        final s = await Collection_DB().updateCollection(
+          collection_id: widget.collection_id.toInt(),
+          collection_name: nameController.text.toString(),
+          collection_image: widget.edit_image, // ใช้รูปภาพเดิม
+          user_id: user_id!.toInt(),
+        );
+        if (s == 0) {
+          _showToastwarning();
+          Navigator.of(context).pop();
+        } else {
+          _showToastUpdate();
+          Navigator.of(context).pop();
+        }
       } else {
         // กรณีที่ไม่มีการเปลี่ยนแปลง
         setState(() {
@@ -148,27 +163,55 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
             SizedBox(
               height: 10,
             ),
-            InkWell(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  image: capturedImages!.path == "assets/images/Collection.png"
-                      ? DecorationImage(
-                          image: AssetImage(capturedImages!.path),
-                          fit: BoxFit.cover,
-                        )
-                      : DecorationImage(
-                          image: FileImage(capturedImages!),
-                          fit: BoxFit.cover,
-                        ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                InkWell(
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image:
+                          capturedImages!.path == "assets/images/Collection.png"
+                              ? DecorationImage(
+                                  image: AssetImage(capturedImages!.path),
+                                  fit: BoxFit.cover,
+                                )
+                              : DecorationImage(
+                                  image: FileImage(capturedImages!),
+                                  fit: BoxFit.cover,
+                                ),
+                    ),
+                  ),
+                  // onTap: () {
+                  //   Gallery();
+                  //   stdout.writeln("กดแล้ว");
+                  // },
                 ),
-              ),
-              onTap: () {
-                Gallery();
-                stdout.writeln("กดแล้ว");
-              },
+                Positioned(
+                  right: -8,
+                  bottom: -8,
+                  child: IconButton(
+                    onPressed: () {
+                      Gallery();
+                      stdout.writeln("กดแล้ว");
+                    },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      padding: EdgeInsets.all(6.0),
+                      child: Icon(
+                        Icons.edit,
+                        color: yellowColor,
+                        size: 10.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(
               height: 10,

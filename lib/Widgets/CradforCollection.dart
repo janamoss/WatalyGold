@@ -108,6 +108,9 @@ class _CradforColletionState extends State<CradforColletion> {
                       height: 120,
                     ),
             ),
+            SizedBox(
+              height: 10,
+            ),
             Center(
               child: Text(
                 '${widget.collections.collection_name}',
