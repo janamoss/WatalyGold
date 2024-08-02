@@ -60,7 +60,7 @@ class _UserManualState extends State<UserManual> {
                 children: [
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 1,
-                    height: 500,
+                    height: 700,
                     child: const Manualphoto(),
                   ),
                 ],

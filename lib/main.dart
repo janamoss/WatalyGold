@@ -48,12 +48,12 @@ Future<void> main() async {
   // FirebaseFunctions.instanceFor(region: 'asia-southeast1')
   //     .useFunctionsEmulator('192.168.1.120', 5001);
   // Obtain a list of the available cameras on the device.
-  // final cameras = await availableCameras();
-  // if (cameras.isEmpty) {
-  //   // Handle the case where no cameras are available
-  //   stdout.writeln('No cameras available');
-  //   return;
-  // }
+  final cameras = await availableCameras();
+  if (cameras.isEmpty) {
+    // Handle the case where no cameras are available
+    stdout.writeln('No cameras available');
+    return;
+  }
   runApp(
     MaterialApp(
       localizationsDelegates: [
@@ -72,7 +72,7 @@ Future<void> main() async {
       theme: ThemeData(
         fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
       ),
-      title: "Wataly Gold",
+      title: "Wataly Gold", 
       // home: const ResultPage(),
       home: const UserManual(),
       // home: BasePage(camera: cameras),
