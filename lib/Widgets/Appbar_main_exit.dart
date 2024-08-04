@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/icon_app.dart';
 
 class AppbarMainExit extends StatefulWidget implements PreferredSizeWidget {
@@ -22,7 +23,7 @@ class _AppbarMainExitState extends State<AppbarMainExit> {
             gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: <Color>[Colors.cyan, Colors.green])),
+                colors: <Color>[GPrimaryColor, Color(0xff42BD41)])),
       ),
       leading: IconButton(
         color: Colors.white,

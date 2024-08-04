@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:watalygold/Widgets/Color.dart';
 import 'icon_app.dart';
 
 class Appbarmain extends StatelessWidget implements PreferredSizeWidget {
@@ -17,7 +18,7 @@ class Appbarmain extends StatelessWidget implements PreferredSizeWidget {
             gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: <Color>[Colors.cyan, Colors.green])),
+                colors: <Color>[GPrimaryColor, Color(0xff42BD41)])),
       ),
       leading: IconButton(
         color: Colors.white,
@@ -58,7 +59,7 @@ class _AppbarMainsState extends State<AppbarMains> {
             gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: <Color>[Colors.cyan, Colors.green])),
+                colors: <Color>[GPrimaryColor, Color(0xff42BD41)])),
       ),
       leading: IconButton(
         color: Colors.white,
