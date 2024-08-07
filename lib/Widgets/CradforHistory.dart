@@ -13,6 +13,7 @@ import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
 import 'package:watalygold/Widgets/DialogDelete.dart';
 import 'package:watalygold/Widgets/DialogLoading.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
 import 'package:watalygold/models/Result_ana.dart';
 import 'package:watalygold/models/Image.dart';
@@ -668,134 +669,6 @@ class _CradforHistoryState extends State<CradforHistory> {
         }
       },
     );
-    // return Card(
-    //   clipBehavior: Clip.antiAlias,
-    //   margin: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-    //   elevation: 4.0,
-    //   shape: RoundedRectangleBorder(
-    //     borderRadius: BorderRadius.circular(15.0), // กำหนด radius ของการ์ด
-    //   ),
-    //   surfaceTintColor: WhiteColor,
-    //   child: SizedBox(
-    //     // width: 450,
-    //     height: 170,
-    //     child: Row(
-    //       children: [
-    //         Container(
-    //           margin: const EdgeInsets.all(10),
-    //           width: 120,
-    //           height: 120,
-    //           clipBehavior: Clip.antiAlias,
-    //           decoration:
-    //               BoxDecoration(borderRadius: BorderRadius.circular(20)),
-    //           child: Image.asset(
-    //             _results.first.image_url.toString(),
-    //             fit: BoxFit.cover,
-    //           ),
-    //         ),
-    //         Expanded(
-    //           child: Padding(
-    //             padding: const EdgeInsets.only(left: 0, top: 15, bottom: 15),
-    //             child: Column(
-    //               // mainAxisAlignment: MainAxisAlignment.start,
-    //               crossAxisAlignment: CrossAxisAlignment.start,
-    //               children: [
-    //                 Row(
-    //                   children: [
-    //                     Text(
-    //                       'รายการที่ ${widget.name}',
-    //                       style: const TextStyle(
-    //                         color: GPrimaryColor,
-    //                         fontSize: 15,
-    //                       ),
-    //                       textAlign: TextAlign.start,
-    //                     ),
-    //                     Spacer(),
-    //                     Padding(
-    //                       padding: const EdgeInsets.only(right: 10),
-    //                       child: ElevatedButton.icon(
-    //                           style: ButtonStyle(
-    //                             backgroundColor: MaterialStateProperty.all(
-    //                                 Colors.green.shade400),
-    //                             surfaceTintColor: MaterialStateProperty.all(
-    //                                 Colors.green.shade400),
-    //                             padding: MaterialStateProperty.all(
-    //                                 const EdgeInsets.symmetric(
-    //                                     horizontal: 10, vertical: 5)),
-    //                             minimumSize: MaterialStateProperty.all(
-    //                                 const Size(50, 25)),
-    //                           ),
-    //                           onPressed: () {},
-    //                           icon: const Icon(
-    //                             Icons.collections_rounded,
-    //                             color: WhiteColor,
-    //                             size: 20,
-    //                           ),
-    //                           label: const Icon(
-    //                             Icons.add,
-    //                             color: WhiteColor,
-    //                             size: 10,
-    //                           )),
-    //                     ),
-    //                   ],
-    //                 ),
-    //                 const Spacer(),
-    //                 Row(
-    //                   children: [
-    //                     Text(
-    //                       "ระดับ",
-    //                       style: TextStyle(color: GPrimaryColor, fontSize: 15),
-    //                     ),
-    //                     const SizedBox(width: 15), // เว้นระยะห่างระหว่างข้อความ
-    //                     Text(
-    //                       widget.result,
-    //                       style: TextStyle(
-    //                           color: gradeColor[widget.result],
-    //                           fontSize: 20,
-    //                           fontWeight: FontWeight.bold),
-    //                     ),
-    //                   ],
-    //                 ),
-    //                 const Spacer(),
-    //                 Row(
-    //                   children: [
-    //                     Text(
-    //                       "วันที่ ${widget.date}",
-    //                       style: TextStyle(
-    //                           color: Colors.grey.shade500, fontSize: 12),
-    //                     ),
-    //                     Spacer(),
-    //                     Padding(
-    //                       padding: const EdgeInsets.only(right: 10),
-    //                       child: ElevatedButton(
-    //                           style: ButtonStyle(
-    //                             backgroundColor: MaterialStateProperty.all(
-    //                                 Colors.red.shade400),
-    //                             surfaceTintColor: MaterialStateProperty.all(
-    //                                 Colors.red.shade400),
-    //                             padding: MaterialStateProperty.all(
-    //                                 const EdgeInsets.symmetric(
-    //                                     horizontal: 10, vertical: 5)),
-    //                             minimumSize: MaterialStateProperty.all(
-    //                                 const Size(30, 30)),
-    //                           ),
-    //                           onPressed: () {},
-    //                           child: const Icon(
-    //                             Icons.delete_rounded,
-    //                             color: WhiteColor,
-    //                             size: 20,
-    //                           )),
-    //                     )
-    //                   ],
-    //                 ),
-    //               ],
-    //             ),
-    //           ),
-    //         )
-    //       ],
-    //     ),
-    //   ),
-    // );
   }
 
   Future _displaybottomsheet(BuildContext context) {
@@ -850,7 +723,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                           fontWeight: FontWeight.bold),
                     ),
                     onTap: () async {
-                      _showToastUpdate();
+                      // _showToastUpdate();
                       final s = await Result_DB().updatecollection(
                           widget.collection![i].collection_id,
                           widget.results.result_id);
@@ -878,7 +751,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                         fontWeight: FontWeight.bold),
                   ),
                   onTap: () async {
-                    await showGeneralDialog(
+                    final bool? result = await showGeneralDialog(
                       context: context,
                       barrierDismissible: true,
                       barrierLabel: MaterialLocalizations.of(context)
@@ -898,8 +771,12 @@ class _CradforHistoryState extends State<CradforHistory> {
                         return DialogCollection();
                       },
                     );
-                    Navigator.pop(context);
-
+                    if (result == true) {
+                      // Navigator.of(context).pop();
+                      dialogsuccess(context);
+                    } else {
+                      Navigator.pop(context);
+                    }
                     widget.refreshCallback();
                   },
                 ),

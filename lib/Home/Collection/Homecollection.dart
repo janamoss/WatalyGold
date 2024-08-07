@@ -9,6 +9,7 @@ import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforCollection.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
 
 class HomeCollection extends StatefulWidget {
@@ -70,8 +71,7 @@ class _HomeCollectionState extends State<HomeCollection> {
         backgroundColor: WhiteColor,
         tooltip: 'Increment',
         onPressed: () async {
-          _showToast();
-          await showGeneralDialog(
+          final bool? result =  await showGeneralDialog(
             context: context,
             barrierDismissible: true,
             barrierLabel:
@@ -87,9 +87,15 @@ class _HomeCollectionState extends State<HomeCollection> {
               );
             },
             pageBuilder: (context, animation, secondaryAnimation) {
-              return DialogCollection();
+              return DialogCollection(
+              );
             },
           );
+
+          if (result == true) {
+            dialogsuccess(context);
+          }
+
           setState(() {});
           _loadCollections();
         },

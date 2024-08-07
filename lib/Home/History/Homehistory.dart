@@ -9,6 +9,7 @@ import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Home/History/HistoryDetail.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforHistory.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
 import 'package:watalygold/models/Result_ana.dart';
 

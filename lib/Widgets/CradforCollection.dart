@@ -9,6 +9,7 @@ import 'package:watalygold/Home/Collection/Selectcollection.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogCollectionEdit.dart';
 import 'package:watalygold/Widgets/DialogDelete.dart';
+import 'package:watalygold/Widgets/DialogUpdate.dart';
 import 'package:watalygold/models/Collection.dart';
 import 'package:watalygold/models/Result_ana.dart';
 
@@ -165,7 +166,7 @@ class _CradforColletionState extends State<CradforColletion> {
                       ),
                       PopupMenuItem(
                         onTap: () async {
-                          await showGeneralDialog(
+                          final bool? result = await showGeneralDialog(
                             context: context,
                             barrierDismissible: true,
                             barrierLabel: MaterialLocalizations.of(context)
@@ -190,6 +191,11 @@ class _CradforColletionState extends State<CradforColletion> {
                               );
                             },
                           );
+
+                          if (result == true) {
+                            dialogupdate(context);
+                          }
+
                           fetchCountResult(widget.collections.collection_id);
                           widget.refreshCallback();
                         },

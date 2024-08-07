@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/User_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 
 class DialogCollection extends StatefulWidget {
   const DialogCollection({
@@ -35,28 +36,32 @@ class _DialogCollectionState extends State<DialogCollection> {
     await Future.delayed(Duration(seconds: 3));
   }
 
-  Future InsertCollection() async {
-    try {
-      if (nameController.text.isNotEmpty) {
-        final s = await Collection_DB().create(
-          user_id: user_id!.toInt(),
-          collection_name: nameController.text.toString(),
-          collection_image: capturedImages!.path.toString(),
-        );
-        stdout.writeln(s.toString());
-        if (s == 0) {
-          _showToastUpdate();
-        }
-        Navigator.of(context).pop();
-      } else {
-        setState(() {
-          _isNotValidate = true;
-        });
+  Future<bool> InsertCollection() async {
+  try {
+    if (nameController.text.isNotEmpty) {
+      final s = await Collection_DB().create(
+        user_id: user_id!.toInt(),
+        collection_name: nameController.text.toString(),
+        collection_image: capturedImages!.path.toString(),
+      );
+      stdout.writeln(s.toString());
+      if (s == 0) {
+        await _showToastUpdate();
+        return false;
       }
-    } catch (e) {
-      stdout.writeln(e);
+      Navigator.of(context).pop(true); // ส่งค่า true กลับไปยัง HomeCollection
+      return true;
+    } else {
+      setState(() {
+        _isNotValidate = true;
+      });
+      return false;
     }
+  } catch (e) {
+    stdout.writeln(e);
+    return false;
   }
+}
 
   Future<void> _fetchUserId() async {
     // ดึง user_id จากฐานข้อมูล
@@ -186,33 +191,43 @@ class _DialogCollectionState extends State<DialogCollection> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                "ยกเลิก",
-                style: TextStyle(color: WhiteColor),
+            SizedBox(
+              width: 125,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  "ยกเลิก",
+                  style: TextStyle(color: WhiteColor, fontSize: 12),
+                ),
+                style: ButtonStyle(
+                    elevation: MaterialStateProperty.all(2),
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.red.shade400),
+                    surfaceTintColor:
+                        MaterialStateProperty.all(Colors.red.shade400)),
               ),
-              style: ButtonStyle(
-                  elevation: MaterialStateProperty.all(2),
-                  backgroundColor:
-                      MaterialStateProperty.all(Colors.red.shade400),
-                  surfaceTintColor:
-                      MaterialStateProperty.all(Colors.red.shade400)),
             ),
-            ElevatedButton(
-              onPressed: () {
-                InsertCollection();
-              },
-              child: Text(
-                "เพิ่มคอลเลคชัน",
-                style: TextStyle(color: WhiteColor),
+            SizedBox(
+              width: 125,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  InsertCollection();
+                },
+                child: Text(
+                  "เพิ่มคอลเลคชัน",
+                  style: TextStyle(color: WhiteColor, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+                style: ButtonStyle(
+                    elevation: MaterialStateProperty.all(2),
+                    backgroundColor: MaterialStateProperty.all(G2PrimaryColor),
+                    surfaceTintColor:
+                        MaterialStateProperty.all(G2PrimaryColor)),
               ),
-              style: ButtonStyle(
-                  elevation: MaterialStateProperty.all(2),
-                  backgroundColor: MaterialStateProperty.all(G2PrimaryColor),
-                  surfaceTintColor: MaterialStateProperty.all(G2PrimaryColor)),
             ),
           ],
         ),

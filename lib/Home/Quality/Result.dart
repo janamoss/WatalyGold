@@ -17,6 +17,7 @@ import 'package:watalygold/ShareResults.dart';
 import 'package:watalygold/Widgets/Appbar_main_exit.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
 
 class ResultPage extends StatefulWidget {
@@ -532,7 +533,7 @@ class _ResultPageState extends State<ResultPage> {
                         fontWeight: FontWeight.bold),
                   ),
                   onTap: () async {
-                    await showGeneralDialog(
+                    final bool? result = await showGeneralDialog(
                       context: context,
                       barrierDismissible: true,
                       barrierLabel: MaterialLocalizations.of(context)
@@ -553,6 +554,9 @@ class _ResultPageState extends State<ResultPage> {
                       },
                     );
                     Navigator.pop(context);
+                    if (result == true) {
+                      dialogsuccess(context);
+                    }
                     _loadCollections();
                     // widget.refreshCallback();
                   },
