@@ -10,7 +10,9 @@ import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Database/User_DB.dart';
+import 'package:watalygold/ExportPrice/ExportPrice.dart';
 import 'package:watalygold/Home/UserManual/UserManual.dart';
+import 'package:watalygold/Onboarding/onboarding_screen.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -75,6 +77,7 @@ Future<void> main() async {
       title: "Wataly Gold", 
       // home: const ResultPage(),
       home: const UserManual(),
+      //  home: const Myonboardingscreen(),
       // home: BasePage(camera: cameras),
       builder: EasyLoading.init(),
     ),
