@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platform_device_id/platform_device_id.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/Result_DB.dart';
@@ -22,6 +23,10 @@ String? _deviceId;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  final prefs = await SharedPreferences.getInstance();
+  final onboarding = prefs.getBool("onboarding") ?? false;
+
   _deviceId = await PlatformDeviceId.getDeviceId;
   stdout.writeln(_deviceId);
   await DatabaseService().database;
@@ -56,7 +61,9 @@ Future<void> main() async {
     stdout.writeln('No cameras available');
     return;
   }
-  runApp(
+
+
+  runApp( 
     MaterialApp(
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
@@ -74,11 +81,11 @@ Future<void> main() async {
       theme: ThemeData(
         fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
       ),
-      title: "Wataly Gold", 
+      title: "Wataly Gold",
       // home: const ResultPage(),
-      home: const UserManual(),
-      //  home: const Myonboardingscreen(),
-      // home: BasePage(camera: cameras),
+      // home: const Myonboardingscreen(),
+     
+      home: onboarding ? BasePage(camera: cameras) : Myonboardingscreen(),
       builder: EasyLoading.init(),
     ),
   );
