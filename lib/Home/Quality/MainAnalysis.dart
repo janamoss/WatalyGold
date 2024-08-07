@@ -178,7 +178,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         builder: (context) => Center(
           child: AlertDialog(
             backgroundColor: GPrimaryColor.withOpacity(0.6),
-            contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
             title: Column(
               children: [
                 const Text(
@@ -241,6 +242,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       var firebasefunctions =
           FirebaseFunctions.instanceFor(region: 'asia-southeast1');
 
+      final preview_result = {
+        'downloadurl': downloadurl,
+        "imagename": concatenatedString,
+        "ip": _deviceId,
+        "result": results
+      };
+
       try {
         final result = await firebasefunctions.httpsCallable("addImages").call({
           'downloadurl': downloadurl,
@@ -264,6 +272,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         rethrow;
       }
       // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
+      debugPrint("$preview_result");
       if (allImagesUploaded) {
         stdout.writeln(imageuri);
         Navigator.of(context).pop();

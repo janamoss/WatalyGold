@@ -182,7 +182,7 @@ class _MangopropertiesState extends State<Mangoproperties> {
           items: imageSliders,
           carouselController: _controller,
           options: CarouselOptions(
-              autoPlay: true,
+              // autoPlay: true,
               enlargeCenterPage: true,
               aspectRatio: 1.9,
               onPageChanged: (index, reason) {
