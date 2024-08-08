@@ -727,7 +727,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                       final s = await Result_DB().updatecollection(
                           widget.collection![i].collection_id,
                           widget.results.result_id);
-                      stdout.writeln("$s จ้าาาาาาา");
+                      // stdout.writeln("$s จ้าาาาาาา");
                       stdout.writeln(widget.collection![i].collection_id);
                       Navigator.pop(context);
 

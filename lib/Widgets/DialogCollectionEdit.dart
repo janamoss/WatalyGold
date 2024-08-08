@@ -264,35 +264,44 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                "ยกเลิก",
-                style: TextStyle(color: WhiteColor),
+            SizedBox(
+              width: 125,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  "ยกเลิก",
+                  style: TextStyle(color: WhiteColor,fontSize: 12),
+                ),
+                style: ButtonStyle(
+                    elevation: MaterialStateProperty.all(2),
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.red.shade400),
+                    surfaceTintColor:
+                        MaterialStateProperty.all(Colors.red.shade400)),
               ),
-              style: ButtonStyle(
-                  elevation: MaterialStateProperty.all(2),
-                  backgroundColor:
-                      MaterialStateProperty.all(Colors.red.shade400),
-                  surfaceTintColor:
-                      MaterialStateProperty.all(Colors.red.shade400)),
             ),
-            ElevatedButton(
-              onPressed: () {
-                UpdateCollection();
-              },
-              child: Text(
-                "แก้ไขคอลเลคชัน",
-                style: TextStyle(color: WhiteColor),
+            SizedBox(
+              width: 125,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  UpdateCollection();
+                },
+                child: Text(
+                  "แก้ไขคอลเลคชัน",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: WhiteColor,fontSize: 12),
+                ),
+                style: ButtonStyle(
+                    elevation: MaterialStateProperty.all(2),
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.orange.shade300),
+                    surfaceTintColor:
+                        MaterialStateProperty.all(Colors.orange.shade300)),
               ),
-              style: ButtonStyle(
-                  elevation: MaterialStateProperty.all(2),
-                  backgroundColor:
-                      MaterialStateProperty.all(Colors.orange.shade300),
-                  surfaceTintColor:
-                      MaterialStateProperty.all(Colors.orange.shade300)),
             ),
           ],
         ),

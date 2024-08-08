@@ -17,8 +17,7 @@ class _UserManualState extends State<UserManual> {
     return Scaffold(
       backgroundColor: GreyColor45,
       appBar: Appbarmain_no_botton(
-        name: "เพิ่มเติม",
-        statusoption: 1,
+        name: "คู่มือการใช้งาน",
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -61,7 +60,7 @@ class _UserManualState extends State<UserManual> {
                 children: [
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 1,
-                    height: 500,
+                    height: 700,
                     child: const Manualphoto(),
                   ),
                 ],
@@ -90,7 +89,7 @@ class _UserManualState extends State<UserManual> {
                     const Center(
                       child: SizedBox(
                         child: Text(
-                          "คุณสมบัติของมะม่วง\nแต่ละเกรด ",
+                          "คุณสมบัติของมะม่วงแต่ละเกรด ",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,

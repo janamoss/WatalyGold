@@ -553,10 +553,12 @@ class _ResultPageState extends State<ResultPage> {
                         return DialogCollection();
                       },
                     );
-                    Navigator.pop(context);
                     if (result == true) {
                       dialogsuccess(context);
+                    } else {
+                      Navigator.pop(context);
                     }
+                    // Navigator.pop(context);
                     _loadCollections();
                     // widget.refreshCallback();
                   },

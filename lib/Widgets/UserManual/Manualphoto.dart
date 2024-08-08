@@ -1,7 +1,7 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:watalygold/Widgets/Color.dart';
-
 
 class Manualphoto extends StatefulWidget {
   const Manualphoto({super.key});
@@ -10,7 +10,18 @@ class Manualphoto extends StatefulWidget {
   State<Manualphoto> createState() => _ManualphotoState();
 }
 
+final List<Map<String, String>> mangoImages = [
+  {"image": "assets/images/f5.jpg", "label": "ด้านหน้า"},
+  {"image": "assets/images/top5.jpg", "label": "ด้านบน"},
+  {"image": "assets/images/back5.jpg", "label": "ด้านหลัง"},
+  {"image": "assets/images/Bottom5.jpg", "label": "ด้านล่าง"},
+];
+
+
 class _ManualphotoState extends State<Manualphoto> {
+  int _current = 0;
+final CarouselController _controller = CarouselController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +59,7 @@ class _ManualphotoState extends State<Manualphoto> {
                     margin: const EdgeInsets.only(top: 20),
                     width: MediaQuery.of(context).size.width * 0.78,
                     child: const Text(
-                      "ถ่ายภาพผลมะม่วงให้ครบทั้งหมด 4 ด้าน คือ ด้านหน้า ด้านหลัง ด้านบน และด้านล่าง",
+                      "ถ่ายภาพผลมะม่วงให้ครบทั้งหมด 4 ด้าน คือ ด้านหน้า ด้านหลัง ด้านบน และด้านล่าง ทุกภาพต้องมีเหรียญ 5 บาท 1 เหรียญในการวางไว้รอบข้างมะม่วง",
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 16,
@@ -60,109 +71,71 @@ class _ManualphotoState extends State<Manualphoto> {
               SizedBox(
                 height: 30,
               ),
+             
+              CarouselSlider(
+                carouselController: _controller,
+                options: CarouselOptions(
+                  height: 220,
+                  enlargeCenterPage: true,
+                  aspectRatio: 16 / 9,
+                  autoPlayCurve: Curves.fastOutSlowIn,
+                  enableInfiniteScroll: true,
+                  viewportFraction: 1,
+                  onPageChanged: (index, reason) {
+                    setState(() {
+                      _current = index;
+                    });
+                  },
+                ),
+                items: mangoImages.map((item) {
+                  return Builder(
+                    builder: (BuildContext context) {
+                      return Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              item['image']!,
+                              fit: BoxFit.cover,
+                              height: 150,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              item['label']!,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
+              ),
               Row(
-                children: [
-                  SizedBox(
-                    width: 15,
-                  ),
-                  Column(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 70,
-                        child: Image.asset(
-                          "assets/images/Extrafront.jpg",
-                          fit: BoxFit.cover,
-                        ),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: mangoImages.asMap().entries.map((entry) {
+                  return GestureDetector(
+                    onTap: () => _controller.animateToPage(entry.key),
+                    child: Container(
+                      width: 8.0,
+                      height: 8.0,
+                      margin:
+                          EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: GPrimaryColor.withOpacity(
+                            _current == entry.key ? 0.9 : 0.4),
                       ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        "ด้านหน้า",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  Column(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 70,
-                        child: Image.asset(
-                          "assets/images/Extratop.jpg",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        "ด้านบน",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  Column(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 70,
-                        child: Image.asset(
-                          "assets/images/Extraback.jpg",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        "ด้านหลัง",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  Column(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 70,
-                        child: Image.asset(
-                          "assets/images/Extrabottom.jpg",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        "ด้านล่าง",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  );
+                }).toList(),
               ),
               SizedBox(
                 height: 20,
@@ -213,6 +186,9 @@ class _ManualphotoState extends State<Manualphoto> {
                     ),
                   ),
                 ],
+              ),
+              SizedBox(
+                height: 20,
               ),
             ],
           ),

@@ -152,7 +152,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future Gallery() async {
     try {
-      final image = await ImagePicker().pickMultiImage(imageQuality: 50);
+      final image = await picker.pickMultiImage(imageQuality: 50, limit: 4);
       final List<String> ImagepathList = [];
       // print(image?.path);
       // if (image == null) return;
