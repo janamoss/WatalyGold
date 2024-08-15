@@ -5,8 +5,10 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:platform_device_id/platform_device_id.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/User_DB.dart';
+import 'package:watalygold/Home/Onboarding/onboarding_screen.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,12 +18,18 @@ String? _deviceId;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  final onboarding = prefs.getBool("onboarding") ?? false;
+  debugPrint("$onboarding");
+
   _deviceId = await PlatformDeviceId.getDeviceId;
   log(_deviceId!);
   await DatabaseService().database;
   // await DatabaseService().deleteDatabases(await getDatabasesPath());
   if (await DatabaseService().isDatabaseExists()) {
     final results = await User_db().create(user_ipaddress: _deviceId!);
+
     // try {
     //   final r_id = await Result_DB().create(
     //       user_id: 1,
@@ -62,7 +70,7 @@ Future<void> main() async {
         const Locale('th', 'TH'),
         const Locale('en', 'US'),
       ],
-      initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
+      // initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
       routes: {
         '/base': (context) => BasePage(camera: cameras),
         // '/base': (context) => const ResultPage(),
@@ -71,8 +79,10 @@ Future<void> main() async {
         fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
       ),
       title: "Wataly Gold",
-      // home: const ResultPage(),
-      home: BasePage(camera: cameras),
+      // home: const Myonboardingscreen(),
+      home: onboarding
+          ? BasePage(camera: cameras)
+          : Myonboardingscreen(camera: cameras),
       builder: EasyLoading.init(),
     ),
   );

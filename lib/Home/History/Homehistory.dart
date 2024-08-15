@@ -88,36 +88,49 @@ class _HomeHistoryState extends State<HomeHistory> {
                 height: 10,
               ),
               Expanded(
-                child: ListView.builder(
-                  itemCount: _results.length,
-                  itemBuilder: (context, index) {
-                    final result = _results[index];
-                    debugPrint("${result.collection_id} คือ id ของคอ");
-                    debugPrint("${result.lenght}");
-                    DateTime createdAt = DateTime.parse(result.created_at);
-                    final formattedDate =
-                        DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);
-
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HistoryDetail(
+                child: _results.isNotEmpty
+                    ? ListView.builder(
+                        itemCount: _results.length,
+                        itemBuilder: (context, index) {
+                          final result = _results[index];
+                          debugPrint("${result.collection_id} คือ id ของคอ");
+                          debugPrint("${result.lenght}");
+                          DateTime createdAt =
+                              DateTime.parse(result.created_at);
+                          final formattedDate =
+                              DateFormat('dd MMM yyyy', 'th_TH')
+                                  .format(createdAt);
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HistoryDetail(
+                                    results: result,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: CradforHistory(
+                              date: formattedDate,
                               results: result,
+                              refreshCallback: () => refreshList(),
+                              collection: _collection,
                             ),
+                          );
+                        },
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.history_rounded,
+                              size: 50, color: GPrimaryColor),
+                          SizedBox(
+                            height: 25,
                           ),
-                        );
-                      },
-                      child: CradforHistory(
-                        date: formattedDate,
-                        results: result,
-                        refreshCallback: () => refreshList(),
-                        collection: _collection,
+                          Text("คุณยังไม่มีรายการการวิเคราะห์คุณภาพ"),
+                        ],
                       ),
-                    );
-                  },
-                ),
               )
             ],
           ),

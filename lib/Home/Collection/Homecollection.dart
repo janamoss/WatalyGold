@@ -71,7 +71,7 @@ class _HomeCollectionState extends State<HomeCollection> {
         backgroundColor: WhiteColor,
         tooltip: 'Increment',
         onPressed: () async {
-          final bool? result =  await showGeneralDialog(
+          final bool? result = await showGeneralDialog(
             context: context,
             barrierDismissible: true,
             barrierLabel:
@@ -87,8 +87,7 @@ class _HomeCollectionState extends State<HomeCollection> {
               );
             },
             pageBuilder: (context, animation, secondaryAnimation) {
-              return DialogCollection(
-              );
+              return DialogCollection();
             },
           );
 
@@ -142,29 +141,38 @@ class _HomeCollectionState extends State<HomeCollection> {
                 height: 10,
               ),
               Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // จำนวนคอลัมน์
-                    childAspectRatio: 2.6 / 4, // อัตราส่วน width ต่อ height
-                  ),
-                  itemCount: _collection.length,
-                  itemBuilder: (context, index) {
-                    final collection = _collection[index];
-                    return SizedBox(
-                      child: CradforColletion(
-                          collections: collection,
-                          refreshCallback: refreshList),
-                    );
-                  },
-                ),
-                // ListView.builder(
-                //   itemCount: _collection.length,
-                //   itemBuilder: (context, index) {
-                //     final collection = _collection[index];
+                child: _collection.isNotEmpty
+                    ? GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // จำนวนคอลัมน์
+                          childAspectRatio:
+                              2.6 / 4, // อัตราส่วน width ต่อ height
+                        ),
+                        itemCount: _collection.length,
+                        itemBuilder: (context, index) {
+                          final collection = _collection[index];
 
-                //   },
-                // ),
-              )
+                          return SizedBox(
+                            child: CradforColletion(
+                                collections: collection,
+                                refreshCallback: refreshList),
+                          );
+                        },
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.folder_rounded,
+                                size: 50, color: GPrimaryColor),
+                            SizedBox(
+                              height: 25,
+                            ),
+                            Text("คุณยังไม่มีคอลเลคชั่น"),
+                          ],
+                        ),
+                      ),
+              ),
             ],
           ),
         ),

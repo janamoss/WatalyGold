@@ -83,31 +83,44 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
           collection_image: capturedImages!.path.toString(),
           user_id: user_id!.toInt(),
         );
-        _showToastUpdate();
+        // _showToastUpdate();
         Navigator.of(context).pop(true);
         return true;
       } else if (isNameChanged) {
         // กรณีที่เปลี่ยนแค่ชื่อ
-        final s = await Collection_DB().updateCollection(
-          collection_id: widget.collection_id.toInt(),
-          collection_name: nameController.text.toString(),
-          collection_image: widget.edit_image, // ใช้รูปภาพเดิม
-          user_id: user_id!.toInt(),
-        );
-        if (s == 0) {
-          _showToastwarning();
-          Navigator.of(context).pop();
+        if (nameController.text.toString() == '') {
+          setState(() {
+            _isNotValidate = true;
+          });
+          // _showToastwarning();
           return false;
         } else {
-          // _showToastUpdate();
-          Navigator.of(context).pop(true);
-          return true;
+          final s = await Collection_DB().updateCollection(
+            collection_id: widget.collection_id.toInt(),
+            collection_name: nameController.text.toString(),
+            collection_image: widget.edit_image, // ใช้รูปภาพเดิม
+            user_id: user_id!.toInt(),
+          );
+          if (s == 0) {
+            _showToastwarning();
+            Navigator.of(context).pop();
+            return false;
+          } else {
+            // _showToastUpdate();
+            Navigator.of(context).pop(true);
+            return true;
+          }
         }
+      } else if (!isNameChanged) {
+        _showToastwarning();
+        Navigator.of(context).pop();
+        return false;
       } else {
         // กรณีที่ไม่มีการเปลี่ยนแปลง
         setState(() {
           _isNotValidate = true;
         });
+        // _showToastwarning();
         return false;
       }
     } catch (e) {
@@ -134,6 +147,8 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
         File(widget.edit_image); // กำหนดค่าเริ่มต้นของ capturedImages ในนี้
     nameController.text = widget.edit_name;
   }
+
+  void reimage() {}
 
   Future Gallery() async {
     try {
@@ -218,6 +233,34 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
                     ),
                   ),
                 ),
+                capturedImages!.path == "assets/images/Collection.png"
+                    ? SizedBox()
+                    : Positioned(
+                        top: -8,
+                        right: -8,
+                        child: IconButton(
+                          onPressed: () {
+                            // Gallery();
+                            setState(() {
+                              capturedImages =
+                                  File("assets/images/Collection.png");
+                            });
+                            stdout.writeln("กดแล้ว");
+                          },
+                          icon: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            padding: EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: Colors.red.shade400,
+                              size: 10.0,
+                            ),
+                          ),
+                        ),
+                      ),
               ],
             ),
             SizedBox(
@@ -273,7 +316,7 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
                 },
                 child: Text(
                   "ยกเลิก",
-                  style: TextStyle(color: WhiteColor,fontSize: 12),
+                  style: TextStyle(color: WhiteColor, fontSize: 12),
                 ),
                 style: ButtonStyle(
                     elevation: MaterialStateProperty.all(2),
@@ -293,7 +336,7 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
                 child: Text(
                   "แก้ไขคอลเลคชัน",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: WhiteColor,fontSize: 12),
+                  style: TextStyle(color: WhiteColor, fontSize: 12),
                 ),
                 style: ButtonStyle(
                     elevation: MaterialStateProperty.all(2),

@@ -38,6 +38,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   String? result;
 
   final ImagePicker picker = ImagePicker();
+  Timer? _lightMeterTimer;
+  bool _isProcessing = false;
 
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
@@ -82,15 +84,55 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         ResolutionPreset.max, // new resolution
         enableAudio: false);
 
-    // Next, initialize the controller. This returns a Future.
+    // Initialize the controller
     _initializeControllerFuture = _controller.initialize();
+
+    // Wait for the initialization to complete
+    try {
+      await _initializeControllerFuture;
+
+      // Now that initialization is complete, start the image stream
+      if (_controller != null) {
+        await _controller!.startImageStream(_processImage);
+        _startLightMeter();
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error initializing camera: $e');
+      // Handle the error appropriately
+    }
+  }
+
+  void _startLightMeter() {
+    _lightMeterTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      _isProcessing = true;
+    });
+  }
+
+  void _processImage(CameraImage image) {
+    if (_isProcessing) {
+      double averageBrightness = _calculateAverageBrightness(image);
+      debugPrint('Average Brightness: $averageBrightness');
+      _isProcessing = false;
+    }
+  }
+
+  double _calculateAverageBrightness(CameraImage image) {
+    var bytes = image.planes[0].bytes;
+    int total = 0;
+    // เพื่อประสิทธิภาพ เราจะสุ่มตัวอย่างเพียงบางพิกเซล
+    for (int i = 0; i < bytes.length; i += 10) {
+      total += bytes[i];
+    }
+    return total / (bytes.length / 10);
   }
 
   @override
   void dispose() {
-    // Dispose of the controller when the widget is disposed.
+    _lightMeterTimer?.cancel();
+    _controller.stopImageStream();
+    _controller.dispose();
     super.dispose();
-    _interpreter.close();
   }
 
   File? image;
@@ -341,22 +383,27 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                   child: FutureBuilder<void>(
                     future: _initializeControllerFuture,
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        // If the Future is complete, display the preview.
-                        return SizedBox(
-                            width: size.width,
-                            height: size.height * 0.5,
-                            child: FittedBox(
-                              fit: BoxFit.cover,
-                              child: SizedBox(
-                                  width:
-                                      100, // the actual width is not important here
-                                  child: CameraPreview(_controller)),
-                            ));
-                      } else {
-                        // Otherwise, display a loading indicator.
-                        return const Center(child: CircularProgressIndicator());
+                      if (_controller == null ||
+                          !_controller!.value.isInitialized) {
+                        return const Center(
+                            child:
+                                CircularProgressIndicator()); // หรือ loading indicator
                       }
+                      return SizedBox(
+                          width: size.width,
+                          height: size.height * 0.5,
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                                width:
+                                    100, // the actual width is not important here
+                                child: CameraPreview(_controller)),
+                          ));
+                      // if (snapshot.connectionState == ConnectionState.done) {
+                      //   // If the Future is complete, display the preview.
+                      // } else {
+                      //   // Otherwise, display a loading indicator.
+                      // }
                     },
                   ),
                 ),
