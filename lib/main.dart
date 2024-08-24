@@ -21,6 +21,7 @@ Future<void> main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final onboarding = prefs.getBool("onboarding") ?? false;
+  // prefs.setBool("checkhowtouse", false);
   debugPrint("$onboarding");
 
   _deviceId = await PlatformDeviceId.getDeviceId;

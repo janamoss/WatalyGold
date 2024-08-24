@@ -1,7 +1,7 @@
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart'; 
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide CarouselController;
 import 'package:flutter/widgets.dart';
 // import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
@@ -24,7 +24,7 @@ class _KnowledgePageState extends State<KnowledgePage> {
   late String detail =
       widget.knowledge?.knowledgeDetail.replaceAll('\n', '\n\n') ?? '';
 
-  late CarouselController controller;
+  late CarouselController controller ; 
   int currentIndex = 0;
 
   @override

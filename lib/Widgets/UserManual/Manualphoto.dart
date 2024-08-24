@@ -12,15 +12,14 @@ class Manualphoto extends StatefulWidget {
 
 final List<Map<String, String>> mangoImages = [
   {"image": "assets/images/f5.jpg", "label": "ด้านหน้า"},
-  {"image": "assets/images/top5.jpg", "label": "ด้านบน"},
   {"image": "assets/images/back5.jpg", "label": "ด้านหลัง"},
   {"image": "assets/images/Bottom5.jpg", "label": "ด้านล่าง"},
+  {"image": "assets/images/top5.jpg", "label": "ด้านบน"},
 ];
-
 
 class _ManualphotoState extends State<Manualphoto> {
   int _current = 0;
-final CarouselController _controller = CarouselController();
+  final CarouselController _controller = CarouselController();
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +70,6 @@ final CarouselController _controller = CarouselController();
               SizedBox(
                 height: 30,
               ),
-             
               CarouselSlider(
                 carouselController: _controller,
                 options: CarouselOptions(
