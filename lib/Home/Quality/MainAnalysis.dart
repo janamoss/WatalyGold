@@ -15,7 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:watalygold/Home/Quality/Gallerypage.dart';
+// import 'package:watalygold/Home/Quality/Gallerypage.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';

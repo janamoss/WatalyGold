@@ -1,5 +1,6 @@
 import 'package:watalygold/ExportPrice/ExportPrice.dart';
 import 'package:watalygold/Home/Collection/baseColoorHis.dart';
+import 'package:watalygold/Home/Quality/WeightNumber.dart';
 import 'package:watalygold/Home/UserManual/usermanual.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
@@ -35,6 +36,7 @@ class _BasePageState extends State<BasePage> {
       _createHomeapp(widget.camera),
       const ExportPrice(),
       TakePictureScreen(camera: widget.camera),
+      // WeightNumber(camera: widget.camera),
       BaseHisorCol(initialIndex: tabviews),
       const UserManual(),
     ];
@@ -114,6 +116,7 @@ class _BasePageState extends State<BasePage> {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
           TakePictureScreen(camera: widget.camera),
+      // WeightNumber(camera: widget.camera),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;
