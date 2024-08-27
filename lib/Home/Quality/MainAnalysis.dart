@@ -760,8 +760,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                       barrierDismissible: false,
                                       context: context,
                                       builder: (context) {
-                                        // return Dialog_HowtoUse();
-                                        return const Dialog_HowtoUse_NW();
+                                        return Dialog_HowtoUse();
+                                        // return const Dialog_HowtoUse_NW();
                                       },
                                     );
                                   },

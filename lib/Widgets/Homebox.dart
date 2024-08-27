@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:watalygold/ExportPrice/ExportPrice.dart';
 import 'package:watalygold/Home/Collection/Homecollection.dart';
 import 'package:watalygold/Home/History/Homehistory.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogChoose.dart';
 import 'package:watalygold/models/category.dart';
 import 'package:watalygold/Home/Knowledge/MainKnowledge.dart';
 import 'package:watalygold/Home/Quality/MainAnalysis.dart';
@@ -48,10 +49,18 @@ class _HomeboxState extends State<Homebox> {
               return GestureDetector(
                 onTap: () {
                   if (index == 0) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const KnowledgeMain()));
+                    showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (context) {
+                        // return Dialog_HowtoUse();
+                        return const Dialog_Choose();
+                      },
+                    );
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => const KnowledgeMain()));
                   }
                   if (index == 1) {
                     widget.changeWidgetOption(1);
