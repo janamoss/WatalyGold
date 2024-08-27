@@ -218,7 +218,7 @@ class _Dialog_HowtoUseState extends State<Dialog_HowtoUse> {
                     children: [
                       Text(
                         textAlign: TextAlign.center,
-                        "4. พื้นที่มีแสงเพียงพอ",
+                        "4.พื้นที่มีแสงเพียงพอ",
                         style: TextStyle(fontSize: 13),
                       ),
                       SizedBox(

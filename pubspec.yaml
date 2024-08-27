@@ -108,6 +108,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/HowtoUse/
+    - assets/images/WeightNumber/
     - assets/lebels.txt
     - assets/mango_color.tflite
     - assets/model.tflite
