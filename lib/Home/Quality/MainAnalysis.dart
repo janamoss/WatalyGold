@@ -21,6 +21,7 @@ import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({
@@ -756,12 +757,19 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                               children: [
                                 IconButton(
                                   onPressed: () {
+                                    // showDialog(
+                                    //   barrierDismissible: false,
+                                    //   context: context,
+                                    //   builder: (context) {
+                                    //     // return Dialog_HowtoUse();
+                                    //     return const Dialog_WeightNumber();
+                                    //   },
+                                    // );
                                     showDialog(
                                       barrierDismissible: false,
                                       context: context,
                                       builder: (context) {
                                         return Dialog_HowtoUse();
-                                        // return const Dialog_HowtoUse_NW();
                                       },
                                     );
                                   },
