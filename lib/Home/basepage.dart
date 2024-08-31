@@ -115,8 +115,8 @@ class _BasePageState extends State<BasePage> {
   Route _createRoute() {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          TakePictureScreen(camera: widget.camera),
-      // WeightNumber(camera: widget.camera),
+          // TakePictureScreen(camera: widget.camera),
+          WeightNumber(camera: widget.camera),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;

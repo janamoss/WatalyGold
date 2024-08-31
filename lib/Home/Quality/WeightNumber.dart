@@ -23,6 +23,9 @@ import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
+import 'package:watalygold/Widgets/icon_app.dart';
 
 class WeightNumber extends StatefulWidget {
   final List<CameraDescription> camera;
@@ -154,7 +157,32 @@ class _WeightNumberState extends State<WeightNumber> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: const AppbarMains(name: 'น้ำหนักมะม่วง'),
+      appBar: AppbarMains(
+        name: 'น้ำหนักมะม่วง',
+        actions: IconButton(
+          color: Colors.white,
+          icon: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Color(0xffF2F6F5)),
+            child: Icon(
+              Icons.scale,
+              color: GPrimaryColor,
+              size: 20,
+            ),
+          ),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return Dialog_WeightNumber();
+              },
+            );
+          },
+        ),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -282,7 +310,7 @@ class _WeightNumberState extends State<WeightNumber> {
                     const Padding(
                       padding: EdgeInsets.only(bottom: 10),
                       child: Text(
-                        "พยายามให้ลูกมะม่วงของคุณ\nอยู่ภายในระยะกรอบสีขาว",
+                        "พยายามให้ตัวเลขในตาชั่งของคุณ\nอยู่ภายในระยะกรอบสีขาว",
                         maxLines: 3,
                         textAlign: TextAlign.center,
                         style: TextStyle(color: GPrimaryColor),
@@ -344,13 +372,13 @@ class _WeightNumberState extends State<WeightNumber> {
                               children: [
                                 IconButton(
                                   onPressed: () {
-                                    // showDialog(
-                                    //   barrierDismissible: false,
-                                    //   context: context,
-                                    //   builder: (context) {
-                                    //     return Dialog_HowtoUse();
-                                    //   },
-                                    // );
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return Dialog_HowtoUse_NW();
+                                      },
+                                    );
                                   },
                                   icon: const Icon(
                                     Icons.help_outline_rounded,
