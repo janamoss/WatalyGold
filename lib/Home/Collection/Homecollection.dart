@@ -9,6 +9,7 @@ import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforCollection.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
 
 class HomeCollection extends StatefulWidget {
@@ -63,14 +64,14 @@ class _HomeCollectionState extends State<HomeCollection> {
       backgroundColor: Color(0xffF2F6F5),
       floatingActionButton: FloatingActionButton(
         splashColor: GPrimaryColor.withOpacity(0.2),
-        shape:
-            ContinuousRectangleBorder(borderRadius: BorderRadius.circular(80)),
+        shape: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(100),
+            borderSide: BorderSide.none),
         elevation: 3,
         backgroundColor: WhiteColor,
         tooltip: 'Increment',
         onPressed: () async {
-          _showToast();
-          await showGeneralDialog(
+          final bool? result = await showGeneralDialog(
             context: context,
             barrierDismissible: true,
             barrierLabel:
@@ -89,6 +90,11 @@ class _HomeCollectionState extends State<HomeCollection> {
               return DialogCollection();
             },
           );
+
+          if (result == true) {
+            dialogsuccess(context);
+          }
+
           setState(() {});
           _loadCollections();
         },
@@ -135,29 +141,38 @@ class _HomeCollectionState extends State<HomeCollection> {
                 height: 10,
               ),
               Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // จำนวนคอลัมน์
-                    childAspectRatio: 2.8 / 4, // อัตราส่วน width ต่อ height
-                  ),
-                  itemCount: _collection.length,
-                  itemBuilder: (context, index) {
-                    final collection = _collection[index];
-                    return SizedBox(
-                      child: CradforColletion(
-                          collections: collection,
-                          refreshCallback: refreshList),
-                    );
-                  },
-                ),
-                // ListView.builder(
-                //   itemCount: _collection.length,
-                //   itemBuilder: (context, index) {
-                //     final collection = _collection[index];
+                child: _collection.isNotEmpty
+                    ? GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // จำนวนคอลัมน์
+                          childAspectRatio:
+                              2.6 / 4, // อัตราส่วน width ต่อ height
+                        ),
+                        itemCount: _collection.length,
+                        itemBuilder: (context, index) {
+                          final collection = _collection[index];
 
-                //   },
-                // ),
-              )
+                          return SizedBox(
+                            child: CradforColletion(
+                                collections: collection,
+                                refreshCallback: refreshList),
+                          );
+                        },
+                      )
+                    : Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.folder_rounded,
+                                size: 50, color: GPrimaryColor),
+                            SizedBox(
+                              height: 25,
+                            ),
+                            Text("คุณยังไม่มีคอลเลคชั่น"),
+                          ],
+                        ),
+                      ),
+              ),
             ],
           ),
         ),

@@ -11,13 +11,17 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:watalygold/Home/Quality/Gallerypage.dart';
+// import 'package:watalygold/Home/Quality/Gallerypage.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
+import 'package:watalygold/Widgets/DialogHowtoUse.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({
@@ -38,6 +42,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   String? result;
 
   final ImagePicker picker = ImagePicker();
+  Timer? _lightMeterTimer;
+  bool _isProcessing = false;
 
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
@@ -49,6 +55,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   late String idResult;
   late List<String> ids;
 
+  late bool checkhowtouse;
+
   void _getDeviceId() async {
     //Recieving device id in the result
     String? result = await PlatformDeviceId.getDeviceId;
@@ -57,11 +65,27 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     });
   }
 
+  void _checkHowtoUse() async {
+    final prefs = await SharedPreferences.getInstance();
+    checkhowtouse = prefs.getBool("checkhowtouse") ?? false;
+    if (!checkhowtouse) {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return Dialog_HowtoUse();
+        },
+      );
+    }
+    // prefs.setBool("checkhowtouse", false);
+  }
+
   @override
   void initState() {
     super.initState();
     initializeCamera(selectedCamera); //Initially selectedCamera = 0
     _getDeviceId();
+    _checkHowtoUse();
     loadmodel().then((_) => {
           loadlabels().then((loadedLabels) {
             setState(() {
@@ -82,15 +106,55 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         ResolutionPreset.max, // new resolution
         enableAudio: false);
 
-    // Next, initialize the controller. This returns a Future.
+    // Initialize the controller
     _initializeControllerFuture = _controller.initialize();
+
+    // Wait for the initialization to complete
+    // try {
+    //   await _initializeControllerFuture;
+
+    //   // Now that initialization is complete, start the image stream
+    //   if (_controller != null) {
+    //     await _controller!.startImageStream(_processImage);
+    //     _startLightMeter();
+    //     setState(() {});
+    //   }
+    // } catch (e) {
+    //   debugPrint('Error initializing camera: $e');
+    //   // Handle the error appropriately
+    // }
+  }
+
+  void _startLightMeter() {
+    _lightMeterTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      _isProcessing = true;
+    });
+  }
+
+  void _processImage(CameraImage image) {
+    if (_isProcessing) {
+      double averageBrightness = _calculateAverageBrightness(image);
+      debugPrint('Average Brightness: $averageBrightness');
+      _isProcessing = false;
+    }
+  }
+
+  double _calculateAverageBrightness(CameraImage image) {
+    var bytes = image.planes[0].bytes;
+    int total = 0;
+    // เพื่อประสิทธิภาพ เราจะสุ่มตัวอย่างเพียงบางพิกเซล
+    for (int i = 0; i < bytes.length; i += 10) {
+      total += bytes[i];
+    }
+    return total / (bytes.length / 10);
   }
 
   @override
   void dispose() {
-    // Dispose of the controller when the widget is disposed.
+    // _lightMeterTimer?.cancel();
+    // _controller.stopImageStream();
+    _controller.dispose();
     super.dispose();
-    _interpreter.close();
   }
 
   File? image;
@@ -152,7 +216,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future Gallery() async {
     try {
-      final image = await ImagePicker().pickMultiImage(imageQuality: 60);
+      final image = await picker.pickMultiImage(imageQuality: 50, limit: 4);
       final List<String> ImagepathList = [];
       // print(image?.path);
       // if (image == null) return;
@@ -178,7 +242,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         builder: (context) => Center(
           child: AlertDialog(
             backgroundColor: GPrimaryColor.withOpacity(0.6),
-            contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
             title: Column(
               children: [
                 const Text(
@@ -241,6 +306,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       var firebasefunctions =
           FirebaseFunctions.instanceFor(region: 'asia-southeast1');
 
+      final preview_result = {
+        'downloadurl': downloadurl,
+        "imagename": concatenatedString,
+        "ip": _deviceId,
+        "result": results
+      };
+
       try {
         final result = await firebasefunctions.httpsCallable("addImages").call({
           'downloadurl': downloadurl,
@@ -264,6 +336,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         rethrow;
       }
       // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
+      debugPrint("$preview_result");
       if (allImagesUploaded) {
         stdout.writeln(imageuri);
         Navigator.of(context).pop();
@@ -332,22 +405,27 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                   child: FutureBuilder<void>(
                     future: _initializeControllerFuture,
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        // If the Future is complete, display the preview.
-                        return SizedBox(
-                            width: size.width,
-                            height: size.height * 0.5,
-                            child: FittedBox(
-                              fit: BoxFit.cover,
-                              child: SizedBox(
-                                  width:
-                                      100, // the actual width is not important here
-                                  child: CameraPreview(_controller)),
-                            ));
-                      } else {
-                        // Otherwise, display a loading indicator.
-                        return const Center(child: CircularProgressIndicator());
+                      if (_controller == null ||
+                          !_controller!.value.isInitialized) {
+                        return const Center(
+                            child:
+                                CircularProgressIndicator()); // หรือ loading indicator
                       }
+                      return SizedBox(
+                          width: size.width,
+                          height: size.height * 0.5,
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                                width:
+                                    100, // the actual width is not important here
+                                child: CameraPreview(_controller)),
+                          ));
+                      // if (snapshot.connectionState == ConnectionState.done) {
+                      //   // If the Future is complete, display the preview.
+                      // } else {
+                      //   // Otherwise, display a loading indicator.
+                      // }
                     },
                   ),
                 ),
@@ -623,62 +701,96 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
-                          onPressed: () {
-                            Gallery();
-                          },
-                          icon: const Icon(
-                            Icons.image_rounded,
-                            color: GPrimaryColor,
-                            size: 40,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () async {
-                            await _initializeControllerFuture;
-                            var xFile = await _controller.takePicture();
-                            setState(() {
-                              capturedImages.add(File(xFile.path));
-                            });
-                            if (capturedImages.length == 4) {
-                              uploadImageAndUpdateState();
-                            }
-                          },
-                          child: Container(
-                            height: 60,
-                            width: 60,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: GPrimaryColor,
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    Gallery();
+                                  },
+                                  icon: const Icon(
+                                    Icons.image_rounded,
+                                    color: GPrimaryColor,
+                                    size: 40,
+                                  ),
+                                ),
+                                const Text(
+                                  "รูปภาพ",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 12),
+                                )
+                              ],
                             ),
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () {
-                            if (capturedImages.isEmpty) return;
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => GalleryScreen(
-                                        images:
-                                            capturedImages.reversed.toList())));
-                          },
-                          child: Container(
-                            height: 60,
-                            width: 60,
-                            decoration: BoxDecoration(
-                              border:
-                                  Border.all(color: GPrimaryColor, width: 4),
-                              image: capturedImages.isNotEmpty
-                                  ? DecorationImage(
-                                      image: FileImage(capturedImages.last),
-                                      fit: BoxFit.cover)
-                                  : null,
+                        Expanded(
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () async {
+                                await _initializeControllerFuture;
+                                var xFile = await _controller.takePicture();
+                                setState(() {
+                                  capturedImages.add(File(xFile.path));
+                                });
+                                if (capturedImages.length == 4) {
+                                  uploadImageAndUpdateState();
+                                }
+                              },
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: GPrimaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    // showDialog(
+                                    //   barrierDismissible: false,
+                                    //   context: context,
+                                    //   builder: (context) {
+                                    //     // return Dialog_HowtoUse();
+                                    //     return const Dialog_WeightNumber();
+                                    //   },
+                                    // );
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return Dialog_HowtoUse();
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.help_outline_rounded,
+                                    color: GPrimaryColor,
+                                    size: 40,
+                                  ),
+                                ),
+                                const Text(
+                                  "คู่มือการถ่ายภาพ",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 12),
+                                )
+                              ],
                             ),
                           ),
                         ),
                       ],
-                    ),
+                    )
                   ],
                 ),
               ),

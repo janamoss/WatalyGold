@@ -52,30 +52,80 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
     await Future.delayed(Duration(seconds: 3));
   }
 
-  Future UpdateCollection() async {
+  Future<bool> UpdateCollection() async {
     try {
-      if (nameController.text.isNotEmpty) {
+      final isImageChanged =
+          capturedImages!.path.toString() != widget.edit_image;
+      final isNameChanged = nameController.text.toString() != widget.edit_name;
+
+      if (isNameChanged && isImageChanged) {
+        // กรณีที่เปลี่ยนทั้งรูปภาพและชื่อ
         final s = await Collection_DB().updateCollection(
           collection_id: widget.collection_id.toInt(),
           collection_name: nameController.text.toString(),
           collection_image: capturedImages!.path.toString(),
           user_id: user_id!.toInt(),
         );
-        stdout.writeln(s.toString());
         if (s == 0) {
           _showToastwarning();
           Navigator.of(context).pop();
+          return false;
         } else {
-          _showToastUpdate();
-          Navigator.of(context).pop();
+          // _showToastUpdate();
+          Navigator.of(context).pop(true);
+          return true;
         }
+      } else if (isImageChanged) {
+        // กรณีที่เปลี่ยนแค่รูปภาพ
+        final s = await Collection_DB().updatecolletiononlyImage(
+          collection_id: widget.collection_id.toInt(),
+          collection_name: widget.edit_name, // ใช้ชื่อเดิม
+          collection_image: capturedImages!.path.toString(),
+          user_id: user_id!.toInt(),
+        );
+        // _showToastUpdate();
+        Navigator.of(context).pop(true);
+        return true;
+      } else if (isNameChanged) {
+        // กรณีที่เปลี่ยนแค่ชื่อ
+        if (nameController.text.toString() == '') {
+          setState(() {
+            _isNotValidate = true;
+          });
+          // _showToastwarning();
+          return false;
+        } else {
+          final s = await Collection_DB().updateCollection(
+            collection_id: widget.collection_id.toInt(),
+            collection_name: nameController.text.toString(),
+            collection_image: widget.edit_image, // ใช้รูปภาพเดิม
+            user_id: user_id!.toInt(),
+          );
+          if (s == 0) {
+            _showToastwarning();
+            Navigator.of(context).pop();
+            return false;
+          } else {
+            // _showToastUpdate();
+            Navigator.of(context).pop(true);
+            return true;
+          }
+        }
+      } else if (!isNameChanged) {
+        _showToastwarning();
+        Navigator.of(context).pop();
+        return false;
       } else {
+        // กรณีที่ไม่มีการเปลี่ยนแปลง
         setState(() {
           _isNotValidate = true;
         });
+        // _showToastwarning();
+        return false;
       }
     } catch (e) {
       stdout.writeln(e);
+      return false;
     }
   }
 
@@ -97,6 +147,8 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
         File(widget.edit_image); // กำหนดค่าเริ่มต้นของ capturedImages ในนี้
     nameController.text = widget.edit_name;
   }
+
+  void reimage() {}
 
   Future Gallery() async {
     try {
@@ -133,27 +185,83 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
             SizedBox(
               height: 10,
             ),
-            InkWell(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  image: capturedImages!.path == "assets/images/Collection.png"
-                      ? DecorationImage(
-                          image: AssetImage(capturedImages!.path),
-                          fit: BoxFit.cover,
-                        )
-                      : DecorationImage(
-                          image: FileImage(capturedImages!),
-                          fit: BoxFit.cover,
-                        ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                InkWell(
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image:
+                          capturedImages!.path == "assets/images/Collection.png"
+                              ? DecorationImage(
+                                  image: AssetImage(capturedImages!.path),
+                                  fit: BoxFit.cover,
+                                )
+                              : DecorationImage(
+                                  image: FileImage(capturedImages!),
+                                  fit: BoxFit.cover,
+                                ),
+                    ),
+                  ),
+                  // onTap: () {
+                  //   Gallery();
+                  //   stdout.writeln("กดแล้ว");
+                  // },
                 ),
-              ),
-              onTap: () {
-                Gallery();
-                stdout.writeln("กดแล้ว");
-              },
+                Positioned(
+                  right: -8,
+                  bottom: -8,
+                  child: IconButton(
+                    onPressed: () {
+                      Gallery();
+                      stdout.writeln("กดแล้ว");
+                    },
+                    icon: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      padding: EdgeInsets.all(6.0),
+                      child: Icon(
+                        Icons.edit,
+                        color: yellowColor,
+                        size: 10.0,
+                      ),
+                    ),
+                  ),
+                ),
+                capturedImages!.path == "assets/images/Collection.png"
+                    ? SizedBox()
+                    : Positioned(
+                        top: -8,
+                        right: -8,
+                        child: IconButton(
+                          onPressed: () {
+                            // Gallery();
+                            setState(() {
+                              capturedImages =
+                                  File("assets/images/Collection.png");
+                            });
+                            stdout.writeln("กดแล้ว");
+                          },
+                          icon: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            padding: EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.close_rounded,
+                              color: Colors.red.shade400,
+                              size: 10.0,
+                            ),
+                          ),
+                        ),
+                      ),
+              ],
             ),
             SizedBox(
               height: 10,
@@ -199,35 +307,44 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                "ยกเลิก",
-                style: TextStyle(color: WhiteColor),
+            SizedBox(
+              width: 125,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  "ยกเลิก",
+                  style: TextStyle(color: WhiteColor, fontSize: 12),
+                ),
+                style: ButtonStyle(
+                    elevation: MaterialStateProperty.all(2),
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.red.shade400),
+                    surfaceTintColor:
+                        MaterialStateProperty.all(Colors.red.shade400)),
               ),
-              style: ButtonStyle(
-                  elevation: MaterialStateProperty.all(2),
-                  backgroundColor:
-                      MaterialStateProperty.all(Colors.red.shade400),
-                  surfaceTintColor:
-                      MaterialStateProperty.all(Colors.red.shade400)),
             ),
-            ElevatedButton(
-              onPressed: () {
-                UpdateCollection();
-              },
-              child: Text(
-                "แก้ไขคอลเลคชัน",
-                style: TextStyle(color: WhiteColor),
+            SizedBox(
+              width: 125,
+              height: 40,
+              child: ElevatedButton(
+                onPressed: () {
+                  UpdateCollection();
+                },
+                child: Text(
+                  "แก้ไขคอลเลคชัน",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: WhiteColor, fontSize: 12),
+                ),
+                style: ButtonStyle(
+                    elevation: MaterialStateProperty.all(2),
+                    backgroundColor:
+                        MaterialStateProperty.all(Colors.orange.shade300),
+                    surfaceTintColor:
+                        MaterialStateProperty.all(Colors.orange.shade300)),
               ),
-              style: ButtonStyle(
-                  elevation: MaterialStateProperty.all(2),
-                  backgroundColor:
-                      MaterialStateProperty.all(Colors.orange.shade300),
-                  surfaceTintColor:
-                      MaterialStateProperty.all(Colors.orange.shade300)),
             ),
           ],
         ),

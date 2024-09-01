@@ -1,14 +1,15 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:watalygold/Home/Onboarding/onboarding_widget.dart';
 import 'package:watalygold/Home/basepage.dart';
-import 'package:watalygold/Onboarding/onboarding_widget.dart';
+// import 'package:watalygold/Onboarding/onboarding_widget.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
 class Myonboardingscreen extends StatefulWidget {
-  // final List<CameraDescription> cameras;
+  final List<CameraDescription> camera;
   const Myonboardingscreen({
-    Key? key,
+    Key? key, required this.camera,
   }) : super(key: key);
 
   // const Myonboardingscreen({Key? key, required this.cameras}) : super(key: key);
@@ -169,8 +170,8 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const BasePage(
-                camera: [],
+              builder: (context) => BasePage(
+                camera: widget.camera,
               ),
             ),
           );

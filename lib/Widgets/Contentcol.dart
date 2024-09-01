@@ -24,7 +24,8 @@ class _ContentcolState extends State<Contentcol> {
       return Contents(
         ContentName: data!['ContentName'].toString(),
         ContentDetail: data['ContentDetail'].toString(),
-        ImageURL: data['image_url'].toString(),
+        ImageURL:
+            data['image_url']?.map((e) => e).cast<dynamic>().toList() ?? [],
       );
     } else {
       throw Exception('Document not found with ID: $documentId');
@@ -62,6 +63,7 @@ class ContentDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
+        debugPrint(contents.ContentDetail.toString());
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -70,10 +72,32 @@ class ContentDisplay extends StatelessWidget {
                       contents: contents,
                     )));
       },
-      title: Text(
-        contents.ContentName,
-        style: TextStyle(
-            color: GPrimaryColor, fontSize: 14, fontWeight: FontWeight.bold),
+      title: Padding(
+        padding: const EdgeInsets.only(left: 15),
+        child: Row(
+          children: [
+            Icon(
+              Icons.fiber_manual_record_rounded,
+              color: YPrimaryColor,
+              size: 15,
+            ),
+            SizedBox(
+              width: 15,
+            ),
+            Expanded(
+              // เพิ่ม Expanded widget
+              child: Text(
+                contents.ContentName,
+                softWrap: true, // คงไว้เหมือนเดิม
+                overflow: TextOverflow.visible, // เปลี่ยนจาก clip เป็น visible
+                style: TextStyle(
+                    color: GPrimaryColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       ),
       trailing: RotatedBox(
         quarterTurns: 1,

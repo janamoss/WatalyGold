@@ -255,7 +255,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
                         Padding(
                           padding: EdgeInsets.only(left: 10, top: 17),
                           child: Text(
-                            widget.results.length.toStringAsFixed(2) +
+                            widget.results.lenght.toStringAsFixed(2) +
                                 " เซนติเมตร",
                             style: TextStyle(
                                 color: Color(0xFF42BD41), fontSize: 18),
@@ -336,17 +336,16 @@ class _HistoryDetailState extends State<HistoryDetail> {
                               side: BorderSide(width: 2, color: GPrimaryColor),
                               backgroundColor: WhiteColor),
                           onPressed: () {
-                            
-                             Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ShareHistoryePage(
-                                          grade: widget.results.quality,
-                                          anotherNote: widget.results.another_note,
-                                          images: _imageList.value,
-                                        ),
-                                      ),
-                                    );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ShareHistoryePage(
+                                  grade: widget.results.quality,
+                                  anotherNote: widget.results.another_note,
+                                  images: _imageList.value,
+                                ),
+                              ),
+                            );
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,

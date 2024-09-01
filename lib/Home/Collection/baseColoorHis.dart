@@ -46,7 +46,7 @@ class _BaseHisorColState extends State<BaseHisorCol> {
               gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: <Color>[Colors.cyan, Colors.green],
+                colors: <Color>[GPrimaryColor, Color(0xff42BD41)],
               ),
             ),
           ),

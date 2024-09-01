@@ -1,19 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:watalygold/Database/Collection_DB.dart';
-import 'package:watalygold/Database/Image_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Home/History/HistoryDetail.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforHistory.dart';
-import 'package:watalygold/Widgets/DialogLoading.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
-import 'package:watalygold/models/Image.dart';
 import 'package:watalygold/models/Result_ana.dart';
 
 class HomeHistory extends StatefulWidget {
@@ -91,35 +88,49 @@ class _HomeHistoryState extends State<HomeHistory> {
                 height: 10,
               ),
               Expanded(
-                child: ListView.builder(
-                  itemCount: _results.length,
-                  itemBuilder: (context, index) {
-                    final result = _results[index];
-                    stdout.writeln("${result.collection_id} คือ id ของคอ");
-                    DateTime createdAt = DateTime.parse(result.created_at);
-                    final formattedDate =
-                        DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);
-
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HistoryDetail(
-                               results: result,
+                child: _results.isNotEmpty
+                    ? ListView.builder(
+                        itemCount: _results.length,
+                        itemBuilder: (context, index) {
+                          final result = _results[index];
+                          debugPrint("${result.collection_id} คือ id ของคอ");
+                          debugPrint("${result.lenght}");
+                          DateTime createdAt =
+                              DateTime.parse(result.created_at);
+                          final formattedDate =
+                              DateFormat('dd MMM yyyy', 'th_TH')
+                                  .format(createdAt);
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HistoryDetail(
+                                    results: result,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: CradforHistory(
+                              date: formattedDate,
+                              results: result,
+                              refreshCallback: () => refreshList(),
+                              collection: _collection,
                             ),
+                          );
+                        },
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.history_rounded,
+                              size: 50, color: GPrimaryColor),
+                          SizedBox(
+                            height: 25,
                           ),
-                        );
-                      },
-                      child: CradforHistory(
-                        date: formattedDate,
-                        results: result,
-                        refreshCallback: () => refreshList(),
-                        collection: _collection,
+                          Text("คุณยังไม่มีรายการการวิเคราะห์คุณภาพ"),
+                        ],
                       ),
-                    );
-                  },
-                ),
               )
             ],
           ),

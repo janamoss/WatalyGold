@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,7 +9,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Image_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
@@ -19,8 +17,8 @@ import 'package:watalygold/ShareResults.dart';
 import 'package:watalygold/Widgets/Appbar_main_exit.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
+import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
-import 'package:path_provider/path_provider.dart';
 
 class ResultPage extends StatefulWidget {
   const ResultPage(
@@ -535,7 +533,7 @@ class _ResultPageState extends State<ResultPage> {
                         fontWeight: FontWeight.bold),
                   ),
                   onTap: () async {
-                    await showGeneralDialog(
+                    final bool? result = await showGeneralDialog(
                       context: context,
                       barrierDismissible: true,
                       barrierLabel: MaterialLocalizations.of(context)
@@ -555,7 +553,13 @@ class _ResultPageState extends State<ResultPage> {
                         return DialogCollection();
                       },
                     );
-                    Navigator.pop(context);
+                    if (result == true) {
+                      dialogsuccess(context);
+                    } else {
+                      Navigator.pop(context);
+                    }
+                    // Navigator.pop(context);
+                    _loadCollections();
                     // widget.refreshCallback();
                   },
                 ),

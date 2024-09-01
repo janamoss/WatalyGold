@@ -5,7 +5,7 @@ class Result {
 
   final String another_note;
   final String quality;
-  final int length;
+  final int lenght;
   final int width;
   final int weight;
 
@@ -19,7 +19,7 @@ class Result {
     this.collection_id,
     required this.another_note,
     required this.quality,
-    required this.length,
+    required this.lenght,
     required this.width,
     required this.weight,
     required this.created_at,
@@ -32,7 +32,7 @@ class Result {
         user_id: map['user_id']?.toInt() ?? 0,
         collection_id: map['collection_id']?.toInt() ?? 0,
         another_note: map['another_note'] ?? '',
-        length: map['length']?.toInt() ?? 0,
+        lenght: map['lenght']?.toInt() ?? 0,
         weight: map['weight']?.toInt() ?? 0,
         width: map['width']?.toInt() ?? 0,
         quality: map['quality'] ?? '',

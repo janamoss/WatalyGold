@@ -13,6 +13,7 @@ class Mangoproperties extends StatefulWidget {
 
 class _MangopropertiesState extends State<Mangoproperties> {
   int _current = 0;
+   int _circleNumber = 1; 
   final CarouselController _controller = CarouselController();
 
   final List<String> imgListClassone = [
@@ -181,9 +182,9 @@ class _MangopropertiesState extends State<Mangoproperties> {
           items: imageSliders,
           carouselController: _controller,
           options: CarouselOptions(
-              autoPlay: false,
+              // autoPlay: true,
               enlargeCenterPage: true,
-              aspectRatio: 2,
+              aspectRatio: 1.9,
               onPageChanged: (index, reason) {
                 setState(() {
                   _current = index;

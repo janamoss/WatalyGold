@@ -176,7 +176,7 @@ class _SharePageState extends State<SharePage> {
 
       await Share.shareXFiles([XFile(file.path)], text: text);
     } catch (e) {
-      print('Error sharing screenshot: $e');
+      debugPrint('Error sharing screenshot: $e');
       // Handle error
     }
   }

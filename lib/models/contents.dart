@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Contents {
   final String ContentName;
   final String ContentDetail;
-  final String ImageURL;
+  final List<dynamic> ImageURL;
 
   Contents({
     required this.ContentName,

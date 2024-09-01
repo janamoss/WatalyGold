@@ -145,10 +145,10 @@ class _ShareHistoryePageState extends State<ShareHistoryePage> {
                         Container(
                           width: 230,
                           child: Text(
-                            "${widget.anotherNote}",style: TextStyle(
-                                color: gradeColor["${widget.grade}"],
-                               
-                              ),
+                            "${widget.anotherNote}",
+                            style: TextStyle(
+                              color: gradeColor["${widget.grade}"],
+                            ),
                           ),
                         ),
                       ],
@@ -173,7 +173,7 @@ class _ShareHistoryePageState extends State<ShareHistoryePage> {
 
       await Share.shareXFiles([XFile(file.path)], text: text);
     } catch (e) {
-      print('Error sharing screenshot: $e');
+      debugPrint('Error sharing screenshot: $e');
       // Handle error
     }
   }
