@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:watalygold/Textrecognition/result_screen.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 
@@ -42,11 +43,11 @@ class _WeightNumberState extends State<WeightNumber> {
   dynamic _probability = 0;
   List<String>? _labels;
   String? result;
-
+  final _screenshotController = ScreenshotController();
   final ImagePicker picker = ImagePicker();
   Timer? _lightMeterTimer;
   bool _isProcessing = false;
-
+  GlobalKey containerKey = GlobalKey();
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   late File model;
@@ -69,7 +70,7 @@ class _WeightNumberState extends State<WeightNumber> {
   // Future<void> loadModel() async {
   //   try {
   //     _interpreter =
-  //         await tfl.Interpreter.fromAsset('assets/sevensegments.tflite');
+  //         await tfl.Interpreter.fromAsset('assets/model_float16.tflite');
   //   } catch (e) {
   //     print("Error loading model: $e");
   //   }
@@ -165,7 +166,7 @@ class _WeightNumberState extends State<WeightNumber> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final Size screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: const AppbarMains(name: 'น้ำหนักมะม่วง'),
       body: Column(
@@ -186,7 +187,7 @@ class _WeightNumberState extends State<WeightNumber> {
                       }
                       return SizedBox(
                           width: size.width,
-                          height: size.height * 0.5,
+                          height: size.height * 1,
                           child: FittedBox(
                             fit: BoxFit.cover,
                             child: SizedBox(
@@ -266,55 +267,23 @@ class _WeightNumberState extends State<WeightNumber> {
                     ),
                   ),
                 ),
-                // Center(
-                //   // child: CropOverlay(),
-                //   child: Container(
-                //     width: 300, // ปรับขนาดตามต้องการ
-                //     height: 100, // ปรับขนาดตามต้องการ
-                //     decoration: BoxDecoration(
-                //       border: Border.all(color: Colors.white, width: 2),
-                //     ),
-                //   ),
-                // ),
-                // Positioned(
-                //   left: (screenSize.width - 300) / 2, // ตำแหน่ง x ของกรอบ
-                //   top: (screenSize.height - 100) / 2, // ตำแหน่ง y ของกรอบ
-                //   //  left: 0, // ตำแหน่ง x ของกรอบ
-                //   // bottom: 100, // ตำแหน่ง y ของกรอบ
-                //   child: Container(
-                //     width: 300, // ความกว้างของกรอบ
-                //     height: 100, // ความสูงของกรอบ
-                //     decoration: BoxDecoration(
-                //       border: Border.all(
-                //           color: Colors.white, width: 3), // เปลี่ยนเป็นสีขาว
-                //     ),
-                //   ),
-                // ),
                 Positioned(
-                  left: 50,
-                  top: 250,
+                  left: MediaQuery.of(context).size.width *
+                      0.1, // 10% from the left
+                  top: MediaQuery.of(context).size.height *
+                      0.3, // 30% from the top
                   child: Container(
-                    width: 300,
-                    height: 100,
+                    width: MediaQuery.of(context).size.width *
+                        0.8, // 80% of screen width
+                    height: MediaQuery.of(context).size.height *
+                        0.1, // 10% of screen height
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.white, width: 3),
                     ),
                   ),
                 ),
-                // Positioned(
-                //   bottom: 180,
-                //   left: 50,
-                //   child: Container(
-                //     width: 300,
-                //     height: 100,
-                //     decoration: BoxDecoration(
-                //         color: Colors.transparent,
-                //         border: Border.all(
-                //           color: WhiteColor,
-                //           width: 3,
-                //         )),
-                //   ),
-                // )
+
+               
               ],
             ),
           ),
@@ -439,7 +408,6 @@ class _WeightNumberState extends State<WeightNumber> {
       await _cropAndOCR(image);
     } catch (e) {
       print('Error capturing image: $e');
-      // แสดงข้อความแจ้งเตือนหากเกิดข้อผิดพลาด
     }
   }
 
@@ -452,75 +420,45 @@ class _WeightNumberState extends State<WeightNumber> {
       if (fullImage == null) {
         throw Exception('ไม่สามารถอ่านภาพได้');
       }
-      showDialog(
-        context: context,   
-        builder: (context) => Center(
-          child: AlertDialog(
-            backgroundColor: GPrimaryColor.withOpacity(0.6),
-            contentPadding:
-                const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            title: Column(
-              children: [
-                const Text(
-                  'กำลังวิเคราะห์น้ำหนัก . . .',
-                  style: TextStyle(color: WhiteColor),
-                  textAlign: TextAlign
-                      .center, // Add this line to center the title text
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                LoadingAnimationWidget.discreteCircle(
-                  color: WhiteColor,
-                  secondRingColor: GPrimaryColor,
-                  thirdRingColor: YPrimaryColor,
-                  size: 70,
-                ),
-              ],
-            ),
-            // actions: [],
-          ),
-        ),
-      );
+      // Proportional position and size of the frame
+      final double frameLeftPercent = 0.1; // 10% from the left
+      final double frameTopPercent = 0.5; // 30% from the top
+      final double frameWidthPercent = 0.8; // 80% of screen width
+      final double frameHeightPercent = 0.1; // 10% of screen height
 
-      // กำหนดตำแหน่งและขนาดของกรอบสีขาว
-      final double frameX = 50; // left ของ Positioned
-      final double frameY = 300; // top ของ Positioned
-      final double frameWidth = 300;
-      final double frameHeight = 100;
+      // Calculate the position and size of the cropping area
+      final int cropX = (frameLeftPercent * fullImage.width).round();
+      final int cropY = (frameTopPercent * fullImage.height).round();
+      final int cropWidth = (frameWidthPercent * fullImage.width).round();
+      final int cropHeight = (frameHeightPercent * fullImage.height).round();
+      print(fullImage.width);
+      print(fullImage.height);
+      print(cropX);
+      print(cropY);
+      print(cropWidth);
+      print(cropHeight);
 
-      // คำนวณ scale
-      final Size screenSize = MediaQuery.of(context).size;
-      final double scale = fullImage.width / screenSize.width;
-
-      // คำนวณตำแหน่งและขนาดสำหรับการครอป
-      final int cropX = (frameX * scale).round();
-      final int cropY = (frameY * scale).round();
-      final int cropWidth = (frameWidth * scale).round();
-      final int cropHeight = (frameHeight * scale).round();
-
-      // ตัดภาพเฉพาะส่วนในกรอบ
+      // Crop the image
       final img.Image croppedImage = img.copyCrop(
         fullImage,
         x: cropX,
         y: cropY,
-        width: cropWidth.round(),
-        height: cropHeight.round(),
+        width: cropWidth,
+        height: cropHeight,
       );
 
-      // บันทึกภาพที่ตัดแล้ว ไฟล์ชั่วคราว
+      // Save the cropped image to a temporary file
       final Directory tempDir = await getTemporaryDirectory();
       final String tempPath = tempDir.path;
       final File croppedFile = File('$tempPath/cropped_image.png')
         ..writeAsBytesSync(img.encodePng(croppedImage));
 
-      // ทำ OCR บนภาพที่ตัดแล้ว
+      // Perform OCR on the cropped image
       final inputImage = InputImage.fromFile(croppedFile);
       final recognizedText = await textRecognizer.processImage(inputImage);
       debugPrint("recognizedText.text ${recognizedText.text}");
       final String numbersOnly = _extractNumbers(recognizedText.text);
       debugPrint("numbersOnly $numbersOnly");
-
 
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -532,9 +470,10 @@ class _WeightNumberState extends State<WeightNumber> {
       );
     } catch (e) {
       print('Error processing image: $e');
-      // แสดงข้อความแจ้งเตือนหากเกิดข้อผิดพลาด
     }
   }
+
+
 
   final textRecognizer = TextRecognizer();
   Future<void> _pickImage() async {
@@ -556,14 +495,14 @@ class _WeightNumberState extends State<WeightNumber> {
 
       debugPrint("numbersOnly ${numbersOnly}");
       debugPrint(numbersOnly);
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (BuildContext context) => ResultScreen(
-            text: numbersOnly,
-            img: processedImage, // ส่งภาพไปยัง ResultScreen
-          ),
-        ),
-      );
+      // Navigator.of(context).push(
+      //   MaterialPageRoute(
+      //     builder: (BuildContext context) => ResultScreen(
+      //       text: numbersOnly,
+      //       img: processedImage, // ส่งภาพไปยัง ResultScreen
+      //     ),
+      //   ),
+      // );
     }
   }
 
@@ -586,4 +525,25 @@ class _WeightNumberState extends State<WeightNumber> {
 
     return processedFile;
   }
+
+  // Widget screenshot() {
+  //   return Screenshot(
+  //     controller: _screenshotController,
+  //     child: Stack(
+  //       children: [
+  //         Positioned(
+  //           left: 50,
+  //           top: 250,
+  //           child: Container(
+  //             width: 300,
+  //             height: 100,
+  //             decoration: BoxDecoration(
+  //               border: Border.all(color: Colors.white, width: 3),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

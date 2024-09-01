@@ -120,7 +120,7 @@ flutter:
     - assets/lebels.txt
     - assets/mango_color.tflite
     - assets/model.tflite
-    
+    - assets/model_float16.tflite
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
