@@ -32,212 +32,214 @@ class _Dialog_HowtoUseState extends State<Dialog_HowtoUse> {
       content: Container(
         height: MediaQuery.of(context).size.height * 0.6,
         width: MediaQuery.of(context).size.width,
-        child: Column(
-          children: [
-            Text(
-              "ภาพถ่ายมะม่วงทั้ง 4 ด้าน",
-              style: TextStyle(
-                fontSize: 15,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Text(
+                "ภาพถ่ายมะม่วงทั้ง 4 ด้าน",
+                style: TextStyle(
+                  fontSize: 15,
+                ),
               ),
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            Container(
-              padding: EdgeInsets.all(5),
-              // decoration: BoxDecoration(
-              //     border: Border.all(
-              //       color: GPrimaryColor.withOpacity(0.5),
-              //       width: 2,
-              //     ),
-              //     borderRadius: BorderRadius.all(Radius.circular(5))),
-              child: Column(
-                children: [
-                  CarouselSlider(
-                    carouselController: _controller,
-                    options: CarouselOptions(
-                      height: 165,
-                      enlargeCenterPage: true,
-                      aspectRatio: 16 / 9,
-                      autoPlayCurve: Curves.fastOutSlowIn,
-                      enableInfiniteScroll: true,
-                      viewportFraction: 1,
-                      onPageChanged: (index, reason) {
-                        setState(() {
-                          _current = index;
-                        });
-                      },
-                    ),
-                    items: mangoImages.map((item) {
-                      return Builder(
-                        builder: (BuildContext context) {
-                          return Container(
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  item['image']!,
-                                  fit: BoxFit.cover,
-                                  height: 100,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  item['label']!,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
+              SizedBox(
+                height: 5,
+              ),
+              Container(
+                padding: EdgeInsets.all(5),
+                // decoration: BoxDecoration(
+                //     border: Border.all(
+                //       color: GPrimaryColor.withOpacity(0.5),
+                //       width: 2,
+                //     ),
+                //     borderRadius: BorderRadius.all(Radius.circular(5))),
+                child: Column(
+                  children: [
+                    CarouselSlider(
+                      carouselController: _controller,
+                      options: CarouselOptions(
+                        height: 165,
+                        enlargeCenterPage: true,
+                        aspectRatio: 16 / 9,
+                        autoPlayCurve: Curves.fastOutSlowIn,
+                        enableInfiniteScroll: true,
+                        viewportFraction: 1,
+                        onPageChanged: (index, reason) {
+                          setState(() {
+                            _current = index;
+                          });
                         },
-                      );
-                    }).toList(),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: mangoImages.asMap().entries.map((entry) {
-                      return GestureDetector(
-                        onTap: () => _controller.animateToPage(entry.key),
-                        child: Container(
-                          width: 8.0,
-                          height: 8.0,
-                          margin: EdgeInsets.symmetric(
-                              vertical: 4.0, horizontal: 4.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: GPrimaryColor.withOpacity(
-                                _current == entry.key ? 0.9 : 0.4),
+                      ),
+                      items: mangoImages.map((item) {
+                        return Builder(
+                          builder: (BuildContext context) {
+                            return Container(
+                              width: MediaQuery.of(context).size.width,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    item['image']!,
+                                    fit: BoxFit.cover,
+                                    height: 100,
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    item['label']!,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: mangoImages.asMap().entries.map((entry) {
+                        return GestureDetector(
+                          onTap: () => _controller.animateToPage(entry.key),
+                          child: Container(
+                            width: 8.0,
+                            height: 8.0,
+                            margin: EdgeInsets.symmetric(
+                                vertical: 4.0, horizontal: 4.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: GPrimaryColor.withOpacity(
+                                  _current == entry.key ? 0.9 : 0.4),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                "คำแนะนำ",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 150,
+                    child: Column(
+                      children: [
+                        Text(
+                          textAlign: TextAlign.center,
+                          "1.พื้นหลังเป็นสีขาวล้วน",
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          child: Image.asset(
+                            "assets/images/HowtoUse/WhiteBackground.jpg",
+                            fit: BoxFit.cover,
                           ),
                         ),
-                      );
-                    }).toList(),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 150,
+                    child: Column(
+                      children: [
+                        Text(
+                          textAlign: TextAlign.center,
+                          "2.มีเหรียญ 5 บาทในภาพ",
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          child: Image.asset(
+                            "assets/images/HowtoUse/Coin5.jpg",
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Text(
-              "คำแนะนำ",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 150,
-                  child: Column(
-                    children: [
-                      Text(
-                        textAlign: TextAlign.center,
-                        "1.พื้นหลังเป็นสีขาวล้วน",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        child: Image.asset(
-                          "assets/images/HowtoUse/WhiteBackground.jpg",
-                          fit: BoxFit.cover,
+              SizedBox(
+                height: 15,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 150,
+                    child: Column(
+                      children: [
+                        Text(
+                          textAlign: TextAlign.center,
+                          "3.ห้ามถ่ายใกล้หรือไกลเกิน",
+                          style: TextStyle(fontSize: 13),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 150,
-                  child: Column(
-                    children: [
-                      Text(
-                        textAlign: TextAlign.center,
-                        "2.มีเหรียญ 5 บาทในภาพ",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        child: Image.asset(
-                          "assets/images/HowtoUse/Coin5.jpg",
-                          fit: BoxFit.cover,
+                        SizedBox(
+                          height: 10,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 150,
-                  child: Column(
-                    children: [
-                      Text(
-                        textAlign: TextAlign.center,
-                        "3.ห้ามถ่ายใกล้หรือไกลเกิน",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        child: Image.asset(
-                          "assets/images/HowtoUse/CloseFar.jpg",
-                          fit: BoxFit.cover,
+                        Container(
+                          width: 100,
+                          height: 100,
+                          child: Image.asset(
+                            "assets/images/HowtoUse/CloseFar.jpg",
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Container(
-                  width: 150,
-                  child: Column(
-                    children: [
-                      Text(
-                        textAlign: TextAlign.center,
-                        "4.พื้นที่มีแสงเพียงพอ",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        child: Image.asset(
-                          "assets/images/HowtoUse/LightDark.jpg",
-                          fit: BoxFit.cover,
+                  Container(
+                    width: 150,
+                    child: Column(
+                      children: [
+                        Text(
+                          textAlign: TextAlign.center,
+                          "4.พื้นที่มีแสงเพียงพอ",
+                          style: TextStyle(fontSize: 13),
                         ),
-                      ),
-                    ],
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Container(
+                          width: 100,
+                          height: 100,
+                          child: Image.asset(
+                            "assets/images/HowtoUse/LightDark.jpg",
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       actions: [

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:watalygold/Home/Quality/Result.dart';
+import 'package:screenshot/screenshot.dart';
 import 'package:watalygold/Home/Quality/result_screen.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:image/image.dart' as img;
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:platform_device_id/platform_device_id.dart';
@@ -19,24 +21,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:watalygold/Widgets/Appbar_main_exit.dart';
+import 'package:watalygold/Home/Quality/Gallerypage.dart';
+import 'package:watalygold/Home/Quality/Result.dart';
+import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
-import 'package:watalygold/Widgets/WeightNumber/DialogChoose.dart';
-import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
-import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
 class WeightNumber extends StatefulWidget {
-  final Map<String, String?> httpscall;
-  final List<File> capturedImage;
-  final List<String> ListImagePath;
   final List<CameraDescription> camera;
   const WeightNumber({
     super.key,
     required this.camera,
-    required this.capturedImage,
-    required this.ListImagePath,
-    required this.httpscall,
   });
 
   @override
@@ -44,12 +39,15 @@ class WeightNumber extends StatefulWidget {
 }
 
 class _WeightNumberState extends State<WeightNumber> {
+  late tfl.Interpreter _interpreter;
+  dynamic _probability = 0;
+  List<String>? _labels;
   String? result;
-
+  final _screenshotController = ScreenshotController();
   final ImagePicker picker = ImagePicker();
   Timer? _lightMeterTimer;
   bool _isProcessing = false;
-
+  GlobalKey containerKey = GlobalKey();
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   late File model;
@@ -60,69 +58,25 @@ class _WeightNumberState extends State<WeightNumber> {
   late String idResult;
   late List<String> ids;
 
-  late String numbersOnly;
   late bool checkhowtouse;
 
-  void _checkHowtoUse() async {
-    final prefs = await SharedPreferences.getInstance();
-    checkhowtouse = prefs.getBool("checkhowtouse_nw") ?? false;
-    if (!checkhowtouse) {
-      bool results = await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) {
-          return Dialog_HowtoUse_NW();
-        },
-      );
-      if (results) {
-        _alertChoose();
-      }
-    } else {
-      _alertChoose();
-    }
-    // prefs.setBool("checkhowtouse", false);
-  }
-
-  void _alertChoose() async {
-    bool? result = await showDialog<bool>(
-      barrierDismissible: false,
-      context: context,
-      builder: (context) {
-        return Dialog_Choose();
-      },
-    );
-    if (result != null) {
-      if (result) {
-        String results = await showDialog(
-          context: context,
-          builder: (context) {
-            return Dialog_WeightNumber();
-          },
-        );
-        if (results.isNotEmpty) {
-          if (results == "") {
-            debugPrint("ไม่มีน้ำหนักที่ได้มา");
-          } else {
-            numbersOnly = results;
-            useFunctionandresult();
-          }
-        }
-      } else {
-        // Handle the case where the dialog returned false
-        print("Dialog false");
-      }
-    } else {
-      print("ไม่ได้กด Dialog หรือ error");
-    }
-  }
+  
 
   @override
   void initState() {
     super.initState();
     initializeCamera(selectedCamera); //Initially selectedCamera = 0
-    _checkHowtoUse();
     // loadModel();
   }
+
+  // Future<void> loadModel() async {
+  //   try {
+  //     _interpreter =
+  //         await tfl.Interpreter.fromAsset('assets/model_float16.tflite');
+  //   } catch (e) {
+  //     print("Error loading model: $e");
+  //   }
+  // }
 
   int selectedCamera = 0;
   List<File> capturedImages = [];
@@ -138,19 +92,20 @@ class _WeightNumberState extends State<WeightNumber> {
     // Initialize the controller
     _initializeControllerFuture = _controller.initialize();
 
-    // // Wait for the initialization to complete
-    // try {
-    //   await _initializeControllerFuture;
+    // Wait for the initialization to complete
+    try {
+      await _initializeControllerFuture;
 
-    //   // Now that initialization is complete, start the image stream
-    //   if (_controller != null) {
-    //     await _controller!.startImageStream(_processImage);
-    //     setState(() {});
-    //   }
-    // } catch (e) {
-    //   debugPrint('Error initializing camera: $e');
-    //   // Handle the error appropriately
-    // }
+      // Now that initialization is complete, start the image stream
+      if (_controller != null) {
+        await _controller!.startImageStream(_processImage);
+        _startLightMeter();
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error initializing camera: $e');
+      // Handle the error appropriately
+    }
   }
 
   void _startLightMeter() {
@@ -208,208 +163,14 @@ class _WeightNumberState extends State<WeightNumber> {
     }
   }
 
-  Future useFunctionandresult() async {
-    widget.httpscall["weight"] = numbersOnly;
-    var firebasefunctions =
-        FirebaseFunctions.instanceFor(region: 'asia-southeast1');
-
-    try {
-      final result = await firebasefunctions
-          .httpsCallable("addImages")
-          .call(widget.httpscall);
-      stdout.writeln(result.data);
-      final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
-
-      idResult = data['ID_Result'];
-      ids = List<String>.from(data['IDs']);
-
-      // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-      stdout.writeln('ID_Result: $idResult');
-      stdout.writeln('IDs: $ids');
-    } on FirebaseFunctionsException catch (error) {
-      debugPrint(
-          'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-      rethrow;
-    }
-
-    Navigator.of(context).pop();
-    // ไปยังหน้าหลัก
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ResultPage(
-          ID_Result: idResult,
-          ID_Image: ids,
-          capturedImage: capturedImages.reversed.toList(),
-          ListImagePath: widget.ListImagePath,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _captureAndProcess() async {
-    try {
-      final XFile image = await _controller.takePicture();
-      await _cropAndOCR(image);
-    } catch (e) {
-      print('Error capturing image: $e');
-    }
-  }
-
-  Future<void> _cropAndOCR(XFile image) async {
-    try {
-      final File imageFile = File(image.path);
-      final img.Image? fullImage =
-          img.decodeImage(await imageFile.readAsBytes());
-
-      if (fullImage == null) {
-        throw Exception('ไม่สามารถอ่านภาพได้');
-      }
-      // Proportional position and size of the frame
-      final double frameLeftPercent = 0.1; // 10% from the left
-      final double frameTopPercent = 0.5; // 30% from the top
-      final double frameWidthPercent = 0.8; // 80% of screen width
-      final double frameHeightPercent = 0.1; // 10% of screen height
-
-      // Calculate the position and size of the cropping area
-      final int cropX = (frameLeftPercent * fullImage.width).round();
-      final int cropY = (frameTopPercent * fullImage.height).round();
-      final int cropWidth = (frameWidthPercent * fullImage.width).round();
-      final int cropHeight = (frameHeightPercent * fullImage.height).round();
-      print(fullImage.width);
-      print(fullImage.height);
-      print(cropX);
-      print(cropY);
-      print(cropWidth);
-      print(cropHeight);
-
-      // Crop the image
-      final img.Image croppedImage = img.copyCrop(
-        fullImage,
-        x: cropX,
-        y: cropY,
-        width: cropWidth,
-        height: cropHeight,
-      );
-
-      // Save the cropped image to a temporary file
-      final Directory tempDir = await getTemporaryDirectory();
-      final String tempPath = tempDir.path;
-      final File croppedFile = File('$tempPath/cropped_image.png')
-        ..writeAsBytesSync(img.encodePng(croppedImage));
-
-      // Perform OCR on the cropped image
-      final inputImage = InputImage.fromFile(croppedFile);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      debugPrint("recognizedText.text ${recognizedText.text}");
-      final String numbersOnly = _extractNumbers(recognizedText.text);
-      debugPrint("numbersOnly $numbersOnly");
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (BuildContext context) => ResultScreen(
-            text: numbersOnly,
-            imgs: croppedImage,
-          ),
-        ),
-      );
-    } catch (e) {
-      print('Error processing image: $e');
-    }
-  }
-
-  final textRecognizer = TextRecognizer();
-  Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      final file = File(image.path);
-
-      // แปลงภาพและปรับขนาดก่อน OCR
-      final processedImage = await _preprocessImage(file);
-
-      // OCR
-      final inputImage = InputImage.fromFile(processedImage);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      debugPrint("recognizedText.text ${recognizedText}");
-
-      final String numbersOnly = _extractNumbers(recognizedText.text);
-
-      debugPrint("numbersOnly ${numbersOnly}");
-      debugPrint(numbersOnly);
-      // Navigator.of(context).push(
-      //   MaterialPageRoute(
-      //     builder: (BuildContext context) => ResultScreen(
-      //       text: numbersOnly,
-      //       img: processedImage, // ส่งภาพไปยัง ResultScreen
-      //     ),
-      //   ),
-      // );
-    }
-  }
-
-  String _extractNumbers(String text) {
-    return text.replaceAll(RegExp(r'[^0-9.]'), '').trim();
-  }
-
-  Future<File> _preprocessImage(File imageFile) async {
-    final originalImage = img.decodeImage(imageFile.readAsBytesSync());
-    if (originalImage == null) return imageFile;
-    // แปลงภาพเป็น grayscale
-    // final grayscaleImage = img.grayscale(originalImage);
-    // ปรับแสงและความคม (เพิ่ม contrast, brightness)
-    // final contrastImage = img.adjustColor(originalImage, contrast: 1, brightness:);
-    // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
-    // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
-    // บันทึกภาพใหม่ลงในไฟล์ชั่วคราว
-    final processedFile = File(imageFile.path)
-      ..writeAsBytesSync(img.encodeJpg(originalImage));
-
-    return processedFile;
-  }
-
   late int flashstatus = 0;
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppbarMainExit(
-        name: 'น้ำหนักมะม่วง',
-        actions: IconButton(
-          color: Colors.white,
-          icon: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Color(0xffF2F6F5)),
-            child: Icon(
-              Icons.scale,
-              color: GPrimaryColor,
-              size: 20,
-            ),
-          ),
-          onPressed: () async {
-            String results = await showDialog(
-              context: context,
-              builder: (context) {
-                return Dialog_WeightNumber();
-              },
-            );
-            if (results.isNotEmpty) {
-              if (results == "") {
-                debugPrint("ไม่มีน้ำหนักที่ได้มา");
-              } else {
-                numbersOnly = results;
-                useFunctionandresult();
-              }
-            }
-          },
-        ),
-      ),
+      appBar: const AppbarMains(name: 'น้ำหนักมะม่วง'),
       body: Column(
         children: [
           Expanded(
@@ -427,12 +188,12 @@ class _WeightNumberState extends State<WeightNumber> {
                                 CircularProgressIndicator()); // หรือ loading indicator
                       }
                       return SizedBox(
-                          width: screenSize.width,
-                          height: screenSize.height * 0.8,
+                          width: size.width,
+                          height: size.height * 0.8,
                           child: FittedBox(
                             fit: BoxFit.cover,
                             child: SizedBox(
-                                width: screenSize
+                                width: size
                                     .width, // the actual width is not important here
                                 child: CameraPreview(_controller)),
                           ));
@@ -594,7 +355,7 @@ class _WeightNumberState extends State<WeightNumber> {
                                     barrierDismissible: false,
                                     context: context,
                                     builder: (context) {
-                                      return Dialog_HowtoUse_NW();
+                                      return Dialog_HowtoUse();
                                     },
                                   );
                                 },
@@ -624,4 +385,147 @@ class _WeightNumberState extends State<WeightNumber> {
       ),
     );
   }
+
+  Future<void> _captureAndProcess() async {
+    try {
+      final XFile image = await _controller.takePicture();
+      await _cropAndOCR(image);
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
+  }
+
+  Future<void> _cropAndOCR(XFile image) async {
+    try {
+      final File imageFile = File(image.path);
+      final img.Image? fullImage =
+          img.decodeImage(await imageFile.readAsBytes());
+
+      if (fullImage == null) {
+        throw Exception('ไม่สามารถอ่านภาพได้');
+      }
+      // Proportional position and size of the frame
+      final double frameLeftPercent = 0.1; // 10% from the left
+      final double frameTopPercent = 0.5; // 30% from the top
+      final double frameWidthPercent = 0.8; // 80% of screen width
+      final double frameHeightPercent = 0.1; // 10% of screen height
+
+      // Calculate the position and size of the cropping area
+      final int cropX = (frameLeftPercent * fullImage.width).round();
+      final int cropY = (frameTopPercent * fullImage.height).round();
+      final int cropWidth = (frameWidthPercent * fullImage.width).round();
+      final int cropHeight = (frameHeightPercent * fullImage.height).round();
+      print(fullImage.width);
+      print(fullImage.height);
+      print(cropX);
+      print(cropY);
+      print(cropWidth);
+      print(cropHeight);
+
+      // Crop the image
+      final img.Image croppedImage = img.copyCrop(
+        fullImage,
+        x: cropX,
+        y: cropY,
+        width: cropWidth,
+        height: cropHeight,
+      );
+
+      // Save the cropped image to a temporary file
+      final Directory tempDir = await getTemporaryDirectory();
+      final String tempPath = tempDir.path;
+      final File croppedFile = File('$tempPath/cropped_image.png')
+        ..writeAsBytesSync(img.encodePng(croppedImage));
+
+      // Perform OCR on the cropped image
+      final inputImage = InputImage.fromFile(croppedFile);
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      debugPrint("recognizedText.text ${recognizedText.text}");
+      final String numbersOnly = _extractNumbers(recognizedText.text);
+      debugPrint("numbersOnly $numbersOnly");
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) => ResultScreen(
+            text: numbersOnly,
+            imgs: croppedImage,
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error processing image: $e');
+    }
+  }
+
+  final textRecognizer = TextRecognizer();
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      final file = File(image.path);
+
+      // แปลงภาพและปรับขนาดก่อน OCR
+      final processedImage = await _preprocessImage(file);
+
+      // OCR
+      final inputImage = InputImage.fromFile(processedImage);
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      debugPrint("recognizedText.text ${recognizedText}");
+
+      final String numbersOnly = _extractNumbers(recognizedText.text);
+
+      debugPrint("numbersOnly ${numbersOnly}");
+      debugPrint(numbersOnly);
+      // Navigator.of(context).push(
+      //   MaterialPageRoute(
+      //     builder: (BuildContext context) => ResultScreen(
+      //       text: numbersOnly,
+      //       img: processedImage, // ส่งภาพไปยัง ResultScreen
+      //     ),
+      //   ),
+      // );
+    }
+  }
+
+  String _extractNumbers(String text) {
+    return text.replaceAll(RegExp(r'[^0-9.]'), '').trim();
+  }
+
+  Future<File> _preprocessImage(File imageFile) async {
+    final originalImage = img.decodeImage(imageFile.readAsBytesSync());
+    if (originalImage == null) return imageFile;
+    // แปลงภาพเป็น grayscale
+    // final grayscaleImage = img.grayscale(originalImage);
+    // ปรับแสงและความคม (เพิ่ม contrast, brightness)
+    // final contrastImage = img.adjustColor(originalImage, contrast: 1, brightness:);
+    // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
+    // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
+    // บันทึกภาพใหม่ลงในไฟล์ชั่วคราว
+    final processedFile = File(imageFile.path)
+      ..writeAsBytesSync(img.encodeJpg(originalImage));
+
+    return processedFile;
+  }
+
+  // Widget screenshot() {
+  //   return Screenshot(
+  //     controller: _screenshotController,
+  //     child: Stack(
+  //       children: [
+  //         Positioned(
+  //           left: 50,
+  //           top: 250,
+  //           child: Container(
+  //             width: 300,
+  //             height: 100,
+  //             decoration: BoxDecoration(
+  //               border: Border.all(color: Colors.white, width: 3),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

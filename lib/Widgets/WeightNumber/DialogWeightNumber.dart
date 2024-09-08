@@ -9,6 +9,8 @@ class Dialog_WeightNumber extends StatefulWidget {
 }
 
 class _Dialog_WeightNumberState extends State<Dialog_WeightNumber> {
+  TextEditingController numberController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -48,6 +50,7 @@ class _Dialog_WeightNumberState extends State<Dialog_WeightNumber> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
+              controller: numberController,
               style: TextStyle(fontSize: 18, color: Colors.black),
               decoration: InputDecoration(
                   contentPadding: EdgeInsets.only(left: 5, bottom: 0),
@@ -103,7 +106,9 @@ class _Dialog_WeightNumberState extends State<Dialog_WeightNumber> {
               width: 100,
               height: 50,
               child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).pop(numberController.toString());
+                  },
                   child: Text(
                     "ยืนยัน",
                     style: TextStyle(

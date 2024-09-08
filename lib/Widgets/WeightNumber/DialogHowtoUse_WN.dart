@@ -126,8 +126,8 @@ class _Dialog_HowtoUse_NWState extends State<Dialog_HowtoUse_NW> {
                     elevation: MaterialStatePropertyAll(1)),
                 onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
-                  prefs.setBool("checkhowtouse", true);
-                  Navigator.of(context).pop();
+                  prefs.setBool("checkhowtouse_nw", true);
+                  Navigator.of(context).pop(true);
                 },
                 child: Text('เข้าใจแล้ว',
                     style: TextStyle(

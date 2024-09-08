@@ -4,6 +4,7 @@ import 'package:watalygold/ExportPrice/ExportPrice.dart';
 import 'package:watalygold/Home/Collection/Homecollection.dart';
 import 'package:watalygold/Home/History/Homehistory.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogChoose.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogError.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 import 'package:watalygold/models/category.dart';
 import 'package:watalygold/Home/Knowledge/MainKnowledge.dart';
@@ -50,10 +51,20 @@ class _HomeboxState extends State<Homebox> {
               return GestureDetector(
                 onTap: () {
                   if (index == 0) {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const KnowledgeMain()));
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return Dialog_Error(
+                          name: 'โอ้ ดูเหมือนจะเกิดข้อผิดพลาด...',
+                          content:
+                              'รูปภาพของคุณไม่สามารถแสกนหาค่าน้ำหนักออกมาได้',
+                        );
+                      },
+                    );
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => const KnowledgeMain()));
                   }
                   if (index == 1) {
                     widget.changeWidgetOption(1);
@@ -71,6 +82,20 @@ class _HomeboxState extends State<Homebox> {
               );
             })
       ],
+    );
+  }
+
+  void _animatedDialog(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Container();
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return Dialog_Error(
+            name: 'โอ้ ดูเหมือนจะเกิดข้อผิดพลาด...',
+            content: 'รูปภาพของคุณไม่สามารถแสกนหาค่าน้ำหนักออกมาได้');
+      },
     );
   }
 }

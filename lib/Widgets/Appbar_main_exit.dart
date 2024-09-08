@@ -4,8 +4,8 @@ import 'package:watalygold/Widgets/icon_app.dart';
 
 class AppbarMainExit extends StatefulWidget implements PreferredSizeWidget {
   final String name;
-
-  const AppbarMainExit({Key? key, required this.name}) : super(key: key);
+  final Widget? actions;
+  const AppbarMainExit({Key? key, required this.name, this.actions}) : super(key: key);
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -36,6 +36,9 @@ class _AppbarMainExitState extends State<AppbarMainExit> {
       ),
       title: Text(widget.name, style: const TextStyle(color: Colors.white)),
       centerTitle: true,
+      actions: widget.actions != null ? [
+        widget.actions!
+      ] : null
     );
   }
 }

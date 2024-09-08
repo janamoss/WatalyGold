@@ -17,6 +17,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 // import 'package:watalygold/Home/Quality/Gallerypage.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
+import 'package:watalygold/Home/Quality/WeightNumber.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
@@ -52,8 +53,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   int selectedIndex = 0;
   FirebaseModelDownloader downloader = FirebaseModelDownloader.instance;
   final List _predictions = [];
-  late String idResult;
-  late List<String> ids;
 
   late bool checkhowtouse;
 
@@ -282,8 +281,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         'Bottom_$uniquename',
       ];
 
-      bool allImagesUploaded = true;
-
       List<String> imageuri = [];
       List<String> downloaduri = [];
       List<String> listImagepath = [];
@@ -297,14 +294,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         downloaduri.add(result['downloadURL']!);
         imageuri.add(result['imageName']!);
       }
+      bool allImagesUploaded = true;
+
       String downloadurl = downloaduri.join(',');
       String concatenatedString = imageuri.join(',');
       // File first = capturedImages[0];
       // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
       String results = result!;
-
-      var firebasefunctions =
-          FirebaseFunctions.instanceFor(region: 'asia-southeast1');
 
       final preview_result = {
         'downloadurl': downloadurl,
@@ -312,47 +308,61 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         "ip": _deviceId,
         "result": results
       };
-
-      try {
-        final result = await firebasefunctions.httpsCallable("addImages").call({
-          'downloadurl': downloadurl,
-          "imagename": concatenatedString,
-          "ip": _deviceId,
-          "result": results
-        });
-        stdout.writeln(result.data);
-        final Map<String, dynamic> data =
-            Map<String, dynamic>.from(result.data);
-
-        idResult = data['ID_Result'];
-        ids = List<String>.from(data['IDs']);
-
-        // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-        stdout.writeln('ID_Result: $idResult');
-        stdout.writeln('IDs: $ids');
-      } on FirebaseFunctionsException catch (error) {
-        debugPrint(
-            'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-        rethrow;
-      }
-      // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
-      debugPrint("$preview_result");
+      debugPrint("เสร็จสิ้น");
       if (allImagesUploaded) {
-        stdout.writeln(imageuri);
         Navigator.of(context).pop();
-        // ไปยังหน้าหลัก
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ResultPage(
-              ID_Result: idResult,
-              ID_Image: ids,
-              capturedImage: capturedImages.reversed.toList(),
-              ListImagePath: listImagepath,
-            ),
-          ),
+              builder: (context) => WeightNumber(
+                    camera: widget.camera,
+                    capturedImage: capturedImages.reversed.toList(),
+                    ListImagePath: listImagepath,
+                    httpscall: preview_result,
+                  )),
         );
       }
+
+      // try {
+      //   final result = await firebasefunctions.httpsCallable("addImages").call({
+      //     'downloadurl': downloadurl,
+      //     "imagename": concatenatedString,
+      //     "ip": _deviceId,
+      //     "result": results
+      //   });
+      //   stdout.writeln(result.data);
+      //   final Map<String, dynamic> data =
+      //       Map<String, dynamic>.from(result.data);
+
+      //   idResult = data['ID_Result'];
+      //   ids = List<String>.from(data['IDs']);
+
+      //   // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
+      //   stdout.writeln('ID_Result: $idResult');
+      //   stdout.writeln('IDs: $ids');
+      // } on FirebaseFunctionsException catch (error) {
+      //   debugPrint(
+      //       'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
+      //   rethrow;
+      // }
+      // // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
+      // debugPrint("$preview_result");
+      // if (allImagesUploaded) {
+      //   stdout.writeln(imageuri);
+      //   Navigator.of(context).pop();
+      //   // ไปยังหน้าหลัก
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => ResultPage(
+      //         ID_Result: idResult,
+      //         ID_Image: ids,
+      //         capturedImage: capturedImages.reversed.toList(),
+      //         ListImagePath: listImagepath,
+      //       ),
+      //     ),
+      //   );
+      // }
     }
     // loadModel();
     // เรียก setState เพื่ออัพเดท UI หลังจากได้ imageUrl แล้ว

@@ -74,6 +74,7 @@ dependencies:
   screenshot: ^2.3.0
   dots_indicator: ^3.0.0
   shared_preferences: ^2.2.3
+  google_mlkit_text_recognition: ^0.13.0
     
 dev_dependencies:
   flutter_test:

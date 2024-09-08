@@ -80,7 +80,7 @@ class _Dialog_ChooseState extends State<Dialog_Choose> {
                   width: MediaQuery.of(context).size.width * 0.5,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(true);
                     },
                     child: Text(
                       "กรอกค่าน้ำหนักเอง",
