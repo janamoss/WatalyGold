@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
-class Dialog_HowtoUse_NW extends StatelessWidget {
-  const Dialog_HowtoUse_NW({super.key});
+class Dialog_Howtouse_SelectNW extends StatelessWidget {
+  const Dialog_Howtouse_SelectNW({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +19,11 @@ class Dialog_HowtoUse_NW extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "ภาพถ่ายน้ำหนักมะม่วงจากตาชั่งดิจิทัล",
+              "เลือกภาพถ่ายจากตาชั่งดิจิทัล ที่เห็นตัวเลขและหน่วยของตาชั่งดิจิทัลอย่างชัดเจน",
               style: TextStyle(
                 fontSize: 15,
               ),
+              textAlign: TextAlign.center,
             ),
             SizedBox(
               height: 5,
@@ -38,10 +39,10 @@ class Dialog_HowtoUse_NW extends StatelessWidget {
               child: Column(
                 children: [
                   Image.asset(
-                    "assets/images/WeightNumber/WeightNumber.png",
+                    "assets/images/WeightNumber/WeightNumber_Cut.png",
                     width: 200,
                     height: 150,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   ),
                 ],
               ),
@@ -52,62 +53,37 @@ class Dialog_HowtoUse_NW extends StatelessWidget {
             Text(
               "คำแนะนำ",
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             SizedBox(
               height: 10,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 150,
-                  child: Column(
-                    children: [
-                      Text(
-                        textAlign: TextAlign.center,
-                        "1.ห้ามถ่ายใกล้หรือไกลเกิน",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        child: Image.asset(
-                          "assets/images/WeightNumber/closefar.png",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
+            ListTile(
+              leading: Icon(
+                Icons.crop_free_rounded,
+                size: 25,
+                color: GPrimaryColor,
+              ),
+              title: Text(
+                "ครอบภาพให้คล้ายคลึงกับตัวอย่างให้ใกล้เคียงมากที่สุด",
+                style: TextStyle(
+                  fontSize: 15,
                 ),
-                Container(
-                  width: 150,
-                  child: Column(
-                    children: [
-                      Text(
-                        textAlign: TextAlign.center,
-                        "2.พื้นที่มีแสงเพียงพอ",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 100,
-                        height: 100,
-                        child: Image.asset(
-                          "assets/images/WeightNumber/Whiteblack.png",
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
+            ListTile(
+              leading: Icon(
+                Icons.camera_enhance_rounded,
+                size: 25,
+                color: GPrimaryColor,
+              ),
+              title: Text(
+                "เป็นภาพถ่ายที่เห็นตัวเลขจากตาชั่งและหน่วยอย่างชัดเจน",
+                style: TextStyle(
+                  fontSize: 15,
+                ),
+              ),
+            )
           ],
         ),
       ),
@@ -120,8 +96,6 @@ class Dialog_HowtoUse_NW extends StatelessWidget {
                     backgroundColor: MaterialStatePropertyAll(GPrimaryColor),
                     elevation: MaterialStatePropertyAll(1)),
                 onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setBool("checkhowtouse_nw", true);
                   Navigator.of(context).pop(true);
                 },
                 child: Text('เข้าใจแล้ว',
@@ -133,7 +107,7 @@ class Dialog_HowtoUse_NW extends StatelessWidget {
         )
       ],
       title: Text(
-        "คู่มือการถ่ายภาพ",
+        "คู่มือการเลือกภาพถ่าย",
         textAlign: TextAlign.center,
         style: TextStyle(
             color: GPrimaryColor, fontSize: 20, fontWeight: FontWeight.bold),

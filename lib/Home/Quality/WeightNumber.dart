@@ -23,6 +23,7 @@ import 'package:watalygold/Widgets/Appbar_main_exit.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogChoose.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
@@ -190,19 +191,25 @@ class _WeightNumberState extends State<WeightNumber> {
 
   Future Gallery() async {
     try {
-      final image = await picker.pickMultiImage(imageQuality: 50, limit: 4);
-      final List<String> ImagepathList = [];
+      final results = await showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return Dialog_Howtouse_SelectNW();
+        },
+      );
+      if (results) {
+        final image = await picker.pickImage(
+            imageQuality: 50, source: ImageSource.gallery);
+        setState(() {
+          capturedImages.add(File(image!.path));
+        });
+      } else {
+        debugPrint("Error");
+      }
       // print(image?.path);
       // if (image == null) return;
       // final imageTemporary = File(image.path);
-      setState(() {
-        for (int i = 0; i < image.length; i++) {
-          ImagepathList.add(image[i].path);
-        }
-        for (int i = 0; i < ImagepathList.length; i++) {
-          capturedImages.add(File(ImagepathList[i]));
-        }
-      });
     } on PlatformException catch (e) {
       stdout.writeln('ผิดพลาด $e');
     }

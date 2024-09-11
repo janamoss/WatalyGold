@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
-class Dialog_Choose extends StatefulWidget {
+class Dialog_Choose extends StatelessWidget {
   const Dialog_Choose({super.key});
 
-  @override
-  State<Dialog_Choose> createState() => _Dialog_ChooseState();
-}
-
-class _Dialog_ChooseState extends State<Dialog_Choose> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(

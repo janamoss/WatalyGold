@@ -21,6 +21,7 @@ import 'package:watalygold/Home/Quality/WeightNumber.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
@@ -215,6 +216,31 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future Gallery() async {
     try {
+      // final results = await showDialog(
+      //   barrierDismissible: false,
+      //   context: context,
+      //   builder: (context) {
+      //     return Dialog_Howtouse_SelectNW();
+      //   },
+      // );
+      // if (results) {
+      //   final image = await picker.pickMultiImage(imageQuality: 50, limit: 4);
+      //   final List<String> ImagepathList = [];
+      //   // print(image?.path);
+      //   // if (image == null) return;
+      //   // final imageTemporary = File(image.path);
+      //   setState(() {
+      //     for (int i = 0; i < image.length; i++) {
+      //       ImagepathList.add(image[i].path);
+      //     }
+      //     for (int i = 0; i < ImagepathList.length; i++) {
+      //       capturedImages.add(File(ImagepathList[i]));
+      //     }
+      //   });
+      //   uploadImageAndUpdateState();
+      // } else {
+      //   debugPrint("Error");
+      // }
       final image = await picker.pickMultiImage(imageQuality: 50, limit: 4);
       final List<String> ImagepathList = [];
       // print(image?.path);
