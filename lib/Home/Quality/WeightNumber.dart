@@ -3,7 +3,8 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:screenshot/screenshot.dart';
 import 'package:watalygold/Textrecognition/result_screen.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
@@ -267,6 +268,41 @@ class _WeightNumberState extends State<WeightNumber> {
                     ),
                   ),
                 ),
+                // Center(
+                //   child: Container(
+                //     width: 300, // ปรับขนาดตามต้องการ
+                //     height: 100, // ปรับขนาดตามต้องการ
+                //     decoration: BoxDecoration(
+                //       border: Border.all(color: Colors.white, width: 2),
+                //     ),
+                //   ),
+                // ),
+                // Positioned(
+                //   left: (screenSize.width - 300) / 2, // ตำแหน่ง x ของกรอบ
+                //   top: (screenSize.height - 100) / 2, // ตำแหน่ง y ของกรอบ
+                //   //  left: 0, // ตำแหน่ง x ของกรอบ
+                //   // bottom: 100, // ตำแหน่ง y ของกรอบ
+                //   child: Container(
+                //     width: 300, // ความกว้างของกรอบ
+                //     height: 100, // ความสูงของกรอบ
+                //     decoration: BoxDecoration(
+                //       border: Border.all(
+                //           color: Colors.white, width: 3), // เปลี่ยนเป็นสีขาว
+                //     ),
+                //   ),
+                // ),
+                // Container(child: screenshot()),
+                // Positioned(
+                //   left: 50,
+                //   top: 250,
+                //   child: Container(
+                //     width: 300,
+                //     height: 100,
+                //     decoration: BoxDecoration(
+                //       border: Border.all(color: Colors.white, width: 3),
+                //     ),
+                //   ),
+                // ),
                 Positioned(
                   left: MediaQuery.of(context).size.width *
                       0.1, // 10% from the left
@@ -283,7 +319,20 @@ class _WeightNumberState extends State<WeightNumber> {
                   ),
                 ),
 
-               
+                // Positioned(
+                //   bottom: 180,
+                //   left: 50,
+                //   child: Container(
+                //     width: 300,
+                //     height: 100,
+                //     decoration: BoxDecoration(
+                //         color: Colors.transparent,
+                //         border: Border.all(
+                //           color: WhiteColor,
+                //           width: 3,
+                //         )),
+                //   ),
+                // )
               ],
             ),
           ),
@@ -405,6 +454,8 @@ class _WeightNumberState extends State<WeightNumber> {
   Future<void> _captureAndProcess() async {
     try {
       final XFile image = await _controller.takePicture();
+      setState(() {});
+
       await _cropAndOCR(image);
     } catch (e) {
       print('Error capturing image: $e');
@@ -412,67 +463,86 @@ class _WeightNumberState extends State<WeightNumber> {
   }
 
   Future<void> _cropAndOCR(XFile image) async {
-    try {
-      final File imageFile = File(image.path);
-      final img.Image? fullImage =
-          img.decodeImage(await imageFile.readAsBytes());
+    final File imageFile = File(image.path);
+    final img.Image? fullImage = img.decodeImage(await imageFile.readAsBytes());
 
-      if (fullImage == null) {
-        throw Exception('ไม่สามารถอ่านภาพได้');
-      }
-      // Proportional position and size of the frame
-      final double frameLeftPercent = 0.1; // 10% from the left
-      final double frameTopPercent = 0.5; // 30% from the top
-      final double frameWidthPercent = 0.8; // 80% of screen width
-      final double frameHeightPercent = 0.1; // 10% of screen height
-
-      // Calculate the position and size of the cropping area
-      final int cropX = (frameLeftPercent * fullImage.width).round();
-      final int cropY = (frameTopPercent * fullImage.height).round();
-      final int cropWidth = (frameWidthPercent * fullImage.width).round();
-      final int cropHeight = (frameHeightPercent * fullImage.height).round();
-      print(fullImage.width);
-      print(fullImage.height);
-      print(cropX);
-      print(cropY);
-      print(cropWidth);
-      print(cropHeight);
-
-      // Crop the image
-      final img.Image croppedImage = img.copyCrop(
-        fullImage,
-        x: cropX,
-        y: cropY,
-        width: cropWidth,
-        height: cropHeight,
-      );
-
-      // Save the cropped image to a temporary file
-      final Directory tempDir = await getTemporaryDirectory();
-      final String tempPath = tempDir.path;
-      final File croppedFile = File('$tempPath/cropped_image.png')
-        ..writeAsBytesSync(img.encodePng(croppedImage));
-
-      // Perform OCR on the cropped image
-      final inputImage = InputImage.fromFile(croppedFile);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      debugPrint("recognizedText.text ${recognizedText.text}");
-      final String numbersOnly = _extractNumbers(recognizedText.text);
-      debugPrint("numbersOnly $numbersOnly");
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (BuildContext context) => ResultScreen(
-            text: numbersOnly,
-            img: croppedFile,
-          ),
-        ),
-      );
-    } catch (e) {
-      print('Error processing image: $e');
+    if (fullImage == null) {
+      throw Exception('ไม่สามารถอ่านภาพได้');
     }
-  }
+    // Proportional position and size of the frame
+    final double frameLeftPercent = 0.1; // 10% from the left
+    final double frameTopPercent = 0.5; // 30% from the top
+    final double frameWidthPercent = 0.8; // 80% of screen width
+    final double frameHeightPercent = 0.2; // 10% of screen height
 
+    // Calculate the position and size of the cropping area
+    final int cropX = (frameLeftPercent * fullImage.width).round();
+    final int cropY = (frameTopPercent * fullImage.height).round();
+    final int cropWidth = (frameWidthPercent * fullImage.width).round();
+    final int cropHeight = (frameHeightPercent * fullImage.height).round();
+
+    print(fullImage.width);
+    print(fullImage.height);
+    print(cropX);
+    print(cropY);
+    print(cropWidth);
+    print(cropHeight);
+
+    // Crop the image
+    final img.Image croppedImage = img.copyCrop(
+      fullImage,
+      x: cropX,
+      y: cropY,
+      width: cropWidth,
+      height: cropHeight,
+    );
+
+    // Save the cropped image to a temporary file
+    final Directory tempDir = await getTemporaryDirectory();
+    final String tempPath = tempDir.path;
+    final File croppedFile = File('$tempPath/cropped_image.png')
+      ..writeAsBytesSync(img.encodePng(croppedImage));
+
+    // Perform OCR on the cropped image
+    final inputImage = InputImage.fromFile(croppedFile);
+    final recognizedText = await textRecognizer.processImage(inputImage);
+    debugPrint("recognizedText.text ${recognizedText.text}");
+    final String numbersOnly = _extractNumbersOCR(recognizedText.text);
+    debugPrint("numbersOnly $numbersOnly");
+
+    // Integrate Gemini
+      final gemini = Gemini.instance;
+      gemini.textAndImage(
+        text:
+            "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 55.3 g or 32 g ?",
+        images: [croppedFile.readAsBytesSync()],
+      ).then((value) {
+        final geminiText = value?.content?.parts?.last.text ?? '';
+        final extractedNumbers =
+            _extractNumbersGeminiText(geminiText);
+        debugPrint("Gemini analysis: $geminiText");
+        debugPrint("Gemini extractedNumbers: $extractedNumbers");
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (BuildContext context) => ResultScreen(
+              // text: "$numbersOnly\n$geminiText",
+              text: "$extractedNumbers",
+              img: croppedFile,
+            ),
+          ),
+        );
+    }).catchError((error) {
+      // จัดการข้อผิดพลาดเฉพาะเจาะจง
+      if (error is HttpException) {
+        print('Error connecting to the server');
+      } else if (error is FormatException) {
+        print('Invalid data format');
+      } else {
+        print('An unexpected error occurred: $error');
+      }
+    });
+  }
 
 
   final textRecognizer = TextRecognizer();
@@ -483,40 +553,73 @@ class _WeightNumberState extends State<WeightNumber> {
     if (image != null) {
       final file = File(image.path);
 
-      // แปลงภาพและปรับขนาดก่อน OCR
-      final processedImage = await _preprocessImage(file);
-
       // OCR
+      final processedImage = await _preprocessImage(file);
       final inputImage = InputImage.fromFile(processedImage);
       final recognizedText = await textRecognizer.processImage(inputImage);
       debugPrint("recognizedText.text ${recognizedText}");
-
-      final String numbersOnly = _extractNumbers(recognizedText.text);
-
+      final String numbersOnly = _extractNumbersOCR(recognizedText.text);
       debugPrint("numbersOnly ${numbersOnly}");
-      debugPrint(numbersOnly);
-      // Navigator.of(context).push(
-      //   MaterialPageRoute(
-      //     builder: (BuildContext context) => ResultScreen(
-      //       text: numbersOnly,
-      //       img: processedImage, // ส่งภาพไปยัง ResultScreen
-      //     ),
-      //   ),
-      // );
+
+      // Integrate Gemini
+      final gemini = Gemini.instance;
+      gemini.textAndImage(
+        text:
+            "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 53.3 g or 32 g ?",
+        images: [file.readAsBytesSync()],
+      ).then((value) {
+        final geminiText = value?.content?.parts?.last.text ?? '';
+        final extractedNumbers =
+            _extractNumbersGeminiText(geminiText);
+        debugPrint("Gemini analysis: $geminiText");
+        debugPrint("Gemini extractedNumbers: $extractedNumbers");
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (BuildContext context) => ResultScreen(
+              // text: "$numbersOnly\n$geminiText",
+              text: "$extractedNumbers",
+              img: file,
+            ),
+          ),
+        );
+      }).catchError((error) {
+        if (error is HttpException) {
+          print('Error connecting to the server');
+        } else if (error is FormatException) {
+          print('Invalid data format');
+        } else {
+          print('An unexpected error occurred: $error');
+        }
+      });
     }
   }
 
-  String _extractNumbers(String text) {
-    return text.replaceAll(RegExp(r'[^0-9.]'), '').trim();
+
+  String _extractNumbersOCR(String text) {
+    return text.replaceAll(RegExp(r'[^0-9.g]'), '').trim();
+  }
+
+  String? _extractNumbersGeminiText(String response) {
+    final regex = RegExp(r"(\d+(\.\d*)?)\s([a-zA-Z]+)");
+    final match = regex.firstMatch(response);
+    if (match != null) {
+      final number = match.group(1);
+      final unit = match.group(3); 
+      return "$number $unit";
+    }
+    return null;
   }
 
   Future<File> _preprocessImage(File imageFile) async {
     final originalImage = img.decodeImage(imageFile.readAsBytesSync());
     if (originalImage == null) return imageFile;
+    // final resizedImage =
+    //     img.copyResize(originalImage, width: 3000); // ปรับขนาดเป็น 3000 พิกเซล
     // แปลงภาพเป็น grayscale
     // final grayscaleImage = img.grayscale(originalImage);
     // ปรับแสงและความคม (เพิ่ม contrast, brightness)
-    // final contrastImage = img.adjustColor(originalImage, contrast: 1, brightness:);
+    // final contrastImage = img.adjustColor(originalImage, contrast: 1, brightness:2);
     // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
     // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
     // บันทึกภาพใหม่ลงในไฟล์ชั่วคราว
@@ -525,25 +628,4 @@ class _WeightNumberState extends State<WeightNumber> {
 
     return processedFile;
   }
-
-  // Widget screenshot() {
-  //   return Screenshot(
-  //     controller: _screenshotController,
-  //     child: Stack(
-  //       children: [
-  //         Positioned(
-  //           left: 50,
-  //           top: 250,
-  //           child: Container(
-  //             width: 300,
-  //             height: 100,
-  //             decoration: BoxDecoration(
-  //               border: Border.all(color: Colors.white, width: 3),
-  //             ),
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }
