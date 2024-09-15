@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +19,8 @@ String? _deviceId;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Gemini.init(apiKey: "AIzaSyByGLUAfh3-KjTmTY2MV_i32u2MJFUtEDE");
 
   final prefs = await SharedPreferences.getInstance();
   final onboarding = prefs.getBool("onboarding") ?? false;

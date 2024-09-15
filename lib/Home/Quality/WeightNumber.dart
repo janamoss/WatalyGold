@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Home/Quality/result_screen.dart';
-import 'package:watalygold/Widgets/Appbar_main.dart';
 
 import 'dart:async';
 import 'dart:io';
 import 'package:image/image.dart' as img;
+import 'package:http/http.dart' as http;
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:platform_device_id/platform_device_id.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
-import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Widgets/Appbar_main_exit.dart';
 import 'package:watalygold/Widgets/Color.dart';
-import 'package:watalygold/Widgets/DialogHowtoUse.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogChoose.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
@@ -48,20 +44,17 @@ class _WeightNumberState extends State<WeightNumber> {
   String? result;
 
   final ImagePicker picker = ImagePicker();
-  Timer? _lightMeterTimer;
   bool _isProcessing = false;
 
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   late File model;
-  String? _deviceId;
   int selectedIndex = 0;
   FirebaseModelDownloader downloader = FirebaseModelDownloader.instance;
-  final List _predictions = [];
   late String idResult;
   late List<String> ids;
 
-  late String numbersOnly;
+  String numbersOnly = "";
   late bool checkhowtouse;
 
   void _checkHowtoUse() async {
@@ -72,7 +65,7 @@ class _WeightNumberState extends State<WeightNumber> {
         barrierDismissible: false,
         context: context,
         builder: (context) {
-          return Dialog_HowtoUse_NW();
+          return const Dialog_HowtoUse_NW();
         },
       );
       if (results) {
@@ -89,15 +82,16 @@ class _WeightNumberState extends State<WeightNumber> {
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return Dialog_Choose();
+        return const Dialog_Choose();
       },
     );
     if (result != null) {
       if (result) {
         String results = await showDialog(
+          barrierDismissible: false,
           context: context,
           builder: (context) {
-            return Dialog_WeightNumber();
+            return const Dialog_WeightNumber();
           },
         );
         if (results.isNotEmpty) {
@@ -126,7 +120,6 @@ class _WeightNumberState extends State<WeightNumber> {
   }
 
   int selectedCamera = 0;
-  List<File> capturedImages = [];
 
   initializeCamera(int cameraIndex) async {
     _controller = CameraController(
@@ -152,12 +145,6 @@ class _WeightNumberState extends State<WeightNumber> {
     //   debugPrint('Error initializing camera: $e');
     //   // Handle the error appropriately
     // }
-  }
-
-  void _startLightMeter() {
-    _lightMeterTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      _isProcessing = true;
-    });
   }
 
   void _processImage(CameraImage image) {
@@ -188,35 +175,71 @@ class _WeightNumberState extends State<WeightNumber> {
 
   File? image;
   String imageUrl = '';
+  late String weight;
 
   Future Gallery() async {
-    try {
-      final results = await showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) {
-          return Dialog_Howtouse_SelectNW();
-        },
-      );
-      if (results) {
-        final image = await picker.pickImage(
-            imageQuality: 50, source: ImageSource.gallery);
-        setState(() {
-          capturedImages.add(File(image!.path));
-        });
-      } else {
-        debugPrint("Error");
-      }
-      // print(image?.path);
-      // if (image == null) return;
-      // final imageTemporary = File(image.path);
-    } on PlatformException catch (e) {
-      stdout.writeln('ผิดพลาด $e');
-    }
+    // try {
+    //   final results = await showDialog(
+    //     barrierDismissible: false,
+    //     context: context,
+    //     builder: (context) {
+    //       return const Dialog_Howtouse_SelectNW();
+    //     },
+    //   );
+    //   if (results) {
+    //     final image = await picker.pickImage(
+    //         imageQuality: 50, source: ImageSource.gallery);
+    //     setState(() {
+    //       capturedImages.add(File(image!.path));
+    //     });
+    //   } else {
+    //     debugPrint("Error");
+    //   }
+    //   // print(image?.path);
+    //   // if (image == null) return;
+    //   // final imageTemporary = File(image.path);
+    // } on PlatformException catch (e) {
+    //   stdout.writeln('ผิดพลาด $e');
+    // }
   }
 
   Future useFunctionandresult() async {
-    widget.httpscall["weight"] = numbersOnly;
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: AlertDialog(
+          backgroundColor: GPrimaryColor.withOpacity(0.6),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+          title: Column(
+            children: [
+              const Text(
+                'กำลังวิเคราะห์คุณภาพ . . .',
+                style: TextStyle(color: WhiteColor),
+                textAlign:
+                    TextAlign.center, // Add this line to center the title text
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              LoadingAnimationWidget.discreteCircle(
+                color: WhiteColor,
+                secondRingColor: GPrimaryColor,
+                thirdRingColor: YPrimaryColor,
+                size: 70,
+              ),
+            ],
+          ),
+          // actions: [],
+        ),
+      ),
+    );
+
+    weight = numbersOnly.toString();
+    debugPrint("ค่าน้ำหนัก $weight");
+    widget.httpscall["weight"] = weight;
+    debugPrint("${widget.httpscall}");
+    // widget.httpscall["weight"] = numbersOnly.toString();
     var firebasefunctions =
         FirebaseFunctions.instanceFor(region: 'asia-southeast1');
 
@@ -247,7 +270,7 @@ class _WeightNumberState extends State<WeightNumber> {
         builder: (context) => ResultPage(
           ID_Result: idResult,
           ID_Image: ids,
-          capturedImage: capturedImages.reversed.toList(),
+          capturedImage: widget.capturedImage,
           ListImagePath: widget.ListImagePath,
         ),
       ),
@@ -257,6 +280,7 @@ class _WeightNumberState extends State<WeightNumber> {
   Future<void> _captureAndProcess() async {
     try {
       final XFile image = await _controller.takePicture();
+      setState(() {});
       await _cropAndOCR(image);
     } catch (e) {
       print('Error capturing image: $e');
@@ -264,100 +288,147 @@ class _WeightNumberState extends State<WeightNumber> {
   }
 
   Future<void> _cropAndOCR(XFile image) async {
-    try {
-      final File imageFile = File(image.path);
-      final img.Image? fullImage =
-          img.decodeImage(await imageFile.readAsBytes());
+    final File imageFile = File(image.path);
+    final img.Image? fullImage = img.decodeImage(await imageFile.readAsBytes());
 
-      if (fullImage == null) {
-        throw Exception('ไม่สามารถอ่านภาพได้');
-      }
-      // Proportional position and size of the frame
-      final double frameLeftPercent = 0.1; // 10% from the left
-      final double frameTopPercent = 0.5; // 30% from the top
-      final double frameWidthPercent = 0.8; // 80% of screen width
-      final double frameHeightPercent = 0.1; // 10% of screen height
-
-      // Calculate the position and size of the cropping area
-      final int cropX = (frameLeftPercent * fullImage.width).round();
-      final int cropY = (frameTopPercent * fullImage.height).round();
-      final int cropWidth = (frameWidthPercent * fullImage.width).round();
-      final int cropHeight = (frameHeightPercent * fullImage.height).round();
-      print(fullImage.width);
-      print(fullImage.height);
-      print(cropX);
-      print(cropY);
-      print(cropWidth);
-      print(cropHeight);
-
-      // Crop the image
-      final img.Image croppedImage = img.copyCrop(
-        fullImage,
-        x: cropX,
-        y: cropY,
-        width: cropWidth,
-        height: cropHeight,
-      );
-
-      // Save the cropped image to a temporary file
-      final Directory tempDir = await getTemporaryDirectory();
-      final String tempPath = tempDir.path;
-      final File croppedFile = File('$tempPath/cropped_image.png')
-        ..writeAsBytesSync(img.encodePng(croppedImage));
-
-      // Perform OCR on the cropped image
-      final inputImage = InputImage.fromFile(croppedFile);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      debugPrint("recognizedText.text ${recognizedText.text}");
-      final String numbersOnly = _extractNumbers(recognizedText.text);
-      debugPrint("numbersOnly $numbersOnly");
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (BuildContext context) => ResultScreen(
-            text: numbersOnly,
-            imgs: croppedImage,
-          ),
-        ),
-      );
-    } catch (e) {
-      print('Error processing image: $e');
+    if (fullImage == null) {
+      throw Exception('ไม่สามารถอ่านภาพได้');
     }
+
+    // Proportional position and size of the frame
+    const double frameLeftPercent = 0.1; // 10% from the left
+    const double frameTopPercent = 0.5; // 30% from the top
+    const double frameWidthPercent = 0.8; // 80% of screen width
+    const double frameHeightPercent = 0.1; // 10% of screen height
+
+    // Calculate the position and size of the cropping area
+    final int cropX = (frameLeftPercent * fullImage.width).round();
+    final int cropY = (frameTopPercent * fullImage.height).round();
+    final int cropWidth = (frameWidthPercent * fullImage.width).round();
+    final int cropHeight = (frameHeightPercent * fullImage.height).round();
+
+    // Crop the image
+    final img.Image croppedImage = img.copyCrop(
+      fullImage,
+      x: cropX,
+      y: cropY,
+      width: cropWidth,
+      height: cropHeight,
+    );
+
+    // Save the cropped image to a temporary file
+    final Directory tempDir = await getTemporaryDirectory();
+    final String tempPath = tempDir.path;
+    final File croppedFile = File('$tempPath/cropped_image.png')
+      ..writeAsBytesSync(img.encodePng(croppedImage));
+
+    await processImageAndAnalyze(croppedFile);
   }
 
   final textRecognizer = TextRecognizer();
   Future<void> _pickImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final ImagePicker picker = ImagePicker();
+    final results = await showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return const Dialog_Howtouse_SelectNW();
+      },
+    );
+    if (results) {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    if (image != null) {
-      final file = File(image.path);
+      if (image != null) {
+        final file = File(image.path);
+        await processImageAndAnalyze(file);
 
-      // แปลงภาพและปรับขนาดก่อน OCR
-      final processedImage = await _preprocessImage(file);
+        // // OCR
+        // final processedImage = await _preprocessImage(file);
+        // final inputImage = InputImage.fromFile(processedImage);
+        // final recognizedText = await textRecognizer.processImage(inputImage);
+        // debugPrint("recognizedText.text ${recognizedText}");
+        // String numbersOnly = _extractNumbersOCR(recognizedText.text);
+        // debugPrint("numbersOnly ${numbersOnly}");
 
-      // OCR
-      final inputImage = InputImage.fromFile(processedImage);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      debugPrint("recognizedText.text ${recognizedText}");
-
-      final String numbersOnly = _extractNumbers(recognizedText.text);
-
-      debugPrint("numbersOnly ${numbersOnly}");
-      debugPrint(numbersOnly);
-      // Navigator.of(context).push(
-      //   MaterialPageRoute(
-      //     builder: (BuildContext context) => ResultScreen(
-      //       text: numbersOnly,
-      //       img: processedImage, // ส่งภาพไปยัง ResultScreen
-      //     ),
-      //   ),
-      // );
+        // // Integrate Gemini
+        // final gemini = Gemini.instance;
+        // gemini.textAndImage(
+        //   text:
+        //       "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 53.3 g or 32 g ?",
+        //   images: [file.readAsBytesSync()],
+        // ).then((value) {
+        //   final geminiText = value?.content?.parts?.last.text ?? '';
+        //   numbersOnly = _extractNumbersGeminiText(geminiText)!;
+        //   debugPrint("Gemini analysis: $geminiText");
+        //   debugPrint("Gemini extractedNumbers: $numbersOnly");
+        // }).catchError((error) {
+        //   if (error is HttpException) {
+        //     print('Error connecting to the server');
+        //   } else if (error is FormatException) {
+        //     print('Invalid data format');
+        //   } else {
+        //     print('An unexpected error occurred: $error');
+        //   }
+        // });
+        // debugPrint("ค่าน้ำหนักหลังทำงานเสร็จ $numbersOnly");
+        // useFunctionandresult();
+        // // Navigator.of(context).push(
+        // //   MaterialPageRoute(
+        // //     builder: (BuildContext context) => ResultScreen(
+        // //       text: numbersOnly,
+        // //       imgs: fullImage!, // ส่งภาพไปยัง ResultScreen
+        // //     ),
+        // //   ),
+        // // );
+      }
+    } else {
+      debugPrint("Error");
     }
   }
 
-  String _extractNumbers(String text) {
-    return text.replaceAll(RegExp(r'[^0-9.]'), '').trim();
+  Future<void> processImageAndAnalyze(file) async {
+    try {
+      final gemini = Gemini.instance;
+      final result = await gemini.textAndImage(
+        text:
+            "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 53.3 g or 32 g ?",
+        images: [file.readAsBytesSync()],
+      );
+
+      final geminiText = result?.content?.parts?.last.text ?? '';
+      numbersOnly = _extractNumbersGeminiText(geminiText)!;
+      debugPrint("Gemini analysis: $geminiText");
+      debugPrint("Gemini extractedNumbers: $numbersOnly");
+
+      debugPrint("ค่าน้ำหนักหลังทำงานเสร็จ $numbersOnly");
+
+      // เรียกใช้ useFunctionandresult() หลังจากได้ค่า numbersOnly แล้ว
+      useFunctionandresult();
+    } catch (error) {
+      if (error is HttpException) {
+        print('Error connecting to the server');
+      } else if (error is FormatException) {
+        print('Invalid data format');
+      } else {
+        print('An unexpected error occurred: $error');
+      }
+    }
+  }
+
+  String _extractNumbersOCR(String text) {
+    return text.replaceAll(RegExp(r'[^0-9]'), '').trim();
+  }
+
+  String? _extractNumbersGeminiText(String response) {
+    final regex = RegExp(r"(\d+(\.\d*)?)\s([a-zA-Z]+)");
+    final match = regex.firstMatch(response);
+    if (match != null) {
+      final number = match.group(1);
+      final unit = match.group(3);
+      return "$number";
+      // return "$number $unit";
+    }
+    return null;
   }
 
   Future<File> _preprocessImage(File imageFile) async {
@@ -392,8 +463,8 @@ class _WeightNumberState extends State<WeightNumber> {
             height: 40,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: Color(0xffF2F6F5)),
-            child: Icon(
+                color: const Color(0xffF2F6F5)),
+            child: const Icon(
               Icons.scale,
               color: GPrimaryColor,
               size: 20,
@@ -401,9 +472,10 @@ class _WeightNumberState extends State<WeightNumber> {
           ),
           onPressed: () async {
             String results = await showDialog(
+              barrierDismissible: false,
               context: context,
               builder: (context) {
-                return Dialog_WeightNumber();
+                return const Dialog_WeightNumber();
               },
             );
             if (results.isNotEmpty) {
@@ -427,8 +499,7 @@ class _WeightNumberState extends State<WeightNumber> {
                   child: FutureBuilder<void>(
                     future: _initializeControllerFuture,
                     builder: (context, snapshot) {
-                      if (_controller == null ||
-                          !_controller!.value.isInitialized) {
+                      if (!_controller.value.isInitialized) {
                         return const Center(
                             child:
                                 CircularProgressIndicator()); // หรือ loading indicator
@@ -601,7 +672,7 @@ class _WeightNumberState extends State<WeightNumber> {
                                     barrierDismissible: false,
                                     context: context,
                                     builder: (context) {
-                                      return Dialog_HowtoUse_NW();
+                                      return const Dialog_HowtoUse_NW();
                                     },
                                   );
                                 },

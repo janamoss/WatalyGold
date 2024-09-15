@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:watalygold/Widgets/Appbar_mains_notbotton.dart';
 import 'package:watalygold/Widgets/Color.dart';
@@ -41,7 +42,7 @@ class _ExportPriceState extends State<ExportPrice> {
   void initState() {
     super.initState();
     _tooltipBehavior = TooltipBehavior(enable: true);
-    fetchDataAndSaveToFirestore();
+    fetchDataAndSaveToFirestore(context);
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -70,11 +71,36 @@ class _ExportPriceState extends State<ExportPrice> {
         selectedDate = picked;
         _dateController.text = DateFormat('d/M/yyyy').format(picked);
       });
-      fetchDataAndSaveToFirestore();
+      // fetchDataAndSaveToFirestore();
+      await checkDataForSelectedDate(context);
     }
   }
 
-  Future<void> fetchDataAndSaveToFirestore() async {
+  Future<void> checkDataForSelectedDate(BuildContext context) async {
+    try {
+      final formattedDate = DateFormat('M/d/yyyy').format(selectedDate);
+
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('ExportPrice')
+          .doc('new_ExportPrice')
+          .get();
+
+      if (docSnapshot.exists) {
+        final data = docSnapshot.data() as Map<String, dynamic>;
+        final priceList = data['price_list'] as List<dynamic>?;
+
+        if (priceList != null &&
+            priceList.any((priceItem) => priceItem['date'] == formattedDate)) {
+          return;
+        }
+      }
+      showNoDataDialog(context);
+    } catch (error) {
+      print('Error checking data: $error');
+    }
+  }
+
+  Future<void> fetchDataAndSaveToFirestore(BuildContext context) async {
     final apiUrl =
         "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
     try {
@@ -105,6 +131,90 @@ class _ExportPriceState extends State<ExportPrice> {
     } catch (error) {
       stdout.writeln('Error fetching data from API: $error');
     }
+  }
+
+  void showNoDataDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Center(
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.width * 0.6,
+            decoration: BoxDecoration(
+              color: WhiteColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: Offset(0, 3),
+                ),
+              ],
+              border: Border(
+                bottom: BorderSide(
+                  color: GPrimaryColor,
+                  width: 10,
+                ),
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: Colors.red.shade400,
+                          size: 35,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          'ไม่พบข้อมูล',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        Text(
+                          'ไม่พบข้อมูลราคาตลาดกลางสำหรับวันที่ ${DateFormat('d/M/yyyy').format(selectedDate)} สามารถตรวจสอบได้ที่ ',
+                          style: TextStyle(color: Colors.black, fontSize: 18),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          'https://data.moc.go.th',
+                          style: TextStyle(color: Colors.black, fontSize: 18),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  TextButton(
+                    child: Text('ตกลง',
+                        style: TextStyle(color: GPrimaryColor, fontSize: 16)),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override

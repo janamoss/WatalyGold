@@ -62,10 +62,10 @@ class _HomeboxState extends State<Homebox> {
                     //     );
                     //   },
                     // );
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => const KnowledgeMain()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const KnowledgeMain()));
                   }
                   if (index == 1) {
                     widget.changeWidgetOption(1);
