@@ -473,7 +473,7 @@ class _WeightNumberState extends State<WeightNumber> {
     final double frameLeftPercent = 0.1; // 10% from the left
     final double frameTopPercent = 0.5; // 30% from the top
     final double frameWidthPercent = 0.8; // 80% of screen width
-    final double frameHeightPercent = 0.2; // 10% of screen height
+    final double frameHeightPercent = 0.1; // 10% of screen height
 
     // Calculate the position and size of the cropping area
     final int cropX = (frameLeftPercent * fullImage.width).round();
