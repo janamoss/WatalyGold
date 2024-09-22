@@ -256,12 +256,14 @@ class _ResultPageState extends State<ResultPage> {
                               Padding(
                                 padding: EdgeInsets.only(
                                     left: 25, top: 5, bottom: 10, right: 15),
-                                child: Text(
-                                  anotherNote,
-                                  style: TextStyle(
-                                      color: gradeColor[grade], fontSize: 15),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
+                                child: SingleChildScrollView(
+                                  child: Text(
+                                    anotherNote,
+                                    style: TextStyle(
+                                        color: gradeColor[grade], fontSize: 15),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
                                 ),
                               )
                             ],

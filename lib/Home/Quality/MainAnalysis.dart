@@ -337,16 +337,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       debugPrint("เสร็จสิ้น");
       if (allImagesUploaded) {
         Navigator.of(context).pop();
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => WeightNumber(
-                    camera: widget.camera,
-                    capturedImage: capturedImages.reversed.toList(),
-                    ListImagePath: listImagepath,
-                    httpscall: preview_result,
-                  )),
-        );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //       builder: (context) => WeightNumber(
+        //             camera: widget.camera,
+        //             capturedImage: capturedImages.reversed.toList(),
+        //             ListImagePath: listImagepath,
+        //             httpscall: preview_result,
+        //           )),
+        // );
       }
 
       // try {
