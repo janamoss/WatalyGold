@@ -1,5 +1,5 @@
 import 'dart:developer';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
@@ -9,8 +9,10 @@ import 'package:platform_device_id/platform_device_id.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/User_DB.dart';
+import 'package:watalygold/ExportPrice/ExportPrice.dart';
 import 'package:watalygold/Home/Onboarding/onboarding_screen.dart';
 import 'package:watalygold/Home/Quality/WeightNumber.dart';
+
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,8 +22,9 @@ String? _deviceId;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   Gemini.init(apiKey: "AIzaSyByGLUAfh3-KjTmTY2MV_i32u2MJFUtEDE");
+  
 
   final prefs = await SharedPreferences.getInstance();
   final onboarding = prefs.getBool("onboarding") ?? false;
@@ -66,9 +69,11 @@ Future<void> main() async {
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
+      locale: Locale('th', 'TH'),
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: [
         const Locale('th', 'TH'),
@@ -84,10 +89,8 @@ Future<void> main() async {
       ),
       title: "Wataly Gold",
       // home: const Myonboardingscreen(),
-      home: onboarding
-          ? WeightNumber(camera: cameras)
-          // ? BasePage(camera: cameras)
-          // ? WeightNumber()
+     home: onboarding
+          ? BasePage(camera: cameras)
           : Myonboardingscreen(camera: cameras),
       builder: EasyLoading.init(),
     ),

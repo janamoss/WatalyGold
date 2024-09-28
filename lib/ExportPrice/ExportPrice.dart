@@ -12,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 
-
 class NumericData {
   NumericData(
       {required this.domain, required this.measure, required this.pointLabel});
@@ -38,7 +37,8 @@ class _ExportPriceState extends State<ExportPrice> {
   @override
   void initState() {
     super.initState();
-    _dateController.text = DateFormat('d/M/yyyy').format(selectedDate); //ตั้งค่าเร่ิมต้น
+    _dateController.text =
+        DateFormat('d/M/yyyy').format(selectedDate); //ตั้งค่าเร่ิมต้น
     checkDataForSelectedDate(context);
     _tooltipBehavior = TooltipBehavior(enable: true);
     fetchDataAndSaveToFirestore(context);
@@ -100,13 +100,16 @@ class _ExportPriceState extends State<ExportPrice> {
   }
 
   Future<void> fetchDataAndSaveToFirestore(BuildContext context) async {
-  DateTime selectedDate = this.selectedDate;
-  DateTime endOfMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0); //+1 และ 0 ทำให้ได้วันสุดท้ายของเดือน
-  String toDate = DateFormat('yyyy-MM-dd').format(endOfMonth);
-  debugPrint(toDate);
-  final apiUrl = "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=$toDate";
+    DateTime selectedDate = this.selectedDate;
+    DateTime endOfMonth = DateTime(selectedDate.year, selectedDate.month + 1,
+        0); //+1 และ 0 ทำให้ได้วันสุดท้ายของเดือน
+    String toDate = DateFormat('yyyy-MM-dd').format(endOfMonth);
+    debugPrint("toDate ${toDate}");
+    final apiUrl =
+        "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=$toDate";
+    debugPrint(apiUrl);
     // final apiUrl =
-        // "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
+    // "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
@@ -208,7 +211,7 @@ class _ExportPriceState extends State<ExportPrice> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
                   TextButton(
                     child: Text('ตกลง',
                         style: TextStyle(color: GPrimaryColor, fontSize: 16)),
@@ -384,11 +387,13 @@ class _ExportPriceState extends State<ExportPrice> {
                       Padding(
                         padding: EdgeInsets.only(bottom: 5, left: 20),
                         child: Text(
-                          "ราคา  ${filteredItem?['price_max'] ?? ' '} - ${filteredItem?['price_min'] ?? ' '} ${unit ?? ' '}",
+                          filteredItem != null
+                              ? "ราคา ${filteredItem['price_max'] ?? ''} ${filteredItem['price_min'] != null ? '- ${filteredItem['price_min']}' : ''} ${unit ?? ''}"
+                              : "ราคา  ${unit ?? ''}",
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.black,
-                          ),
+                          ), 
                         ),
                       ),
                       Padding(
@@ -566,7 +571,7 @@ class _ExportPriceState extends State<ExportPrice> {
                 Padding(
                   padding: EdgeInsets.all(7),
                   child: Container(
-                    height: 300, 
+                    height: MediaQuery.of(context).size.width * 0.65,
                     child: Stack(
                       children: [
                         SfCartesianChart(

@@ -56,6 +56,9 @@ post_install do |installer|
         end
       end
     end
+
+  
+
      # add these lines:
     target.build_configurations.each do |config|
       if Gem::Version.new($iOSVersion) > Gem::Version.new(config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'])

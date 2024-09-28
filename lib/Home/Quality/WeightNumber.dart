@@ -1,14 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:watalygold/Textrecognition/result_screen.dart';
+import 'package:watalygold/Home/Quality/result_screen.dart';
+
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'package:image/image.dart' as img;
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -20,13 +22,13 @@ import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
-import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Home/Quality/Gallerypage.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
+import 'package:image/image.dart' as img;
 
 class WeightNumber extends StatefulWidget {
   final List<CameraDescription> camera;
@@ -303,16 +305,28 @@ class _WeightNumberState extends State<WeightNumber> {
                 //     ),
                 //   ),
                 // ),
+
+                // Positioned(
+                //   left: MediaQuery.of(context).size.width *
+                //       0.1, // 10% from the left
+                //   top: MediaQuery.of(context).size.height *
+                //       0.3, // 30% from the top
+                //   child: Container(
+                //     width: MediaQuery.of(context).size.width *
+                //         0.8, // 80% of screen width
+                //     height: MediaQuery.of(context).size.height *
+                //         0.1, // 10% of screen height
+                //     decoration: BoxDecoration(
+                //       border: Border.all(color: Colors.white, width: 3),
+                //     ),
+                //   ),
+                // ),
                 Positioned(
-                  left: MediaQuery.of(context).size.width *
-                      0.1, // 10% from the left
-                  top: MediaQuery.of(context).size.height *
-                      0.3, // 30% from the top
+                  left: MediaQuery.of(context).size.width * 0.15,
+                  top: MediaQuery.of(context).size.height * 0.3,
                   child: Container(
-                    width: MediaQuery.of(context).size.width *
-                        0.8, // 80% of screen width
-                    height: MediaQuery.of(context).size.height *
-                        0.1, // 10% of screen height
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: MediaQuery.of(context).size.height * 0.12,
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.white, width: 3),
                     ),
@@ -455,7 +469,6 @@ class _WeightNumberState extends State<WeightNumber> {
     try {
       final XFile image = await _controller.takePicture();
       setState(() {});
-
       await _cropAndOCR(image);
     } catch (e) {
       print('Error capturing image: $e');
@@ -469,17 +482,19 @@ class _WeightNumberState extends State<WeightNumber> {
     if (fullImage == null) {
       throw Exception('ไม่สามารถอ่านภาพได้');
     }
+
     // Proportional position and size of the frame
-    final double frameLeftPercent = 0.1; // 10% from the left
+    final double frameLeftPercent = 0.15; // 10% from the left
     final double frameTopPercent = 0.5; // 30% from the top
-    final double frameWidthPercent = 0.8; // 80% of screen width
-    final double frameHeightPercent = 0.1; // 10% of screen height
+    final double frameWidthPercent = 0.7; // 80% of screen width
+    final double frameHeightPercent = 0.12; // 10% of screen height
 
     // Calculate the position and size of the cropping area
     final int cropX = (frameLeftPercent * fullImage.width).round();
     final int cropY = (frameTopPercent * fullImage.height).round();
     final int cropWidth = (frameWidthPercent * fullImage.width).round();
-    final int cropHeight = (frameHeightPercent * fullImage.height).round();
+    final int cropHeight =
+        (frameHeightPercent * fullImage.height * 1.5).round();
 
     print(fullImage.width);
     print(fullImage.height);
@@ -503,37 +518,37 @@ class _WeightNumberState extends State<WeightNumber> {
     final File croppedFile = File('$tempPath/cropped_image.png')
       ..writeAsBytesSync(img.encodePng(croppedImage));
 
+    final processedImage = await _preprocessImageblackandwhite(croppedFile);
+
     // Perform OCR on the cropped image
-    final inputImage = InputImage.fromFile(croppedFile);
-    final recognizedText = await textRecognizer.processImage(inputImage);
-    debugPrint("recognizedText.text ${recognizedText.text}");
-    final String numbersOnly = _extractNumbersOCR(recognizedText.text);
-    debugPrint("numbersOnly $numbersOnly");
+    // final inputImage = InputImage.fromFile(croppedFile);
+    // final recognizedText = await textRecognizer.processImage(inputImage);
+    // debugPrint("recognizedText.text ${recognizedText.text}");
+    // final String numbersOnly = _extractNumbersOCR(recognizedText.text);
+    // debugPrint("numbersOnly $numbersOnly");
 
     // Integrate Gemini
-      final gemini = Gemini.instance;
-      gemini.textAndImage(
-        text:
-            "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 55.3 g or 32 g ?",
-        images: [croppedFile.readAsBytesSync()],
-      ).then((value) {
-        final geminiText = value?.content?.parts?.last.text ?? '';
-        final extractedNumbers =
-            _extractNumbersGeminiText(geminiText);
-        debugPrint("Gemini analysis: $geminiText");
-        debugPrint("Gemini extractedNumbers: $extractedNumbers");
+    final gemini = Gemini.instance;
+    gemini.textAndImage(
+      text:
+          "From the picture is the digital weighing scale screen. Can you please read the numbers on the scale screen, for example 33.3 g",
+      images: [processedImage.readAsBytesSync()],
+    ).then((value) {
+      final geminiText = value?.content?.parts?.last.text ?? '';
+      // final extractedNumbers = _extractNumbersGeminiText(geminiText);
+      debugPrint("Gemini analysis: $geminiText");
+      // debugPrint("Gemini extractedNumbers: $extractedNumbers");
 
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (BuildContext context) => ResultScreen(
-              // text: "$numbersOnly\n$geminiText",
-              text: "$extractedNumbers",
-              img: croppedFile,
-            ),
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (BuildContext context) => ResultScreen(
+            // text: "$numbersOnly\n$geminiText",
+            text: "$geminiText",
+            img: processedImage,
           ),
-        );
+        ),
+      );
     }).catchError((error) {
-      // จัดการข้อผิดพลาดเฉพาะเจาะจง
       if (error is HttpException) {
         print('Error connecting to the server');
       } else if (error is FormatException) {
@@ -544,33 +559,46 @@ class _WeightNumberState extends State<WeightNumber> {
     });
   }
 
-
   final textRecognizer = TextRecognizer();
+
   Future<void> _pickImage() async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
       final file = File(image.path);
+    
+
+      final img.Image originalImage =
+          img.decodeImage(await file.readAsBytes())!;
 
       // OCR
-      final processedImage = await _preprocessImage(file);
-      final inputImage = InputImage.fromFile(processedImage);
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      debugPrint("recognizedText.text ${recognizedText}");
-      final String numbersOnly = _extractNumbersOCR(recognizedText.text);
-      debugPrint("numbersOnly ${numbersOnly}");
+      final processedImageHSV = await preprocessImagesHSV(originalImage);
+      final processedImageFile = File('${file.path}_processed.png')
+        ..writeAsBytesSync(img.encodePng(processedImageHSV));
+
+           final processedImageBW = await _preprocessImageblackandwhite(file);
+
+      // final inputImage = InputImage.fromFile(processedImage);
+      // final recognizedText = await textRecognizer.processImage(inputImage);
+      // debugPrint("recognizedText.text ${recognizedText}");
+      // final String numbersOnly = _extractNumbersOCR(recognizedText.text);
+      // debugPrint("numbersOnly ${numbersOnly}");
 
       // Integrate Gemini
       final gemini = Gemini.instance;
+
       gemini.textAndImage(
+        // text: "จากภาพที่ฉันแนบให้คือรูปภาพจากเครื่องชั่งน้ำหนักดิจิตอลที่แสดงตัวเลขดิจิตอลเป็นสีดำ รูปภาพที่ฉันแนบให้คุณมีตัวเลข1-3หลักและมีจุดทศนิยมแลัวมีหน่วยคุณช่วยอ่านค่าตัวเลขออกมาให้หน่อย",
         text:
-            "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 53.3 g or 32 g ?",
-        images: [file.readAsBytesSync()],
+            "The picture shows a digital weighing scale screen with digital numbers and a decimal point. There is a unit of weight attached to the image with a white background and black numbers. I'd like you to read the weight on the scale, for example 325.25 g",
+        //  images: [processedImageFile.readAsBytesSync(),]
+          // images: [processedImageBW.readAsBytesSync(),]
+          //  images: [file.readAsBytesSync(),]
+        images: [processedImageFile.readAsBytesSync(),processedImageBW.readAsBytesSync(),file.readAsBytesSync()],
       ).then((value) {
         final geminiText = value?.content?.parts?.last.text ?? '';
-        final extractedNumbers =
-            _extractNumbersGeminiText(geminiText);
+        final extractedNumbers = _extractNumbersGeminiText(geminiText);
         debugPrint("Gemini analysis: $geminiText");
         debugPrint("Gemini extractedNumbers: $extractedNumbers");
 
@@ -578,8 +606,8 @@ class _WeightNumberState extends State<WeightNumber> {
           MaterialPageRoute(
             builder: (BuildContext context) => ResultScreen(
               // text: "$numbersOnly\n$geminiText",
-              text: "$extractedNumbers",
-              img: file,
+              text: "$geminiText",
+              img: processedImageFile,
             ),
           ),
         );
@@ -595,6 +623,63 @@ class _WeightNumberState extends State<WeightNumber> {
     }
   }
 
+  // Future<void> _pickImage() async {
+  //   final ImagePicker _picker = ImagePicker();
+  //   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+  //   if (image != null) {
+  //     final file = File(image.path);
+  //     final img.Image originalImage =
+  //         img.decodeImage(await file.readAsBytes())!;
+
+  //     // Process the image
+  //     final img.Image processedImage = preprocessImagesHSV(originalImage);
+
+  //     // Save processed image to a file if needed
+  //     final processedImageFile = File('${file.path}_processed.png')
+  //       ..writeAsBytesSync(img.encodePng(processedImage));
+
+  //     // OCR
+  //     final inputImage = InputImage.fromFile(processedImageFile);
+  //     final recognizedText = await textRecognizer.processImage(inputImage);
+  //     debugPrint("recognizedText.text: ${recognizedText.text}");
+  //     // final String numbersOnly = recognizedText.text;
+  //     final String numbersOnly = _extractNumbersOCR(recognizedText.text);
+  //     debugPrint("numbersOnly: $numbersOnly");
+
+  //     // Integrate Gemini
+  //     final gemini = Gemini.instance;
+
+  //     gemini.textAndImage(
+  //       // text:"จากภาพคือภาพหน้าจอเครื่องชั่งน้ำหนักที่มีตัวเลขสีดำและทสนิยมเช่น . สีดำและเป็นตัวเลขดิจิตอลซึ่งฉันต้องการหาค่าน้ำหนักที่แสดงบนหน้าจอเครื่องชั่งคุณช่วยบอกให้หน่อยว่าในภาพมีตัวเลขใดบ้างตัวเลขดิตอล0-9",
+  //       text:
+  //           "The picture shows a digital scale screen showing digital numbers. Can you please read the digital numbers on the scale screen  For example, 33.3 g.",
+  //       images: [processedImageFile.readAsBytesSync()],
+  //     ).then((value) {
+  //       final geminiText = value?.content?.parts?.last.text ?? '';
+  //       final extractedNumbers = _extractNumbersGeminiText(geminiText);
+  //       debugPrint("Gemini analysis: $geminiText");
+  //       debugPrint("Gemini extractedNumbers: $extractedNumbers");
+
+  //       Navigator.of(context).push(
+  //         MaterialPageRoute(
+  //           builder: (BuildContext context) => ResultScreen(
+  //             text: "$numbersOnly\n$geminiText",
+  //             img: processedImageFile,
+  //           ),
+  //         ),
+  //       );
+  //     }).catchError((error) {
+  //       if (error is HttpException) {
+  //         print('Error connecting to the server');
+  //       } else if (error is FormatException) {
+  //         print('Invalid data format');
+  //       } else {
+  //         print('An unexpected error occurred: $error');
+  //       }
+  //     });
+  //   }
+  // }
 
   String _extractNumbersOCR(String text) {
     return text.replaceAll(RegExp(r'[^0-9.g]'), '').trim();
@@ -605,27 +690,99 @@ class _WeightNumberState extends State<WeightNumber> {
     final match = regex.firstMatch(response);
     if (match != null) {
       final number = match.group(1);
-      final unit = match.group(3); 
+      final unit = match.group(3);
       return "$number $unit";
     }
-    return null;
+    return "รูปที่คุณถ่ายไม่ใช่เครื่องชั่งน้ำหนัก";
   }
 
-  Future<File> _preprocessImage(File imageFile) async {
+  // hsv ปรับสีน้ำเงินพื้นหลัง
+  img.Image preprocessImagesHSV(img.Image image) {
+    for (var y = 0; y < image.height; y++) {
+      for (var x = 0; x < image.width; x++) {
+        var pixel = image.getPixel(x, y);
+        // แปลง pixel เป็น Color
+        var color = Color.fromARGB(
+            pixel.a.toInt(), pixel.r.toInt(), pixel.g.toInt(), pixel.b.toInt());
+
+        var hsv = HSVColor.fromColor(color);
+
+        if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
+          // ลบพื้นที่สีน้ำเงินออก
+          hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 0.0); // ทำให้โปร่งใส
+          // hsv = HSVColor.fromAHSV(1, 0.0, 0.0, 0.7);
+        }
+        // hue สีน้ำเงิน 180-240
+        // if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
+        //   // เพิ่มความสว่างและลดความอิ่มตัว
+        //   // hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 1);
+        //   hsv = HSVColor.fromAHSV(1.0, 0.0, 0.0, 1);
+        // } else if (hsv.value < 0.3) {
+        //   // สำหรับตัวเลขที่มืด ปรับให้เข้มขึ้นเล็กน้อย
+        //   // hsv = HSVColor.fromAHSV(1.0, hsv.hue, hsv.saturation, hsv.value * 0.5);
+        //   hsv = HSVColor.fromAHSV(1.0, 0.0, 0.0, 0.0);
+        // } else {
+        //   // ไม่พบสีน้ำเงิน ให้เพิ่มความสว่าง
+        //   hsv =
+        //       HSVColor.fromAHSV(1.0, hsv.hue, hsv.saturation, 0.5);
+        // }
+        var rgb = hsv.toColor();
+        image.setPixelRgba(x, y, rgb.red, rgb.green, rgb.blue, rgb.alpha);
+      }
+    }
+    return image;
+  }
+
+  // ปรับขาวดำ
+  Future<File> _preprocessImageblackandwhite(File imageFile) async {
     final originalImage = img.decodeImage(imageFile.readAsBytesSync());
     if (originalImage == null) return imageFile;
-    // final resizedImage =
-    //     img.copyResize(originalImage, width: 3000); // ปรับขนาดเป็น 3000 พิกเซล
-    // แปลงภาพเป็น grayscale
-    // final grayscaleImage = img.grayscale(originalImage);
-    // ปรับแสงและความคม (เพิ่ม contrast, brightness)
-    // final contrastImage = img.adjustColor(originalImage, contrast: 1, brightness:2);
-    // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
-    // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
-    // บันทึกภาพใหม่ลงในไฟล์ชั่วคราว
-    final processedFile = File(imageFile.path)
-      ..writeAsBytesSync(img.encodeJpg(originalImage));
+    // // ขยายขนาดภาพ
+    // final resizedImage = img.copyResize(
+    //   originalImage,
+    //   width: originalImage.width * 2, // ขยายความกว้างเป็น 2 เท่า
+    //   height: originalImage.height * 2, // ขยายความสูงเป็น 2 เท่า
+    // );
+    // final processedImage = preprocessImagesHSV(originalImage);
 
+    // Define the threshold value (0-255)
+    const int threshold = 32;
+    // // ปรับแสงและความคม (เพิ่ม contrast, brightness)
+    // final contrastImage =
+    //     img.adjustColor(originalImage, contrast: 1, brightness: 2);
+    // // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
+    // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
+    // Loop through each pixel to apply thresholding
+    for (int y = 0; y < originalImage.height; y++) {
+      for (int x = 0; x < originalImage.width; x++) {
+        // Get the Pixel object
+        final pixel = originalImage.getPixel(x, y);
+
+        // Extract RGBA values and cast to int
+        int r = pixel.r.toInt();
+        int g = pixel.g.toInt();
+        int b = pixel.b.toInt();
+
+        // Calculate the luminance (brightness) using the average of RGB components
+        int luminance = (0.299 * r + 0.587 * g + 0.114 * b).toInt();
+
+        // Apply thresholding: set pixel to black or white
+        if (luminance < threshold) {
+          originalImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+        } else {
+          originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
+        }
+        // if (luminance < threshold) {
+        //   originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
+        // } else {
+        //   originalImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+        // }
+      }
+    }
+
+    // Save the processed image into a temporary file
+    final processedFile = File(imageFile.path)
+      ..writeAsBytesSync(img.encodeJpg(originalImage)); // บันทึก processedImage
     return processedFile;
   }
 }
