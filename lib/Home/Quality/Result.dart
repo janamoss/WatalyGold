@@ -261,8 +261,8 @@ class _ResultPageState extends State<ResultPage> {
                                     anotherNote,
                                     style: TextStyle(
                                         color: gradeColor[grade], fontSize: 15),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
+                                    // overflow: TextOverflow.ellipsis,
+                                    // maxLines: 2,
                                   ),
                                 ),
                               )

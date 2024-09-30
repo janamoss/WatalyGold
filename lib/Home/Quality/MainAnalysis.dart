@@ -21,6 +21,7 @@ import 'package:watalygold/Home/Quality/WeightNumber.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogError.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
@@ -263,6 +264,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Future uploadImageAndUpdateState() async {
     if (capturedImages.length == 4) {
       showDialog(
+        barrierDismissible: false,
         context: context,
         builder: (context) => Center(
           child: AlertDialog(
@@ -293,60 +295,83 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         ),
       );
 
-      runInference();
-      stdout.writeln(result);
+      await runInference();
 
-      // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
-      String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
+      if (result == "Yellow") {
+        // ทำงานเมื่อ result เป็น "Yellow"
+        print("พบสีเหลือง");
 
-      // ชื่อของรูปภาพที่ต้องการ
-      List<String> imageNames = [
-        'Front_$uniquename',
-        'Back_$uniquename',
-        'Top_$uniquename',
-        'Bottom_$uniquename',
-      ];
+        // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
+        String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
 
-      List<String> imageuri = [];
-      List<String> downloaduri = [];
-      List<String> listImagepath = [];
-      for (int i = 0; i < capturedImages.length; i++) {
-        final result =
-            await uploadImageToCloudStorage(capturedImages[i], imageNames[i]);
-        final imagePath =
-            await saveImageToDevice(capturedImages[i], imageNames[i]);
-        stdout.writeln('Saved image path: $imagePath');
-        listImagepath.add(imagePath.toString());
-        downloaduri.add(result['downloadURL']!);
-        imageuri.add(result['imageName']!);
-      }
-      bool allImagesUploaded = true;
+        // ชื่อของรูปภาพที่ต้องการ
+        List<String> imageNames = [
+          'Front_$uniquename',
+          'Back_$uniquename',
+          'Top_$uniquename',
+          'Bottom_$uniquename',
+        ];
 
-      String downloadurl = downloaduri.join(',');
-      String concatenatedString = imageuri.join(',');
-      // File first = capturedImages[0];
-      // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
-      String results = result!;
+        List<String> imageuri = [];
+        List<String> downloaduri = [];
+        List<String> listImagepath = [];
+        for (int i = 0; i < capturedImages.length; i++) {
+          final result =
+              await uploadImageToCloudStorage(capturedImages[i], imageNames[i]);
+          final imagePath =
+              await saveImageToDevice(capturedImages[i], imageNames[i]);
+          stdout.writeln('Saved image path: $imagePath');
+          listImagepath.add(imagePath.toString());
+          downloaduri.add(result['downloadURL']!);
+          imageuri.add(result['imageName']!);
+        }
+        bool allImagesUploaded = true;
 
-      final preview_result = {
-        'downloadurl': downloadurl,
-        "imagename": concatenatedString,
-        "ip": _deviceId,
-        "result": results
-      };
-      debugPrint("เสร็จสิ้น");
-      if (allImagesUploaded) {
+        String downloadurl = downloaduri.join(',');
+        String concatenatedString = imageuri.join(',');
+        // File first = capturedImages[0];
+        // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
+        String results = result!;
+
+        final preview_result = {
+          'downloadurl': downloadurl,
+          "imagename": concatenatedString,
+          "ip": _deviceId,
+          "result": results
+        };
+        debugPrint("เสร็จสิ้น");
+        if (allImagesUploaded) {
+          Navigator.of(context).pop();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => WeightNumber(
+                      camera: widget.camera,
+                      capturedImage: capturedImages.reversed.toList(),
+                      ListImagePath: listImagepath,
+                      httpscall: preview_result,
+                    )),
+          );
+        }
+        // เพิ่มโค้ดที่ต้องการทำเมื่อเป็นสีเหลืองตรงนี้
+      } else if (result == "Not_Yellow") {
+        // แสดง Dialog Error เมื่อ result เป็น "Not_Yellow"
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return Dialog_Error(
+                name: "เกิดข้อผิดพลาด",
+                content: "ไม่พบมะม่วงหรือสีของมะม่วงไม่สีเหลืองทอง");
+          },
+        );
         Navigator.of(context).pop();
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (context) => WeightNumber(
-        //             camera: widget.camera,
-        //             capturedImage: capturedImages.reversed.toList(),
-        //             ListImagePath: listImagepath,
-        //             httpscall: preview_result,
-        //           )),
-        // );
+        setState(() {
+          capturedImages = List.empty();
+        });
+      } else {
+        // กรณีที่ result เป็นค่าอื่นๆ (ถ้ามี)
+        print("ผลลัพธ์ไม่ตรงกับที่คาดหวัง: $result");
       }
 
       // try {

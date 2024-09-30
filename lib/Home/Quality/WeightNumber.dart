@@ -20,21 +20,22 @@ import 'package:watalygold/Widgets/Appbar_main_exit.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogAlertWNbyGemini.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogChoose.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogError.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
 class WeightNumber extends StatefulWidget {
-  // final Map<String, String?> httpscall;
-  // final List<File> capturedImage;
-  // final List<String> ListImagePath;
+  final Map<String, String?> httpscall;
+  final List<File> capturedImage;
+  final List<String> ListImagePath;
   final List<CameraDescription> camera;
   const WeightNumber({
     super.key,
     required this.camera,
-    // required this.capturedImage,
-    // required this.ListImagePath,
-    // required this.httpscall,
+    required this.capturedImage,
+    required this.ListImagePath,
+    required this.httpscall,
   });
 
   @override
@@ -88,7 +89,7 @@ class _WeightNumberState extends State<WeightNumber> {
     );
     if (result != null) {
       if (result) {
-        String results = await showDialog(
+        var results = await showDialog(
           barrierDismissible: false,
           context: context,
           builder: (context) {
@@ -204,84 +205,122 @@ class _WeightNumberState extends State<WeightNumber> {
     // }
   }
 
-  // Future useFunctionandresult() async {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => Center(
-  //       child: AlertDialog(
-  //         backgroundColor: GPrimaryColor.withOpacity(0.6),
-  //         contentPadding:
-  //             const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-  //         title: Column(
-  //           children: [
-  //             const Text(
-  //               'กำลังวิเคราะห์คุณภาพ . . .',
-  //               style: TextStyle(color: WhiteColor),
-  //               textAlign:
-  //                   TextAlign.center, // Add this line to center the title text
-  //             ),
-  //             const SizedBox(
-  //               height: 15,
-  //             ),
-  //             LoadingAnimationWidget.discreteCircle(
-  //               color: WhiteColor,
-  //               secondRingColor: GPrimaryColor,
-  //               thirdRingColor: YPrimaryColor,
-  //               size: 70,
-  //             ),
-  //           ],
-  //         ),
-  //         // actions: [],
-  //       ),
-  //     ),
-  //   );
+  Future useFunctionandresult() async {
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: AlertDialog(
+          backgroundColor: GPrimaryColor.withOpacity(0.6),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          title: Column(
+            children: [
+              const Text(
+                'กำลังตรวจสอบน้ำหนัก . . .',
+                style: TextStyle(color: WhiteColor),
+                textAlign:
+                    TextAlign.center, // Add this line to center the title text
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              LoadingAnimationWidget.discreteCircle(
+                color: WhiteColor,
+                secondRingColor: GPrimaryColor,
+                thirdRingColor: YPrimaryColor,
+                size: 70,
+              ),
+            ],
+          ),
+          // actions: [],
+        ),
+      ),
+    );
+    weight = numbersOnly.toString();
+    debugPrint("ค่าน้ำหนัก $weight");
+    widget.httpscall["weight"] = weight;
+    debugPrint("${widget.httpscall}");
+    // widget.httpscall["weight"] = numbersOnly.toString();
+    var firebasefunctions =
+        FirebaseFunctions.instanceFor(region: 'asia-southeast1');
 
-  //   weight = numbersOnly.toString();
-  //   debugPrint("ค่าน้ำหนัก $weight");
-  //   widget.httpscall["weight"] = weight;
-  //   debugPrint("${widget.httpscall}");
-  //   // widget.httpscall["weight"] = numbersOnly.toString();
-  //   var firebasefunctions =
-  //       FirebaseFunctions.instanceFor(region: 'asia-southeast1');
+    try {
+      final result = await firebasefunctions
+          .httpsCallable("addImages")
+          .call(widget.httpscall);
+      stdout.writeln(result.data);
+      final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
 
-  //   try {
-  //     final result = await firebasefunctions
-  //         .httpsCallable("addImages")
-  //         .call(widget.httpscall);
-  //     stdout.writeln(result.data);
-  //     final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
+      idResult = data['ID_Result'];
+      ids = List<String>.from(data['IDs']);
 
-  //     idResult = data['ID_Result'];
-  //     ids = List<String>.from(data['IDs']);
+      // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
+      stdout.writeln('ID_Result: $idResult');
+      stdout.writeln('IDs: $ids');
+    } on FirebaseFunctionsException catch (error) {
+      debugPrint(
+          'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
+      Navigator.of(context).pop();
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog_Error(
+              name: "เกิดข้อผิดพลาดบางอย่าง", content: "กรุณาลองใหม่อีกครั้ง");
+        },
+      );
+      return;
+    }
 
-  //     // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-  //     stdout.writeln('ID_Result: $idResult');
-  //     stdout.writeln('IDs: $ids');
-  //   } on FirebaseFunctionsException catch (error) {
-  //     debugPrint(
-  //         'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-  //     rethrow;
-  //   }
-
-  //   Navigator.of(context).pop();
-  //   // ไปยังหน้าหลัก
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => ResultPage(
-  //         ID_Result: idResult,
-  //         ID_Image: ids,
-  //         capturedImage: widget.capturedImage,
-  //         ListImagePath: widget.ListImagePath,
-  //       ),
-  //     ),
-  //   );
-  // }
+    Navigator.of(context).pop();
+    // ไปยังหน้าหลัก
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultPage(
+          ID_Result: idResult,
+          ID_Image: ids,
+          capturedImage: widget.capturedImage,
+          ListImagePath: widget.ListImagePath,
+        ),
+      ),
+    );
+  }
 
   Future<void> _captureAndProcess() async {
     try {
       final XFile image = await _controller.takePicture();
       setState(() {});
+      showDialog(
+        context: context,
+        builder: (context) => Center(
+          child: AlertDialog(
+            backgroundColor: GPrimaryColor.withOpacity(0.6),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            title: Column(
+              children: [
+                const Text(
+                  'กำลังตรวจสอบน้ำหนัก . . .',
+                  style: TextStyle(color: WhiteColor),
+                  textAlign: TextAlign
+                      .center, // Add this line to center the title text
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                LoadingAnimationWidget.discreteCircle(
+                  color: WhiteColor,
+                  secondRingColor: GPrimaryColor,
+                  thirdRingColor: YPrimaryColor,
+                  size: 70,
+                ),
+              ],
+            ),
+            // actions: [],
+          ),
+        ),
+      );
       await _cropAndOCR(image);
     } catch (e) {
       print('Error capturing image: $e');
@@ -297,16 +336,17 @@ class _WeightNumberState extends State<WeightNumber> {
     }
 
     // Proportional position and size of the frame
-    const double frameLeftPercent = 0.1; // 10% from the left
-    const double frameTopPercent = 0.5; // 30% from the top
-    const double frameWidthPercent = 0.8; // 80% of screen width
-    const double frameHeightPercent = 0.1; // 10% of screen height
+    final double frameLeftPercent = 0.15; // 10% from the left
+    final double frameTopPercent = 0.5; // 30% from the top
+    final double frameWidthPercent = 0.7; // 80% of screen width
+    final double frameHeightPercent = 0.12; // 10% of screen height
 
     // Calculate the position and size of the cropping area
     final int cropX = (frameLeftPercent * fullImage.width).round();
     final int cropY = (frameTopPercent * fullImage.height).round();
     final int cropWidth = (frameWidthPercent * fullImage.width).round();
-    final int cropHeight = (frameHeightPercent * fullImage.height).round();
+    final int cropHeight =
+        (frameHeightPercent * fullImage.height * 1.5).round();
 
     // Crop the image
     final img.Image croppedImage = img.copyCrop(
@@ -323,10 +363,13 @@ class _WeightNumberState extends State<WeightNumber> {
     final File croppedFile = File('$tempPath/cropped_image.png')
       ..writeAsBytesSync(img.encodePng(croppedImage));
 
-    await processImageAndAnalyze(croppedFile);
+    final processedImage = await _preprocessImageblackandwhite(croppedFile);
+
+    await processImageAndAnalyze(processedImage);
   }
 
   final textRecognizer = TextRecognizer();
+
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
     final results = await showDialog(
@@ -340,8 +383,47 @@ class _WeightNumberState extends State<WeightNumber> {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => Center(
+            child: AlertDialog(
+              backgroundColor: GPrimaryColor.withOpacity(0.6),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+              title: Column(
+                children: [
+                  const Text(
+                    'กำลังตรวจสอบน้ำหนัก . . .',
+                    style: TextStyle(color: WhiteColor),
+                    textAlign: TextAlign
+                        .center, // Add this line to center the title text
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  LoadingAnimationWidget.discreteCircle(
+                    color: WhiteColor,
+                    secondRingColor: GPrimaryColor,
+                    thirdRingColor: YPrimaryColor,
+                    size: 70,
+                  ),
+                ],
+              ),
+              // actions: [],
+            ),
+          ),
+        );
         final file = File(image.path);
-        await processImageAndAnalyze(file);
+        final img.Image originalImage =
+            img.decodeImage(await file.readAsBytes())!;
+
+        final processedImageHSV = await preprocessImagesHSV(originalImage);
+        final processedImageFile = File('${file.path}_processed.png')
+          ..writeAsBytesSync(img.encodePng(processedImageHSV));
+        final processedImageBW = await _preprocessImageblackandwhite(file);
+
+        await processImageAndAnalyze(processedImageBW);
 
         // // OCR
         // final processedImage = await _preprocessImage(file);
@@ -372,38 +454,72 @@ class _WeightNumberState extends State<WeightNumber> {
         //   }
         // });
         // debugPrint("ค่าน้ำหนักหลังทำงานเสร็จ $numbersOnly");
-        // useFunctionandresult();
-        // // Navigator.of(context).push(
-        // //   MaterialPageRoute(
-        // //     builder: (BuildContext context) => ResultScreen(
-        // //       text: numbersOnly,
-        // //       imgs: fullImage!, // ส่งภาพไปยัง ResultScreen
-        // //     ),
-        // //   ),
-        // // );
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder: (BuildContext context) => ResultScreen(
+        //       text: numbersOnly,
+        //       imgs: fullImage!, // ส่งภาพไปยัง ResultScreen
+        //     ),
+        //   ),
+        // );
       }
     } else {
       debugPrint("Error");
     }
   }
 
-  Future<void> processImageAndAnalyze(file) async {
+  Future<void> processImageAndAnalyze(File file) async {
     try {
       final gemini = Gemini.instance;
       final result = await gemini.textAndImage(
         text:
-            "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 53.3 g or 32 g ?",
+            """What are the numbers in the picture and what are the units of measurement?
+         If the image doesn't contain a scale or any numbers, please respond with 'ไม่มีตัวเลขหรือตาชั่งในภาพนี้'.
+         Otherwise, answer with just numbers and units of measurement without any further explanation. 
+         Just answer with numbers, such as 53.3 g or 32 g.""",
         images: [file.readAsBytesSync()],
       );
 
       final geminiText = result?.content?.parts?.last.text ?? '';
-      numbersOnly = _extractNumbersGeminiText(geminiText)!;
-      debugPrint("Gemini analysis: $geminiText");
-      debugPrint("Gemini extractedNumbers: $numbersOnly");
+      debugPrint("Gemini response: $geminiText");
 
+      if (geminiText == 'ไม่มีตัวเลขหรือตาชั่งในภาพนี้') {
+        Navigator.of(context).pop(); // ปิด dialog กำลังโหลด
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return Dialog_Error(
+                name: "เกิดข้อผิดพลาด",
+                content: "ไม่พบตัวเลขจากรูปภาพหรือภายในรูปภาพไม่เจอตาชั่ง");
+          },
+        );
+        return; // หยุดการทำงานต่อไป
+      }
+
+      String? extractedNumbers = _extractNumbersGeminiText(geminiText);
+      debugPrint("Extracted numbers: $extractedNumbers");
+
+      if (extractedNumbers == null) {
+        Navigator.of(context).pop(); // ปิด dialog กำลังโหลด
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return Dialog_Error(
+                name: "เกิดข้อผิดพลาด",
+                content: "ไม่สามารถแยกตัวเลขจากข้อความที่ได้รับ");
+          },
+        );
+        return; // หยุดการทำงานต่อไป
+      }
+
+      numbersOnly = extractedNumbers;
       debugPrint("ค่าน้ำหนักหลังทำงานเสร็จ $numbersOnly");
 
-      String results = await showDialog(
+      Navigator.of(context).pop(); // ปิด dialog กำลังโหลด
+
+      String? results = await showDialog(
         barrierDismissible: false,
         context: context,
         builder: (context) {
@@ -412,20 +528,30 @@ class _WeightNumberState extends State<WeightNumber> {
           );
         },
       );
-      if (results.isNotEmpty) {
+
+      if (results!.isNotEmpty) {
         if (results == "") {
           debugPrint("ไม่มีน้ำหนักที่ได้มา");
         } else {
           debugPrint(results);
-          // numbersOnly = results;
-          // useFunctionandresult();
+          useFunctionandresult();
+          // ทำอะไรต่อกับ results ตามที่ต้องการ
         }
       } else {
         debugPrint("น้ำหนักไม่ถูกต้อง");
+        debugPrint("น้ำหนักที่ได้มา : $results");
       }
-      // เรียกใช้ useFunctionandresult() หลังจากได้ค่า numbersOnly แล้ว
-      // useFunctionandresult();
     } catch (error) {
+      Navigator.of(context).pop(); // ปิด dialog กำลังโหลด ในกรณีเกิด error
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog_Error(
+              name: "เกิดข้อผิดพลาด",
+              content: "เกิดข้อผิดพลาดในการวิเคราะห์รูปภาพ: $error");
+        },
+      );
       if (error is HttpException) {
         print('Error connecting to the server');
       } else if (error is FormatException) {
@@ -436,18 +562,100 @@ class _WeightNumberState extends State<WeightNumber> {
     }
   }
 
+  img.Image preprocessImagesHSV(img.Image image) {
+    for (var y = 0; y < image.height; y++) {
+      for (var x = 0; x < image.width; x++) {
+        var pixel = image.getPixel(x, y);
+        // แปลง pixel เป็น Color
+        var color = Color.fromARGB(
+            pixel.a.toInt(), pixel.r.toInt(), pixel.g.toInt(), pixel.b.toInt());
+        var hsv = HSVColor.fromColor(color);
+        if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
+          // ลบพื้นที่สีน้ำเงินออก
+          hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 0.0); // ทำให้โปร่งใส
+          // hsv = HSVColor.fromAHSV(1, 0.0, 0.0, 0.7);
+        }
+        // hue สีน้ำเงิน 180-240
+        // if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
+        //   // เพิ่มความสว่างและลดความอิ่มตัว
+        //   // hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 1);
+        //   hsv = HSVColor.fromAHSV(1.0, 0.0, 0.0, 1);
+        // } else if (hsv.value < 0.3) {
+        //   // สำหรับตัวเลขที่มืด ปรับให้เข้มขึ้นเล็กน้อย
+        //   // hsv = HSVColor.fromAHSV(1.0, hsv.hue, hsv.saturation, hsv.value * 0.5);
+        //   hsv = HSVColor.fromAHSV(1.0, 0.0, 0.0, 0.0);
+        // } else {
+        //   // ไม่พบสีน้ำเงิน ให้เพิ่มความสว่าง
+        //   hsv =
+        //       HSVColor.fromAHSV(1.0, hsv.hue, hsv.saturation, 0.5);
+        // }
+        var rgb = hsv.toColor();
+        image.setPixelRgba(x, y, rgb.red, rgb.green, rgb.blue, rgb.alpha);
+      }
+    }
+    return image;
+  }
+
+  // ปรับขาวดำ
+  Future<File> _preprocessImageblackandwhite(File imageFile) async {
+    final originalImage = img.decodeImage(imageFile.readAsBytesSync());
+    if (originalImage == null) return imageFile;
+    // // ขยายขนาดภาพ
+    // final resizedImage = img.copyResize(
+    //   originalImage,
+    //   width: originalImage.width * 2, // ขยายความกว้างเป็น 2 เท่า
+    //   height: originalImage.height * 2, // ขยายความสูงเป็น 2 เท่า
+    // );
+    // final processedImage = preprocessImagesHSV(originalImage);
+    // Define the threshold value (0-255)
+    const int threshold = 32;
+    // // ปรับแสงและความคม (เพิ่ม contrast, brightness)
+    // final contrastImage =
+    //     img.adjustColor(originalImage, contrast: 1, brightness: 2);
+    // // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
+    // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
+    // Loop through each pixel to apply thresholding
+    for (int y = 0; y < originalImage.height; y++) {
+      for (int x = 0; x < originalImage.width; x++) {
+        // Get the Pixel object
+        final pixel = originalImage.getPixel(x, y);
+        // Extract RGBA values and cast to int
+        int r = pixel.r.toInt();
+        int g = pixel.g.toInt();
+        int b = pixel.b.toInt();
+        // Calculate the luminance (brightness) using the average of RGB components
+        int luminance = (0.299 * r + 0.587 * g + 0.114 * b).toInt();
+        // Apply thresholding: set pixel to black or white
+        if (luminance < threshold) {
+          originalImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+        } else {
+          originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
+        }
+        // if (luminance < threshold) {
+        //   originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
+        // } else {
+        //   originalImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+        // }
+      }
+    }
+
+    // Save the processed image into a temporary file
+    final processedFile = File(imageFile.path)
+      ..writeAsBytesSync(img.encodeJpg(originalImage)); // บันทึก processedImage
+    return processedFile;
+  }
+
   String _extractNumbersOCR(String text) {
     return text.replaceAll(RegExp(r'[^0-9]'), '').trim();
   }
 
   String? _extractNumbersGeminiText(String response) {
-    final regex = RegExp(r"(\d+(\.\d*)?)\s([a-zA-Z]+)");
+    final regex = RegExp(r"(\d+(\.\d*)?)\s*([a-zA-Z]+)");
     final match = regex.firstMatch(response);
     if (match != null) {
       final number = match.group(1);
       final unit = match.group(3);
-      return "$number";
-      // return "$number $unit";
+      return "$number $unit"; // หรือ "$number $unit" ถ้าต้องการหน่วยด้วย
     }
     return null;
   }
@@ -492,19 +700,19 @@ class _WeightNumberState extends State<WeightNumber> {
             ),
           ),
           onPressed: () async {
-            var results = await showDialog(
+            String? results = await showDialog(
               barrierDismissible: false,
               context: context,
               builder: (context) {
                 return const Dialog_WeightNumber();
               },
             );
-            if (results.isNotEmpty) {
+            if (results!.isNotEmpty) {
               if (results == "") {
                 debugPrint("ไม่มีน้ำหนักที่ได้มา");
               } else {
                 numbersOnly = results;
-                // useFunctionandresult();
+                await useFunctionandresult();
               }
             } else {
               debugPrint("ไม่มีน้ำหนักที่ได้มา");
@@ -610,15 +818,11 @@ class _WeightNumberState extends State<WeightNumber> {
                   ),
                 ),
                 Positioned(
-                  left: MediaQuery.of(context).size.width *
-                      0.1, // 10% from the left
-                  top: MediaQuery.of(context).size.height *
-                      0.3, // 30% from the top
+                  left: MediaQuery.of(context).size.width * 0.15,
+                  top: MediaQuery.of(context).size.height * 0.3,
                   child: Container(
-                    width: MediaQuery.of(context).size.width *
-                        0.8, // 80% of screen width
-                    height: MediaQuery.of(context).size.height *
-                        0.1, // 10% of screen height
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: MediaQuery.of(context).size.height * 0.12,
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.white, width: 3),
                     ),

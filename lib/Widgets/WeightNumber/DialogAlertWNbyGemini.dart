@@ -77,7 +77,7 @@ class _Dialog_WN_GeminiState extends State<Dialog_WN_Gemini> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop("");
                   },
                   style: ButtonStyle(
                       padding:

@@ -69,7 +69,9 @@ Future<void> main() async {
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
       ],
+      locale: Locale('th', 'TH'),
       supportedLocales: [
         const Locale('th', 'TH'),
         const Locale('en', 'US'),

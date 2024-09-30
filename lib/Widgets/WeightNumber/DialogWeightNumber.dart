@@ -84,7 +84,7 @@ class _Dialog_WeightNumberState extends State<Dialog_WeightNumber> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop("");
                   },
                   child: Text(
                     "ยกเลิก",

@@ -105,13 +105,13 @@ class _ExportPriceState extends State<ExportPrice> {
 
   Future<void> fetchDataAndSaveToFirestore(BuildContext context) async {
     DateTime selectedDate = this.selectedDate;
-
     DateTime endOfMonth = DateTime(selectedDate.year, selectedDate.month + 1,
         0); //+1 และ 0 ทำให้ได้วันสุดท้ายของเดือน
     String toDate = DateFormat('yyyy-MM-dd').format(endOfMonth);
+    debugPrint("toDate ${toDate}");
     final apiUrl =
         "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=$toDate";
-    // final apiUrl =
+    debugPrint(apiUrl);
     //     "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
     try {
       final response = await http.get(Uri.parse(apiUrl));
@@ -217,7 +217,7 @@ class _ExportPriceState extends State<ExportPrice> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
                   TextButton(
                     child: Text('ตกลง',
                         style: TextStyle(color: GPrimaryColor, fontSize: 16)),
@@ -381,7 +381,9 @@ class _ExportPriceState extends State<ExportPrice> {
                             ),
                           ),
                           child: Text(
-                            "ราคาวันที่ ${_dateController.text}",
+                            filteredItem != null
+                                ? "ราคา ${filteredItem['price_max'] ?? ''} ${filteredItem['price_min'] != null ? '- ${filteredItem['price_min']}' : ''} ${unit ?? ''}"
+                                : "ราคา  ${unit ?? ''}",
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.black,
@@ -490,7 +492,7 @@ class _ExportPriceState extends State<ExportPrice> {
                 Padding(
                   padding: EdgeInsets.all(7),
                   child: Container(
-                    height: 300,
+                    height: MediaQuery.of(context).size.width * 0.65,
                     child: Stack(
                       children: [
                         SfCartesianChart(

@@ -146,13 +146,15 @@ class _HistoryDetailState extends State<HistoryDetail> {
                         Padding(
                           padding: EdgeInsets.only(
                               left: 25, top: 5, bottom: 10, right: 15),
-                          child: Text(
-                            widget.results.another_note,
-                            style: TextStyle(
-                                color: gradeColor[widget.results.quality],
-                                fontSize: 15),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
+                          child: SingleChildScrollView(
+                            child: Text(
+                              widget.results.another_note,
+                              style: TextStyle(
+                                  color: gradeColor[widget.results.quality],
+                                  fontSize: 15),
+                              // overflow: TextOverflow.ellipsis,
+                              // maxLines: 2,
+                            ),
                           ),
                         )
                       ],

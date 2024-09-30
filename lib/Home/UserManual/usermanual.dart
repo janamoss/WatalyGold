@@ -47,11 +47,13 @@ class _UserManualState extends State<UserManual> {
                     const Center(
                       child: SizedBox(
                         child: Text(
-                          "วิธีถ่ายภาพมะม่วง ",
+                          "วิธีถ่ายภาพมะม่วง",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                           ),
+                          softWrap: true,
+                          overflow: TextOverflow.clip,
                         ),
                       ),
                     ),
@@ -78,6 +80,7 @@ class _UserManualState extends State<UserManual> {
                 iconColor: Colors.white,
                 collapsedIconColor: Colors.white,
                 title: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(width: 10),
                     Image.asset(
@@ -86,15 +89,15 @@ class _UserManualState extends State<UserManual> {
                       height: 50,
                     ),
                     SizedBox(width: 10),
-                    const Center(
-                      child: SizedBox(
-                        child: Text(
-                          "คุณสมบัติของมะม่วงแต่ละเกรด ",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
+                    Expanded(
+                      child: Text(
+                        "คุณสมบัติของมะม่วงแต่ละเกรด",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                         ),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                   ],
@@ -105,11 +108,6 @@ class _UserManualState extends State<UserManual> {
                     child: Mangoproperties(),
                   ),
                 ],
-                // children: [
-                //   Expanded(
-                //     child: Mangoproperties(),
-                //   ),
-                // ],
               ),
               // SizedBox(height: 10),
             ],
