@@ -381,9 +381,7 @@ class _ExportPriceState extends State<ExportPrice> {
                             ),
                           ),
                           child: Text(
-                            filteredItem != null
-                                ? "ราคา ${filteredItem['price_max'] ?? ''} ${filteredItem['price_min'] != null ? '- ${filteredItem['price_min']}' : ''} ${unit ?? ''}"
-                                : "ราคา  ${unit ?? ''}",
+                            "ราคาวันที่ ${_dateController.text}",
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.black,
@@ -395,7 +393,9 @@ class _ExportPriceState extends State<ExportPrice> {
                       Padding(
                         padding: EdgeInsets.only(bottom: 5, left: 20),
                         child: Text(
-                          "ราคา  ${filteredItem?['price_max'] ?? ' '} - ${filteredItem?['price_min'] ?? ' '} ${unit ?? ' '}",
+                          filteredItem != null
+                              ? "ราคา ${filteredItem['price_max'] ?? ''} ${filteredItem['price_min'] != null ? '- ${filteredItem['price_min']}' : ''} ${unit ?? ''}"
+                              : "ราคา  ${unit ?? ''}",
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.black,

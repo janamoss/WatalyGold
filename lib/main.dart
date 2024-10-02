@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/User_DB.dart';
 import 'package:watalygold/Home/Onboarding/onboarding_screen.dart';
+import 'package:watalygold/Home/Quality/test.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -89,6 +90,7 @@ Future<void> main() async {
       home: onboarding
           ? BasePage(camera: cameras)
           : Myonboardingscreen(camera: cameras),
+      // home: const Testing(),
       builder: EasyLoading.init(),
     ),
   );

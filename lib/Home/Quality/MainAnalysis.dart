@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:platform_device_id/platform_device_id.dart';
@@ -25,6 +26,20 @@ import 'package:watalygold/Widgets/WeightNumber/DialogError.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
+
+class CapturedImage {
+  final File image;
+  int statusMango;
+  int statusimage;
+  int statusMangoColor;
+
+  CapturedImage({
+    required this.image,
+    required this.statusMango,
+    required this.statusimage,
+    required this.statusMangoColor,
+  });
+}
 
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({
@@ -57,6 +72,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   final List _predictions = [];
 
   late bool checkhowtouse;
+
+  int statusimage = 1;
 
   void _getDeviceId() async {
     //Recieving device id in the result
@@ -97,7 +114,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   int selectedCamera = 0;
-  List<File> capturedImages = [];
+  List<CapturedImage> capturedImages = [];
+  // List<File> capturedImages = [];
 
   initializeCamera(int cameraIndex) async {
     _controller = CameraController(
@@ -169,13 +187,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     return bytes;
   }
 
-  Future<void> runInference() async {
+  Future<void> runInference(File images, int index) async {
     if (_labels == null) {
       return;
     }
 
     try {
-      Uint8List inputBytes = await preProcessingImage(capturedImages[0]);
+      Uint8List inputBytes = await preProcessingImage(images);
       var input = inputBytes.buffer.asUint8List().reshape([1, 64, 64, 3]);
       var outputBuffer = List<int>.filled(1 * 2, 0).reshape([1, 2]);
       _interpreter.run(input, outputBuffer);
@@ -187,10 +205,25 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       int highestProbIndex = output.indexOf(maxScore);
       String classificationResult = _labels![highestProbIndex];
+      int numberresult = 0;
+      if (classificationResult == "Yellow") {
+        numberresult = 1;
+      } else {
+        numberresult = 2;
+      }
       setState(() {
-        result = classificationResult;
+        updateStatusMangoColorByStatusImage(index, numberresult);
       });
-      debugPrint(result);
+      if (capturedImages.length == 4 &&
+          capturedImages
+              .map((image) => image.statusimage)
+              .toSet()
+              .containsAll([1, 2, 3, 4]) &&
+          capturedImages.every((image) =>
+              image.statusMango == 1 && image.statusMangoColor == 1)) {
+        debugPrint("ครบ 4 รูปภาพเรียบร้อยแล้ว");
+        await uploadImageAndUpdateState();
+      }
     } catch (e) {
       debugPrint('Error processing Image $e');
     }
@@ -215,49 +248,63 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     return;
   }
 
-  Future Gallery() async {
+  Future<void> Gallery() async {
     try {
-      // final results = await showDialog(
-      //   barrierDismissible: false,
-      //   context: context,
-      //   builder: (context) {
-      //     return Dialog_Howtouse_SelectNW();
-      //   },
-      // );
-      // if (results) {
-      //   final image = await picker.pickMultiImage(imageQuality: 50, limit: 4);
-      //   final List<String> ImagepathList = [];
-      //   // print(image?.path);
-      //   // if (image == null) return;
-      //   // final imageTemporary = File(image.path);
-      //   setState(() {
-      //     for (int i = 0; i < image.length; i++) {
-      //       ImagepathList.add(image[i].path);
-      //     }
-      //     for (int i = 0; i < ImagepathList.length; i++) {
-      //       capturedImages.add(File(ImagepathList[i]));
-      //     }
-      //   });
-      //   uploadImageAndUpdateState();
-      // } else {
-      //   debugPrint("Error");
-      // }
-      final image = await picker.pickMultiImage(imageQuality: 50, limit: 4);
-      final List<String> ImagepathList = [];
-      // print(image?.path);
-      // if (image == null) return;
-      // final imageTemporary = File(image.path);
-      setState(() {
-        for (int i = 0; i < image.length; i++) {
-          ImagepathList.add(image[i].path);
+      final List<XFile> images =
+          await picker.pickMultiImage(imageQuality: 50, limit: 4);
+
+      if (images.isNotEmpty) {
+        Set<int> existingStatusImages =
+            capturedImages.map((image) => image.statusimage).toSet();
+        List<Future> analysisFutures = [];
+
+        for (int i = 0; i < images.length; i++) {
+          int nextAvailableStatus = 1;
+          while (existingStatusImages.contains(nextAvailableStatus)) {
+            nextAvailableStatus++;
+          }
+
+          // แปลง XFile เป็น File
+          File imageFile = File(images[i].path);
+
+          setState(() {
+            capturedImages.add(CapturedImage(
+              image: imageFile,
+              statusMango: 0,
+              statusMangoColor: 0,
+              statusimage: nextAvailableStatus,
+            ));
+            existingStatusImages.add(nextAvailableStatus);
+
+            List<int> availableStatusImages = [1, 2, 3, 4]
+                .where((number) => !existingStatusImages.contains(number))
+                .toList();
+            if (availableStatusImages.isNotEmpty) {
+              statusimage = availableStatusImages.first;
+            } else {
+              debugPrint("ครบ 4 รูปแล้วค่า");
+            }
+          });
+
+          // ส่ง File แทน XFile ไปยัง analyzeImage
+          analysisFutures.add(analyzeImage(imageFile, nextAvailableStatus));
         }
-        for (int i = 0; i < ImagepathList.length; i++) {
-          capturedImages.add(File(ImagepathList[i]));
-        }
-      });
-      uploadImageAndUpdateState();
+
+        await Future.wait(analysisFutures);
+        debugPrint("analysis");
+      }
     } on PlatformException catch (e) {
-      stdout.writeln('ผิดพลาด $e');
+      debugPrint('เกิดข้อผิดพลาด: $e');
+    }
+  }
+
+  CapturedImage? findCapturedImageByStatusImage(int statusImage) {
+    try {
+      return capturedImages.firstWhere(
+        (image) => image.statusimage == statusImage,
+      );
+    } catch (e) {
+      return null; // คืนค่า null ถ้าไม่พบภาพที่ตรงกับ statusImage
     }
   }
 
@@ -276,8 +323,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 const Text(
                   'กำลังวิเคราะห์คุณภาพ . . .',
                   style: TextStyle(color: WhiteColor),
-                  textAlign: TextAlign
-                      .center, // Add this line to center the title text
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(
                   height: 15,
@@ -290,136 +336,105 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 ),
               ],
             ),
-            // actions: [],
           ),
         ),
       );
 
-      await runInference();
+      print("พบสีเหลือง");
 
-      if (result == "Yellow") {
-        // ทำงานเมื่อ result เป็น "Yellow"
-        print("พบสีเหลือง");
+      String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
 
-        // สร้างชื่อที่ไม่ซ้ำกันจาก timestamp
-        String uniquename = DateTime.now().millisecondsSinceEpoch.toString();
+      // ชื่อของรูปภาพที่ต้องการ
+      List<String> imageNames = [
+        'Front_$uniquename',
+        'Back_$uniquename',
+        'Top_$uniquename',
+        'Bottom_$uniquename',
+      ];
 
-        // ชื่อของรูปภาพที่ต้องการ
-        List<String> imageNames = [
-          'Front_$uniquename',
-          'Back_$uniquename',
-          'Top_$uniquename',
-          'Bottom_$uniquename',
-        ];
+      List<String> imageuri = [];
+      List<String> downloaduri = [];
+      List<String> listImagepath = [];
 
-        List<String> imageuri = [];
-        List<String> downloaduri = [];
-        List<String> listImagepath = [];
-        for (int i = 0; i < capturedImages.length; i++) {
-          final result =
-              await uploadImageToCloudStorage(capturedImages[i], imageNames[i]);
-          final imagePath =
-              await saveImageToDevice(capturedImages[i], imageNames[i]);
-          stdout.writeln('Saved image path: $imagePath');
-          listImagepath.add(imagePath.toString());
-          downloaduri.add(result['downloadURL']!);
-          imageuri.add(result['imageName']!);
+      for (int i = 1; i <= 4; i++) {
+        // ใช้ฟังก์ชัน findCapturedImageByStatusImage เพื่อนำ capturedImages ที่ตรงกับ statusimage
+        final capturedImage = findCapturedImageByStatusImage(i);
+
+        if (capturedImage != null) {
+          final result = await uploadImageToCloudStorage(
+              capturedImage.image, imageNames[i - 1]);
+          if (result == null) {
+            print("Result is null for image $i");
+          }
+
+          if (result != null && result.containsKey('downloadURL')) {
+            final imagePath =
+                await saveImageToDevice(capturedImage.image, imageNames[i - 1]);
+
+            stdout.writeln('Saved image path: $imagePath');
+            listImagepath.add(imagePath.toString());
+            downloaduri.add(result['downloadURL']!);
+            imageuri.add(result['imageName']!);
+          } else {
+            print("Upload failed or result is null for statusimage $i");
+          }
+        } else {
+          print("ไม่พบภาพสำหรับ statusimage $i");
         }
-        bool allImagesUploaded = true;
-
-        String downloadurl = downloaduri.join(',');
-        String concatenatedString = imageuri.join(',');
-        // File first = capturedImages[0];
-        // ตัวแปรเพื่อตรวจสอบว่าทุกรูปถูกอัปโหลดหรือไม่
-        String results = result!;
-
-        final preview_result = {
-          'downloadurl': downloadurl,
-          "imagename": concatenatedString,
-          "ip": _deviceId,
-          "result": results
-        };
-        debugPrint("เสร็จสิ้น");
-        if (allImagesUploaded) {
-          Navigator.of(context).pop();
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => WeightNumber(
-                      camera: widget.camera,
-                      capturedImage: capturedImages.reversed.toList(),
-                      ListImagePath: listImagepath,
-                      httpscall: preview_result,
-                    )),
-          );
-        }
-        // เพิ่มโค้ดที่ต้องการทำเมื่อเป็นสีเหลืองตรงนี้
-      } else if (result == "Not_Yellow") {
-        // แสดง Dialog Error เมื่อ result เป็น "Not_Yellow"
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return Dialog_Error(
-                name: "เกิดข้อผิดพลาด",
-                content: "ไม่พบมะม่วงหรือสีของมะม่วงไม่สีเหลืองทอง");
-          },
-        );
-        Navigator.of(context).pop();
-        setState(() {
-          capturedImages = List.empty();
-        });
-      } else {
-        // กรณีที่ result เป็นค่าอื่นๆ (ถ้ามี)
-        print("ผลลัพธ์ไม่ตรงกับที่คาดหวัง: $result");
       }
 
-      // try {
-      //   final result = await firebasefunctions.httpsCallable("addImages").call({
-      //     'downloadurl': downloadurl,
-      //     "imagename": concatenatedString,
-      //     "ip": _deviceId,
-      //     "result": results
-      //   });
-      //   stdout.writeln(result.data);
-      //   final Map<String, dynamic> data =
-      //       Map<String, dynamic>.from(result.data);
+      bool allImagesUploaded = true;
+      String downloadurl = downloaduri.join(',');
+      String concatenatedString = imageuri.join(',');
 
-      //   idResult = data['ID_Result'];
-      //   ids = List<String>.from(data['IDs']);
+      setState(() {
+        capturedImages.sort((a, b) => a.statusimage.compareTo(b.statusimage));
+      });
 
-      //   // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-      //   stdout.writeln('ID_Result: $idResult');
-      //   stdout.writeln('IDs: $ids');
-      // } on FirebaseFunctionsException catch (error) {
-      //   debugPrint(
-      //       'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-      //   rethrow;
-      // }
-      // // เช็คว่าอัปโหลดภาพทั้ง 4 ได้สำเร็จหรือไม่ ถ้าสำเร็จทั้งหมดให้กลับไปยังหน้าหลัก
-      // debugPrint("$preview_result");
-      // if (allImagesUploaded) {
-      //   stdout.writeln(imageuri);
-      //   Navigator.of(context).pop();
-      //   // ไปยังหน้าหลัก
-      //   Navigator.push(
-      //     context,
-      //     MaterialPageRoute(
-      //       builder: (context) => ResultPage(
-      //         ID_Result: idResult,
-      //         ID_Image: ids,
-      //         capturedImage: capturedImages.reversed.toList(),
-      //         ListImagePath: listImagepath,
-      //       ),
-      //     ),
-      //   );
-      // }
+// ตอนที่ใช้ results ใน preview_result:
+      final previewResult = {
+        'downloadurl': downloadurl,
+        "imagename": concatenatedString,
+        "ip": _deviceId,
+        "result": "Yellow"
+      };
+
+      debugPrint("$previewResult");
+
+      List<File> capturedImagesFiles =
+          capturedImages.map((captured) => captured.image).toList();
+
+      debugPrint("เสร็จสิ้น");
+
+      if (allImagesUploaded) {
+        Navigator.of(context).pop();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => WeightNumber(
+                    camera: widget.camera,
+                    capturedImage: capturedImagesFiles,
+                    ListImagePath: listImagepath,
+                    httpscall: previewResult,
+                  )),
+        );
+      }
+    } else {
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog_Error(
+              name: "เกิดข้อผิดพลาด",
+              content: "เซิฟเวอร์ทำงานผิดพลาด กรุณาลองใหม่อีกครั้ง");
+        },
+      );
+      Navigator.of(context).pop();
+      setState(() {
+        capturedImages.clear();
+      });
+      print("ผลลัพธ์ไม่ตรงกับที่คาดหวัง: $result");
     }
-    // loadModel();
-    // เรียก setState เพื่ออัพเดท UI หลังจากได้ imageUrl แล้ว
-    setState(() {
-      // detectImage(imageTemporary);
-    });
   }
 
   Future<String> saveImageToDevice(File imageFile, String imageName) async {
@@ -447,6 +462,60 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   late int flashstatus = 0;
+
+  // การอัพเดตข้อมูล statusmango
+  void updateStatusMangoByStatusImage(int statusImage, int statusMango) {
+    setState(() {
+      for (var image in capturedImages) {
+        if (image.statusimage == statusImage) {
+          image.statusMango =
+              statusMango; // อัปเดตค่า statusMango ตามที่ต้องการ
+          break; // ถ้าเจอแล้วหยุดลูป
+        }
+      }
+    });
+  }
+
+  void updateStatusMangoColorByStatusImage(
+      int statusImage, int statusMangoColor) {
+    setState(() {
+      for (var image in capturedImages) {
+        if (image.statusimage == statusImage) {
+          image.statusMangoColor =
+              statusMangoColor; // อัปเดตค่า statusMango ตามที่ต้องการ
+          break; // ถ้าเจอแล้วหยุดลูป
+        }
+      }
+    });
+  }
+
+  Future<void> analyzeImage(File image, int index) async {
+    if (image != null) {
+      final gemini = Gemini.instance;
+
+      await gemini.textAndImage(
+        text:
+            """The picture that you checked, please help me identify whether this is a mango or not. 
+      If it is a mango, answer "mango". If it is not a mango, answer "not mango".""",
+        images: [await image.readAsBytes()],
+      ).then((result) {
+        final geminiText = result?.content?.parts?.last.text ?? '';
+
+        setState(() {
+          if (geminiText == "mango" || geminiText == "mango.") {
+            updateStatusMangoByStatusImage(index, 1);
+            runInference(image, index);
+          } else {
+            updateStatusMangoByStatusImage(index, 2);
+          }
+        });
+
+        debugPrint("Gemini response: $geminiText");
+      }).catchError((error) {
+        debugPrint("Error: $error");
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -554,7 +623,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     ),
                   ),
                 ),
-                capturedImages.length >= 2
+                statusimage == 3 || statusimage == 4
                     ? Positioned(
                         bottom: 180,
                         left: 50,
@@ -562,25 +631,21 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                           width: 300,
                           height: 300,
                           decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                color: WhiteColor,
-                                width: 3,
-                              )),
+                            color: Colors.transparent,
+                            border: Border.all(color: WhiteColor, width: 3),
+                          ),
                         ),
                       )
                     : Positioned(
-                        bottom: 160,
+                        bottom: 125,
                         left: 100,
                         child: Container(
                           width: 200,
                           height: 350,
                           decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(
-                                color: WhiteColor,
-                                width: 3,
-                              )),
+                            color: Colors.transparent,
+                            border: Border.all(color: WhiteColor, width: 3),
+                          ),
                         ),
                       ),
                 Positioned(
@@ -591,153 +656,149 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     color: Colors.transparent,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Column(
+                      children: List.generate(4, (index) {
+                        final labels = [
+                          'ด้านหน้า',
+                          'ด้านหลัง',
+                          'ด้านล่าง',
+                          'ด้านบน'
+                        ];
+
+                        // ฟังก์ชันสำหรับค้นหาภาพที่มี statusimage ตรงกับ index ปัจจุบัน
+                        CapturedImage? findCapturedImageByStatusImage(
+                            int statusImage) {
+                          try {
+                            return capturedImages.firstWhere(
+                              (image) => image.statusimage == statusImage,
+                            );
+                          } catch (e) {
+                            return null; // คืนค่า null เมื่อไม่เจอ
+                          }
+                        }
+
+                        // ดึงข้อมูลภาพที่ตรงกับ statusimage = index + 1
+                        final image = findCapturedImageByStatusImage(index + 1);
+
+                        return Stack(
                           children: [
-                            GestureDetector(
-                              child: Container(
-                                height: 60,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  // border: Border.all(color: WhiteColor, width: 4),
-                                  border: capturedImages.isNotEmpty
-                                      ? Border.all(
-                                          color: GPrimaryColor, width: 2)
-                                      : Border.all(color: WhiteColor, width: 2),
-                                  color: Colors.white.withOpacity(0.4),
-                                  image: capturedImages.isNotEmpty
-                                      ? DecorationImage(
-                                          image: FileImage(capturedImages[0]),
-                                          fit: BoxFit.cover)
-                                      : null,
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: image == null
+                                      ? () {
+                                          setState(() {
+                                            statusimage = index +
+                                                1; // ตั้งค่า statusimage ตาม index ของรูปภาพที่กด
+                                          });
+                                          debugPrint("$statusimage สถานะตอนกด");
+                                        }
+                                      : image!.statusMango == 1 &&
+                                              image.statusMangoColor == 1
+                                          ? null
+                                          : () {
+                                              setState(() {
+                                                statusimage = index +
+                                                    1; // ตั้งค่า statusimage ตาม index ของรูปภาพที่กด
+                                              });
+                                              debugPrint(
+                                                  "$statusimage สถานะตอนกด");
+                                            },
+                                  child: Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      border: image != null
+                                          ? Border.all(
+                                              color: GPrimaryColor, width: 2)
+                                          : statusimage == index + 1
+                                              ? Border.all(
+                                                  color: Colors.cyan.shade400,
+                                                  width: 2)
+                                              : Border.all(
+                                                  color: WhiteColor, width: 2),
+                                      color: Colors.white.withOpacity(0.4),
+                                      image: image != null
+                                          ? DecorationImage(
+                                              image: FileImage(image.image),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
+                                    ),
+                                    // ใช้ child เพื่อแสดงสถานะของ statusMango ตามที่เลือก
+                                    child: image != null
+                                        ? Center(
+                                            child: image.statusMango == 0
+                                                ? CircularProgressIndicator(
+                                                    color: GPrimaryColor,
+                                                  ) // วงกลม Loading ขณะประมวลผล
+                                                : image.statusMango == 1 &&
+                                                        image.statusMangoColor ==
+                                                            1
+                                                    ? Icon(
+                                                        Icons
+                                                            .check_circle, // เครื่องหมายถูก
+                                                        color: Colors
+                                                            .green.shade400,
+                                                        size: 30,
+                                                      )
+                                                    : image.statusMango == 1
+                                                        ? CircularProgressIndicator(
+                                                            color:
+                                                                GPrimaryColor,
+                                                          )
+                                                        : Icon(
+                                                            Icons
+                                                                .cancel, // เครื่องหมายกากบาท
+                                                            color: Colors
+                                                                .red.shade400,
+                                                            size: 30,
+                                                          ),
+                                          )
+                                        : null,
+                                  ),
                                 ),
-                              ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 5),
+                                  child: Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: Text(
+                                      labels[index],
+                                      style: TextStyle(
+                                          color: GPrimaryColor, fontSize: 20),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Text(
-                                  "ด้านหน้า",
-                                  style: TextStyle(
-                                      color: GPrimaryColor, fontSize: 20),
+                            if (image != null && image.statusMango == 2)
+                              Positioned(
+                                top: 0,
+                                right: 5,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      capturedImages.remove(image);
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(2),
+                                    decoration: BoxDecoration(
+                                      color: WhiteColor,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 15,
+                                      color: Colors.red.shade400,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            )
                           ],
-                        ),
-                        Column(
-                          children: [
-                            GestureDetector(
-                              child: Container(
-                                height: 60,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  // border: Border.all(color: WhiteColor, width: 4),
-                                  border: capturedImages.isNotEmpty &&
-                                          capturedImages.length >= 2
-                                      ? Border.all(
-                                          color: GPrimaryColor, width: 2)
-                                      : Border.all(color: WhiteColor, width: 2),
-                                  color: Colors.white.withOpacity(0.4),
-                                  image: capturedImages.isNotEmpty &&
-                                          capturedImages.length > 1
-                                      ? DecorationImage(
-                                          image: FileImage(capturedImages[1]),
-                                          fit: BoxFit.cover)
-                                      : null,
-                                ),
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Text(
-                                  "ด้านหลัง",
-                                  style: TextStyle(
-                                      color: GPrimaryColor, fontSize: 20),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            GestureDetector(
-                              child: Container(
-                                height: 60,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  // border: Border.all(color: WhiteColor, width: 4),
-                                  border: capturedImages.isNotEmpty &&
-                                          capturedImages.length >= 3
-                                      ? Border.all(
-                                          color: GPrimaryColor, width: 2)
-                                      : Border.all(color: WhiteColor, width: 2),
-                                  color: Colors.white.withOpacity(0.4),
-                                  image: capturedImages.isNotEmpty &&
-                                          capturedImages.length > 2
-                                      ? DecorationImage(
-                                          image: FileImage(capturedImages[2]),
-                                          fit: BoxFit.cover)
-                                      : null,
-                                ),
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Text(
-                                  "ด้านล่าง",
-                                  style: TextStyle(
-                                      color: GPrimaryColor, fontSize: 20),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            GestureDetector(
-                              child: Container(
-                                height: 60,
-                                width: 60,
-                                decoration: BoxDecoration(
-                                  // border: Border.all(color: WhiteColor, width: 4),
-                                  border: capturedImages.isNotEmpty &&
-                                          capturedImages.length == 4
-                                      ? Border.all(
-                                          color: GPrimaryColor, width: 2)
-                                      : Border.all(color: WhiteColor, width: 2),
-                                  color: Colors.white.withOpacity(0.4),
-                                  image: capturedImages.isNotEmpty &&
-                                          capturedImages.length > 3
-                                      ? DecorationImage(
-                                          image: FileImage(capturedImages[3]),
-                                          fit: BoxFit.cover)
-                                      : null,
-                                ),
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 5),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Text(
-                                  "ด้านบน",
-                                  style: TextStyle(
-                                      color: GPrimaryColor, fontSize: 20),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
+                        );
+                      }),
                     ),
                   ),
-                ),
+                )
               ],
             ),
           ),
@@ -792,13 +853,53 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                             child: GestureDetector(
                               onTap: () async {
                                 await _initializeControllerFuture;
-                                var xFile = await _controller.takePicture();
-                                setState(() {
-                                  capturedImages.add(File(xFile.path));
-                                });
-                                if (capturedImages.length == 4) {
-                                  uploadImageAndUpdateState();
+
+                                // ตั้งค่าแฟลชตาม flashstatus
+                                if (flashstatus == 0) {
+                                  _controller.setFlashMode(FlashMode.off);
                                 }
+
+                                // ถ่ายรูป
+                                var xFile = await _controller.takePicture();
+
+                                // ตรวจสอบเลข statusimage ที่ขาด
+                                Set<int> existingStatusImages = capturedImages
+                                    .map((image) => image.statusimage)
+                                    .toSet();
+
+                                // เพิ่ม statusimage ปัจจุบันเข้าไปใน existingStatusImages
+                                existingStatusImages.add(statusimage);
+
+                                List<int> availableStatusImages = [1, 2, 3, 4]
+                                    .where((number) =>
+                                        !existingStatusImages.contains(number))
+                                    .toList();
+
+                                // ใช้ statusimage ปัจจุบันเป็น statusN
+                                int statusN = statusimage;
+
+                                // เพิ่มรูปภาพลงใน capturedImages
+                                setState(() {
+                                  capturedImages.add(CapturedImage(
+                                    statusimage: statusN,
+                                    image: File(xFile.path),
+                                    statusMango: 0,
+                                    statusMangoColor: 0,
+                                  ));
+                                  if (availableStatusImages.isNotEmpty) {
+                                    statusimage = availableStatusImages.first;
+                                  } else {
+                                    debugPrint("ครบ 4 รูปแล้วค่า");
+                                  }
+                                });
+
+                                debugPrint("ตัวเลขสถานะ $statusN");
+                                debugPrint("$capturedImages");
+                                debugPrint(
+                                    "availableStatusImages: $availableStatusImages");
+
+                                // เรียก analyzeImage พร้อมส่ง statusN ไป
+                                await analyzeImage(File(xFile.path), statusN);
                               },
                               child: Container(
                                 height: 60,
