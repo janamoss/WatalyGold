@@ -87,10 +87,10 @@ Future<void> main() async {
       ),
       title: "Wataly Gold",
       // home: const Myonboardingscreen(),
-      home: onboarding
-          ? BasePage(camera: cameras)
-          : Myonboardingscreen(camera: cameras),
-      // home: const Testing(),
+      // home: onboarding
+      //     ? BasePage(camera: cameras)
+      //     : Myonboardingscreen(camera: cameras),
+      home: const Testing(),
       builder: EasyLoading.init(),
     ),
   );

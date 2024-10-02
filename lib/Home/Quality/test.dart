@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:watalygold/Widgets/WeightNumber/DialogAlertWNbyGemini.dart';
 
 class Testing extends StatefulWidget {
   const Testing({super.key});
@@ -36,10 +37,36 @@ class _TestingState extends State<Testing> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ElevatedButton(
-            onPressed: analyzeImage,
-            child: Text('Analyze Image'),
+          Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                String? results = await showDialog(
+                  barrierDismissible: false,
+                  context: context,
+                  builder: (context) {
+                    return Dialog_WN_Gemini(
+                      number: "258.6 g",
+                    );
+                  },
+                );
+
+                if (results!.isNotEmpty) {
+                  if (results == "") {
+                    debugPrint("ไม่มีน้ำหนักที่ได้มา");
+                  } else {
+                    debugPrint(results);
+                    // useFunctionandresult();
+                    // ทำอะไรต่อกับ results ตามที่ต้องการ
+                  }
+                } else {
+                  debugPrint("น้ำหนักไม่ถูกต้อง");
+                  debugPrint("น้ำหนักที่ได้มา : $results");
+                }
+              },
+              child: Text('Analyze Image'),
+            ),
           )
         ],
       ),
