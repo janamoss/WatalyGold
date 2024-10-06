@@ -26,16 +26,16 @@ import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
 class WeightNumber extends StatefulWidget {
-  // final Map<String, String?> httpscall;
-  // final List<File> capturedImage;
-  // final List<String> ListImagePath;
+  final Map<String, String?> httpscall;
+  final List<File> capturedImage;
+  final List<String> ListImagePath;
   final List<CameraDescription> camera;
   const WeightNumber({
     super.key,
     required this.camera,
-    // required this.capturedImage,
-    // required this.ListImagePath,
-    // required this.httpscall,
+    required this.capturedImage,
+    required this.ListImagePath,
+    required this.httpscall,
   });
 
   @override
@@ -101,7 +101,7 @@ class _WeightNumberState extends State<WeightNumber> {
             debugPrint("ไม่มีน้ำหนักที่ได้มา");
           } else {
             numbersOnly = results;
-            //await useFunctionandresult();
+            await useFunctionandresult();
           }
         }
       } else {
@@ -205,87 +205,87 @@ class _WeightNumberState extends State<WeightNumber> {
     // }
   }
 
-  // Future useFunctionandresult() async {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => Center(
-  //       child: AlertDialog(
-  //         backgroundColor: GPrimaryColor.withOpacity(0.6),
-  //         contentPadding:
-  //             const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-  //         title: Column(
-  //           children: [
-  //             const Text(
-  //               'กำลังตรวจสอบน้ำหนัก . . .',
-  //               style: TextStyle(color: WhiteColor),
-  //               textAlign:
-  //                   TextAlign.center, // Add this line to center the title text
-  //             ),
-  //             const SizedBox(
-  //               height: 15,
-  //             ),
-  //             LoadingAnimationWidget.discreteCircle(
-  //               color: WhiteColor,
-  //               secondRingColor: GPrimaryColor,
-  //               thirdRingColor: YPrimaryColor,
-  //               size: 70,
-  //             ),
-  //           ],
-  //         ),
-  //         // actions: [],
-  //       ),
-  //     ),
-  //   );
-  //   weight = numbersOnly.toString();
-  //   debugPrint("ค่าน้ำหนัก $weight");
-  //   widget.httpscall["weight"] = weight;
-  //   debugPrint("${widget.httpscall}");
-  //   // widget.httpscall["weight"] = numbersOnly.toString();
-  //   var firebasefunctions =
-  //       FirebaseFunctions.instanceFor(region: 'asia-southeast1');
+  Future useFunctionandresult() async {
+    showDialog(
+      context: context,
+      builder: (context) => Center(
+        child: AlertDialog(
+          backgroundColor: GPrimaryColor.withOpacity(0.6),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          title: Column(
+            children: [
+              const Text(
+                'กำลังตรวจสอบน้ำหนัก . . .',
+                style: TextStyle(color: WhiteColor),
+                textAlign:
+                    TextAlign.center, // Add this line to center the title text
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              LoadingAnimationWidget.discreteCircle(
+                color: WhiteColor,
+                secondRingColor: GPrimaryColor,
+                thirdRingColor: YPrimaryColor,
+                size: 70,
+              ),
+            ],
+          ),
+          // actions: [],
+        ),
+      ),
+    );
+    weight = numbersOnly.toString();
+    debugPrint("ค่าน้ำหนัก $weight");
+    widget.httpscall["weight"] = weight;
+    debugPrint("${widget.httpscall}");
+    // widget.httpscall["weight"] = numbersOnly.toString();
+    var firebasefunctions =
+        FirebaseFunctions.instanceFor(region: 'asia-southeast1');
 
-  //   try {
-  //     final result = await firebasefunctions
-  //         .httpsCallable("addImages")
-  //         .call(widget.httpscall);
-  //     stdout.writeln(result.data);
-  //     final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
+    try {
+      final result = await firebasefunctions
+          .httpsCallable("addImages")
+          .call(widget.httpscall);
+      stdout.writeln(result.data);
+      final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
 
-  //     idResult = data['ID_Result'];
-  //     ids = List<String>.from(data['IDs']);
+      idResult = data['ID_Result'];
+      ids = List<String>.from(data['IDs']);
 
-  //     // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
-  //     stdout.writeln('ID_Result: $idResult');
-  //     stdout.writeln('IDs: $ids');
-  //   } on FirebaseFunctionsException catch (error) {
-  //     debugPrint(
-  //         'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
-  //     Navigator.of(context).pop();
-  //     await showDialog(
-  //       context: context,
-  //       barrierDismissible: false,
-  //       builder: (BuildContext context) {
-  //         return Dialog_Error(
-  //             name: "เกิดข้อผิดพลาดบางอย่าง", content: "กรุณาลองใหม่อีกครั้ง");
-  //       },
-  //     );
-  //     return;
-  //   }
+      // นำค่า idResult และ ids ไปใช้ต่อได้ตามต้องการ
+      stdout.writeln('ID_Result: $idResult');
+      stdout.writeln('IDs: $ids');
+    } on FirebaseFunctionsException catch (error) {
+      debugPrint(
+          'Functions error code: ${error.code}, details: ${error.details}, message: ${error.message}');
+      Navigator.of(context).pop();
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog_Error(
+              name: "เกิดข้อผิดพลาดบางอย่าง", content: "กรุณาลองใหม่อีกครั้ง");
+        },
+      );
+      return;
+    }
 
-  //   Navigator.of(context).pop();
-  //   // ไปยังหน้าหลัก
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => ResultPage(
-  //         ID_Result: idResult,
-  //         ID_Image: ids,
-  //         capturedImage: widget.capturedImage,
-  //         ListImagePath: widget.ListImagePath,
-  //       ),
-  //     ),
-  //   );
-  // }
+    Navigator.of(context).pop();
+    // ไปยังหน้าหลัก
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultPage(
+          ID_Result: idResult,
+          ID_Image: ids,
+          capturedImage: widget.capturedImage,
+          ListImagePath: widget.ListImagePath,
+        ),
+      ),
+    );
+  }
 
   Future<void> _captureAndProcess() async {
     try {
@@ -386,31 +386,37 @@ class _WeightNumberState extends State<WeightNumber> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => Center(
-            child: AlertDialog(
-              backgroundColor: GPrimaryColor.withOpacity(0.6),
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-              title: Column(
-                children: [
-                  const Text(
-                    'กำลังตรวจสอบน้ำหนัก . . .',
-                    style: TextStyle(color: WhiteColor),
-                    textAlign: TextAlign
-                        .center, // Add this line to center the title text
-                  ),
-                  const SizedBox(
-                    height: 15,
-                  ),
-                  LoadingAnimationWidget.discreteCircle(
-                    color: WhiteColor,
-                    secondRingColor: GPrimaryColor,
-                    thirdRingColor: YPrimaryColor,
-                    size: 70,
-                  ),
-                ],
+          builder: (context) => PopScope(
+            canPop: false,
+            child: Center(
+              child: AlertDialog(
+                backgroundColor: GPrimaryColor.withOpacity(0.6),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                title: Column(
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'กำลังตรวจสอบน้ำหนัก',
+                        style: TextStyle(color: WhiteColor, fontSize: 20),
+                        textAlign: TextAlign
+                            .center, // Add this line to center the title text
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    LoadingAnimationWidget.discreteCircle(
+                      color: WhiteColor,
+                      secondRingColor: GPrimaryColor,
+                      thirdRingColor: YPrimaryColor,
+                      size: 70,
+                    ),
+                  ],
+                ),
+                // actions: [],
               ),
-              // actions: [],
             ),
           ),
         );
@@ -473,10 +479,11 @@ class _WeightNumberState extends State<WeightNumber> {
       final gemini = Gemini.instance;
       final result = await gemini.textAndImage(
         text:
-            """What are the numbers in the picture and what are the units of measurement?
-         If the image doesn't contain a scale or any numbers, please respond with 'ไม่มีตัวเลขหรือตาชั่งในภาพนี้'.
-         Otherwise, answer with just numbers and units of measurement without any further explanation. 
-         Just answer with numbers, such as 53.3 g or 32 g.""",
+            """The image shows a digital scale display with digital numbers and decimal points. 
+            There is a weight attached to the image, with a white background and black numbers. 
+            However, if you cannot find the numbers or there is no digital scale display, 
+            you would answer "ไม่มีตัวเลขหรือตาชั่งในภาพนี้" 
+            I would like you to read the weight on the scale, for example, 325.25 g .""",
         images: [file.readAsBytesSync()],
       );
 
@@ -534,7 +541,7 @@ class _WeightNumberState extends State<WeightNumber> {
           debugPrint("ไม่มีน้ำหนักที่ได้มา");
         } else {
           debugPrint(results);
-          // useFunctionandresult();
+          await useFunctionandresult();
           // ทำอะไรต่อกับ results ตามที่ต้องการ
         }
       } else {
@@ -650,12 +657,17 @@ class _WeightNumberState extends State<WeightNumber> {
   }
 
   String? _extractNumbersGeminiText(String response) {
-    final regex = RegExp(r"(\d+(\.\d*)?)\s*([a-zA-Z]+)");
+    final regex =
+        RegExp(r"(\d+(\.\d*)?)\s*([a-zA-Z]*)"); // เปลี่ยนให้หน่วยเป็น optional
     final match = regex.firstMatch(response);
     if (match != null) {
       final number = match.group(1);
       final unit = match.group(3);
-      return "$number $unit"; // หรือ "$number $unit" ถ้าต้องการหน่วยด้วย
+
+      // ถ้า unit เป็น null หรือ empty ให้เติม "g" เข้าไป
+      final finalUnit = (unit == null || unit.isEmpty) ? 'g' : unit;
+      debugPrint("final unit : $number $finalUnit");
+      return "$number $finalUnit"; // คืนค่าตัวเลขพร้อมหน่วย
     }
     return null;
   }
@@ -712,7 +724,7 @@ class _WeightNumberState extends State<WeightNumber> {
                 debugPrint("ไม่มีน้ำหนักที่ได้มา");
               } else {
                 numbersOnly = results;
-                // await useFunctionandresult();
+                await useFunctionandresult();
               }
             } else {
               debugPrint("ไม่มีน้ำหนักที่ได้มา");

@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path_provider/path_provider.dart';
@@ -313,28 +314,34 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       showDialog(
         barrierDismissible: false,
         context: context,
-        builder: (context) => Center(
-          child: AlertDialog(
-            backgroundColor: GPrimaryColor.withOpacity(0.6),
-            contentPadding:
-                const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-            title: Column(
-              children: [
-                const Text(
-                  'กำลังวิเคราะห์คุณภาพ . . .',
-                  style: TextStyle(color: WhiteColor),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                LoadingAnimationWidget.discreteCircle(
-                  color: WhiteColor,
-                  secondRingColor: GPrimaryColor,
-                  thirdRingColor: YPrimaryColor,
-                  size: 70,
-                ),
-              ],
+        builder: (context) => PopScope(
+          canPop: false,
+          child: Center(
+            child: AlertDialog(
+              backgroundColor: GPrimaryColor.withOpacity(0.6),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              title: Column(
+                children: [
+                  const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'กำลังวิเคราะห์คุณภาพ',
+                      style: TextStyle(color: WhiteColor, fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  LoadingAnimationWidget.discreteCircle(
+                    color: WhiteColor,
+                    secondRingColor: GPrimaryColor,
+                    thirdRingColor: YPrimaryColor,
+                    size: 70,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -408,16 +415,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       if (allImagesUploaded) {
         Navigator.of(context).pop();
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (context) => WeightNumber(
-        //             camera: widget.camera,
-        //             capturedImage: capturedImagesFiles,
-        //             ListImagePath: listImagepath,
-        //             httpscall: previewResult,
-        //           )),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => WeightNumber(
+                    camera: widget.camera,
+                    capturedImage: capturedImagesFiles,
+                    ListImagePath: listImagepath,
+                    httpscall: previewResult,
+                  )),
+        );
       }
     } else {
       await showDialog(
@@ -495,12 +502,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       await gemini.textAndImage(
         text:
-            """The picture that you checked, please help me identify whether this is a mango or not. 
-      If it is a mango, answer "mango". If it is not a mango, answer "not mango".""",
+            """ am sending you a picture to check. Could you please let me know if this image is a mango or not? .
+            If it is a mango, please reply 'mango' ,
+            If it is not a mango, please reply 'not mango' .
+            Please note that this image may show different angles of the mango, such as the front, back, top, or bottom. 
+            The bottom may resemble the top of the mango but will not have the stem in the middle, so please be careful when analyzing.""",
         images: [await image.readAsBytes()],
       ).then((result) {
-        final geminiText = result?.content?.parts?.last.text ?? '';
+        final geminiText = (result?.content?.parts?.last.text ?? '').trim();
 
+        debugPrint(geminiText);
         setState(() {
           if (geminiText == "mango" || geminiText == "mango.") {
             updateStatusMangoByStatusImage(index, 1);
@@ -695,14 +706,22 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                       : image!.statusMango == 1 &&
                                               image.statusMangoColor == 1
                                           ? null
-                                          : () {
-                                              setState(() {
-                                                statusimage = index +
-                                                    1; // ตั้งค่า statusimage ตาม index ของรูปภาพที่กด
-                                              });
-                                              debugPrint(
-                                                  "$statusimage สถานะตอนกด");
-                                            },
+                                          : image != null &&
+                                                  image.statusMango == 2
+                                              ? () {
+                                                  setState(() {
+                                                    capturedImages
+                                                        .remove(image);
+                                                  });
+                                                }
+                                              : () {
+                                                  setState(() {
+                                                    statusimage = index +
+                                                        1; // ตั้งค่า statusimage ตาม index ของรูปภาพที่กด
+                                                  });
+                                                  debugPrint(
+                                                      "$statusimage สถานะตอนกด");
+                                                },
                                   child: Container(
                                     height: 60,
                                     width: 60,
@@ -734,24 +753,48 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                                 : image.statusMango == 1 &&
                                                         image.statusMangoColor ==
                                                             1
-                                                    ? Icon(
-                                                        Icons
-                                                            .check_circle, // เครื่องหมายถูก
-                                                        color: Colors
-                                                            .green.shade400,
-                                                        size: 30,
+                                                    ? Stack(
+                                                        alignment:
+                                                            Alignment.center,
+                                                        children: [
+                                                          CircleAvatar(
+                                                            radius: 15,
+                                                            backgroundColor:
+                                                                Colors.white,
+                                                          ),
+                                                          Icon(
+                                                            Icons.check,
+                                                            size: 20,
+                                                            weight: 10,
+                                                            color:
+                                                                GPrimaryColor,
+                                                          ),
+                                                        ],
                                                       )
                                                     : image.statusMango == 1
                                                         ? CircularProgressIndicator(
                                                             color:
                                                                 GPrimaryColor,
                                                           )
-                                                        : Icon(
-                                                            Icons
-                                                                .cancel, // เครื่องหมายกากบาท
-                                                            color: Colors
-                                                                .red.shade400,
-                                                            size: 30,
+                                                        : Stack(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            children: [
+                                                              CircleAvatar(
+                                                                radius: 15,
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                              ),
+                                                              Icon(
+                                                                Icons.close,
+                                                                size: 20,
+                                                                weight: 10,
+                                                                color: Colors
+                                                                    .red
+                                                                    .shade400,
+                                                              ),
+                                                            ],
                                                           ),
                                           )
                                         : null,
@@ -770,29 +813,29 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 ),
                               ],
                             ),
-                            if (image != null && image.statusMango == 2)
-                              Positioned(
-                                top: 0,
-                                right: 5,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      capturedImages.remove(image);
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      color: WhiteColor,
-                                    ),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 15,
-                                      color: Colors.red.shade400,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                            // if (image != null && image.statusMango == 2)
+                            //   Positioned(
+                            //     top: 0,
+                            //     right: 5,
+                            //     child: GestureDetector(
+                            //       onTap: () {
+                            //         setState(() {
+                            //           capturedImages.remove(image);
+                            //         });
+                            //       },
+                            //       child: Container(
+                            //         padding: EdgeInsets.all(2),
+                            //         decoration: BoxDecoration(
+                            //           color: WhiteColor,
+                            //         ),
+                            //         child: Icon(
+                            //           Icons.close,
+                            //           size: 15,
+                            //           color: Colors.red.shade400,
+                            //         ),
+                            //       ),
+                            //     ),
+                            //   ),
                           ],
                         );
                       }),
