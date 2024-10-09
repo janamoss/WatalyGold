@@ -571,19 +571,18 @@ class _WeightNumberState extends State<WeightNumber> {
 
       final img.Image originalImage =
           img.decodeImage(await file.readAsBytes())!;
-
-      // OCR
+          
       final processedImageHSV = await preprocessImagesHSV(originalImage);
       final processedImageFile = File('${file.path}_processed.png')
         ..writeAsBytesSync(img.encodePng(processedImageHSV));
 
-           final processedImageBW = await _preprocessImageblackandwhite(file);
+      final processedImageBW = await _preprocessImageblackandwhite(file);
 
-      // final inputImage = InputImage.fromFile(processedImage);
-      // final recognizedText = await textRecognizer.processImage(inputImage);
-      // debugPrint("recognizedText.text ${recognizedText}");
-      // final String numbersOnly = _extractNumbersOCR(recognizedText.text);
-      // debugPrint("numbersOnly ${numbersOnly}");
+      final inputImage = InputImage.fromFile(processedImageBW);
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      debugPrint("recognizedText.text ${recognizedText}");
+      final String numbersOnly = _extractNumbersOCR(recognizedText.text);
+      debugPrint("numbersOnly ${numbersOnly}");
 
       // Integrate Gemini
       final gemini = Gemini.instance;
@@ -593,9 +592,9 @@ class _WeightNumberState extends State<WeightNumber> {
         text:
             "The picture shows a digital weighing scale screen with digital numbers and a decimal point. There is a unit of weight attached to the image with a white background and black numbers. I'd like you to read the weight on the scale, for example 325.25 g",
         //  images: [processedImageFile.readAsBytesSync(),]
-          // images: [processedImageBW.readAsBytesSync(),]
+          images: [processedImageBW.readAsBytesSync(),]
           //  images: [file.readAsBytesSync(),]
-        images: [processedImageFile.readAsBytesSync(),processedImageBW.readAsBytesSync(),file.readAsBytesSync()],
+        // images: [processedImageFile.readAsBytesSync(),processedImageBW.readAsBytesSync(),file.readAsBytesSync()],
       ).then((value) {
         final geminiText = value?.content?.parts?.last.text ?? '';
         final extractedNumbers = _extractNumbersGeminiText(geminiText);
@@ -607,7 +606,7 @@ class _WeightNumberState extends State<WeightNumber> {
             builder: (BuildContext context) => ResultScreen(
               // text: "$numbersOnly\n$geminiText",
               text: "$geminiText",
-              img: processedImageFile,
+              img: processedImageBW,
             ),
           ),
         );
@@ -709,9 +708,10 @@ class _WeightNumberState extends State<WeightNumber> {
 
         if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
           // ลบพื้นที่สีน้ำเงินออก
-          hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 0.0); // ทำให้โปร่งใส
-          // hsv = HSVColor.fromAHSV(1, 0.0, 0.0, 0.7);
+          // hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 0.0); // ทำให้โปร่งใส
+          hsv = HSVColor.fromAHSV(1, 0.0, 0.0, 1.0); //สีขาว
         }
+
         // hue สีน้ำเงิน 180-240
         // if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
         //   // เพิ่มความสว่างและลดความอิ่มตัว
@@ -743,7 +743,7 @@ class _WeightNumberState extends State<WeightNumber> {
     //   width: originalImage.width * 2, // ขยายความกว้างเป็น 2 เท่า
     //   height: originalImage.height * 2, // ขยายความสูงเป็น 2 เท่า
     // );
-    // final processedImage = preprocessImagesHSV(originalImage);
+    final processedImage = preprocessImagesHSV(originalImage);
 
     // Define the threshold value (0-255)
     const int threshold = 32;
@@ -753,10 +753,11 @@ class _WeightNumberState extends State<WeightNumber> {
     // // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
     // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
     // Loop through each pixel to apply thresholding
-    for (int y = 0; y < originalImage.height; y++) {
-      for (int x = 0; x < originalImage.width; x++) {
+    
+    for (int y = 0; y < processedImage.height; y++) {
+      for (int x = 0; x < processedImage.width; x++) {
         // Get the Pixel object
-        final pixel = originalImage.getPixel(x, y);
+        final pixel = processedImage.getPixel(x, y);
 
         // Extract RGBA values and cast to int
         int r = pixel.r.toInt();
@@ -768,9 +769,9 @@ class _WeightNumberState extends State<WeightNumber> {
 
         // Apply thresholding: set pixel to black or white
         if (luminance < threshold) {
-          originalImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+          processedImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
         } else {
-          originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
+          processedImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
         }
         // if (luminance < threshold) {
         //   originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
@@ -782,7 +783,7 @@ class _WeightNumberState extends State<WeightNumber> {
 
     // Save the processed image into a temporary file
     final processedFile = File(imageFile.path)
-      ..writeAsBytesSync(img.encodeJpg(originalImage)); // บันทึก processedImage
+      ..writeAsBytesSync(img.encodeJpg(processedImage)); // บันทึก processedImage
     return processedFile;
   }
 }

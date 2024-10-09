@@ -3,6 +3,7 @@ import 'package:watalygold/Widgets/Appbar_mains_notbotton.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/UserManual/Mangoproperties.dart';
 import 'package:watalygold/Widgets/UserManual/Manualphoto.dart';
+import 'package:watalygold/Widgets/UserManual/WeightManual.dart';
 
 class UserManual extends StatefulWidget {
   const UserManual({Key? key}) : super(key: key);
@@ -79,6 +80,53 @@ class _UserManualState extends State<UserManual> {
                 collapsedIconColor: Colors.white,
                 title: Row(
                   children: [
+                    // SizedBox(width: 10),
+                    Image.asset(
+                      "assets/images/weightdigitalLogo.png",
+                      width: 60,
+                      height: 60,
+                      color: Colors.white,
+                    ),
+                    // SizedBox(width: 10),
+                    const Center(
+                      child: SizedBox(
+                        child: Text(
+                          "วิธีถ่ายภาพหน้าจอเครื่องชั่งน้ำหนัก",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                children: [
+                  SizedBox(
+                    height:  MediaQuery.of(context).size.width * 2.1,
+                    child: WeightManual(),
+                  ),
+                ],
+                // children: [
+                //   Expanded(
+                //     child: Mangoproperties(),
+                //   ),
+                // ],
+              ),
+              SizedBox(height: 10),
+              ExpansionTile(
+                collapsedShape: const ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                shape: const ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                collapsedBackgroundColor: GPrimaryColor,
+                backgroundColor: GPrimaryColor,
+                collapsedTextColor: Colors.black,
+                textColor: Colors.white,
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                title: Row(
+                  children: [
                     SizedBox(width: 10),
                     Image.asset(
                       "assets/images/mangoicon.png",
@@ -111,7 +159,8 @@ class _UserManualState extends State<UserManual> {
                 //   ),
                 // ],
               ),
-              // SizedBox(height: 10),
+              SizedBox(height: 10),
+              
             ],
           ),
         ),
