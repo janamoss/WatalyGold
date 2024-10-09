@@ -61,7 +61,7 @@ class _UserManualState extends State<UserManual> {
                 children: [
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 1,
-                    height: 700,
+                    height: MediaQuery.of(context).size.width * 1.7,
                     child: const Manualphoto(),
                   ),
                 ],
@@ -103,7 +103,7 @@ class _UserManualState extends State<UserManual> {
                 ),
                 children: [
                   SizedBox(
-                    height:  MediaQuery.of(context).size.width * 2.1,
+                    height: MediaQuery.of(context).size.width * 2.1,
                     child: WeightManual(),
                   ),
                 ],
@@ -149,15 +149,11 @@ class _UserManualState extends State<UserManual> {
                 ),
                 children: [
                   SizedBox(
-                    height: 1600,
+                    height: MediaQuery.of(context).size.width * 3.9,
                     child: Mangoproperties(),
                   ),
                 ],
-                // children: [
-                //   Expanded(
-                //     child: Mangoproperties(),
-                //   ),
-                // ],
+               
               ),
               SizedBox(height: 10),
               
