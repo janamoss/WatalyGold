@@ -12,21 +12,34 @@ class Dialog_WN_Gemini extends StatefulWidget {
 class _Dialog_WN_GeminiState extends State<Dialog_WN_Gemini> {
   TextEditingController numberController = TextEditingController();
   int statusEdit = 0;
+  String unit = '';
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     // ดึงเฉพาะตัวเลขออกจากค่า widget.number
-    final RegExp regex = RegExp(
+    final RegExp regexNumber = RegExp(
         r'\d+(\.\d+)?'); // Regular expression to match numbers (with or without decimal)
-    final match = regex.firstMatch(widget.number);
+    final RegExp regexUnit = RegExp(
+        r'[a-zA-Z]+'); // Regular expression to match alphabetic characters (the units)
 
-    if (match != null) {
-      // ตั้งค่าเฉพาะตัวเลขให้กับ numberController
-      numberController.text = match.group(0) ?? '';
+// Match the number part
+    final numberMatch = regexNumber.firstMatch(widget.number);
+
+// Match the unit part
+    final unitMatch = regexUnit.firstMatch(widget.number);
+
+// ตั้งค่าเฉพาะตัวเลขให้กับ numberController
+    if (numberMatch != null) {
+      numberController.text = numberMatch.group(0) ?? '';
     } else {
       numberController.text = ''; // หากไม่มีตัวเลข
+    }
+
+// เก็บหน่วย (เช่น g หรือ kg) ในตัวแปร
+    if (unitMatch != null) {
+      unit = unitMatch.group(0) ?? '';
     }
   }
 
@@ -151,7 +164,8 @@ class _Dialog_WN_GeminiState extends State<Dialog_WN_Gemini> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(numberController.text.toString());
+                    Navigator.of(context)
+                        .pop("${numberController.text.toString()} $unit");
                   },
                   style: ButtonStyle(
                       padding:

@@ -19,6 +19,7 @@ import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogCollection.dart';
 import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
+import 'package:watalygold/models/Image.dart';
 
 class ResultPage extends StatefulWidget {
   const ResultPage(
@@ -51,6 +52,11 @@ class _ResultPageState extends State<ResultPage> {
   late double length = 0.0;
   late double width = 0.0;
 
+  double totalFlawsPercent = 0;
+  double maxFlawsPercent = 0;
+  double totalBrownSpot = 0;
+  double maxBrownSpot = 0;
+
   @override
   void initState() {
     super.initState();
@@ -76,13 +82,31 @@ class _ResultPageState extends State<ResultPage> {
     }
   }
 
+  double calculateAverageBrownSpot(double totalBrownSpot) {
+    return totalBrownSpot;
+  }
+
+  double calculateAverageFlawsPercent(double totalFlawsPercent) {
+    return totalFlawsPercent;
+  }
+
   Future<void> _insertImage(int resultId) async {
     stdout.writeln(resultId);
     final results = FirebaseFirestore.instance.collection('Image');
     for (int i = 0; i < widget.ID_Image.length; i++) {
-      stdout.writeln("1234");
+      debugPrint("1234");
       final document = await results.doc(widget.ID_Image[i]).get();
-      stdout.writeln(document["img_status"].toString());
+      debugPrint(document["img_status"].toString());
+      debugPrint("จุดตำหนิ ${document["mango_weight"].toDouble()}");
+      debugPrint("จุดตำหนิ ${document["mango_weight"].toString()}");
+
+      double flawsPercent = document["flaws_percent"].toDouble();
+      double brownSpot = document["brown_spot"].toDouble();
+
+      // รวมค่า
+      totalFlawsPercent += flawsPercent;
+      totalBrownSpot += brownSpot;
+
       await Image_DB().insertdata(
           result_id: resultId.toInt(),
           image_status: document["img_status"].toString(),
@@ -94,7 +118,7 @@ class _ResultPageState extends State<ResultPage> {
           flaws_percent: document["flaws_percent"].toDouble(),
           brown_spot: document["brown_spot"].toDouble(),
           color: document["color"].toString());
-      stdout.writeln("สร้างข้อมูลรูปภาพเสด");
+      debugPrint("สร้างข้อมูลรูปภาพเสด");
       setState(() {});
     }
   }
@@ -260,7 +284,7 @@ class _ResultPageState extends State<ResultPage> {
                                   child: Text(
                                     anotherNote,
                                     style: TextStyle(
-                                        color: gradeColor[grade], fontSize: 15),
+                                        color: gradeColor[grade], fontSize: 17),
                                     // overflow: TextOverflow.ellipsis,
                                     // maxLines: 2,
                                   ),
@@ -268,6 +292,220 @@ class _ResultPageState extends State<ResultPage> {
                               )
                             ],
                           )
+                        ],
+                      ),
+                    ),
+                    Card(
+                      clipBehavior: Clip.hardEdge,
+                      margin: EdgeInsets.only(top: 25),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                          bottom: Radius.circular(10),
+                        ),
+                        //set border radius more than 50% of height and width to make circle
+                      ),
+                      color: WhiteColor,
+                      child: Column(
+                        children: [
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF069D73),
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
+                            ),
+                            width: double.infinity,
+                            height: 35,
+                            child: const Padding(
+                              padding: EdgeInsets.only(left: 20),
+                              child: Text(
+                                "รายละเอียด",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const FittedBox(
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 15),
+                                  child: SizedBox(
+                                    width: 140,
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.all(0),
+                                      leading: Icon(
+                                        Icons.straighten_rounded,
+                                        size: 25,
+                                        color: GPrimaryColor,
+                                      ),
+                                      title: Text(
+                                        "ความยาว : ",
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 10, top: 17),
+                                child: Text(
+                                  length.toStringAsFixed(2) + " เซนติเมตร",
+                                  style: TextStyle(
+                                      color: Color(0xFF42BD41), fontSize: 18),
+                                ),
+                              )
+                            ],
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const FittedBox(
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 15),
+                                  child: SizedBox(
+                                    width: 140,
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.all(0),
+                                      leading: Icon(
+                                        Icons.straighten_rounded,
+                                        size: 25,
+                                        color: GPrimaryColor,
+                                      ),
+                                      title: Text(
+                                        "ความกว้าง : ",
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 10, top: 17),
+                                child: Text(
+                                  width.toStringAsFixed(2) + " เซนติเมตร",
+                                  style: TextStyle(
+                                      color: Color(0xFF42BD41), fontSize: 18),
+                                ),
+                              )
+                            ],
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const FittedBox(
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 15),
+                                  child: SizedBox(
+                                    width: 140,
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.all(0),
+                                      leading: Icon(
+                                        Icons.scale_rounded,
+                                        size: 25,
+                                        color: GPrimaryColor,
+                                      ),
+                                      title: Text(
+                                        "น้ำหนัก : ",
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 10, top: 17),
+                                child: Text(
+                                  weight.toStringAsFixed(2) + " กรัม",
+                                  style: TextStyle(
+                                      color: Color(0xFF42BD41), fontSize: 18),
+                                ),
+                              )
+                            ],
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const FittedBox(
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 15),
+                                  child: SizedBox(
+                                    width: 140,
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.all(0),
+                                      leading: Icon(
+                                        Icons.brightness_1,
+                                        size: 25,
+                                        color: GPrimaryColor,
+                                      ),
+                                      title: Text(
+                                        "พื้นที่จุดตำหนิ : ",
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 10, top: 17),
+                                child: Text(
+                                  totalBrownSpot.toStringAsFixed(2) +
+                                      " ตารางเซนติเมตร",
+                                  style: TextStyle(
+                                      color: Color(0xFF42BD41), fontSize: 18),
+                                ),
+                              )
+                            ],
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const FittedBox(
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 15),
+                                  child: SizedBox(
+                                    width: 140,
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.all(0),
+                                      leading: Icon(
+                                        Icons.bubble_chart_rounded,
+                                        size: 25,
+                                        color: GPrimaryColor,
+                                      ),
+                                      title: Text(
+                                        "พื้นที่จุดกระสีน้ำตาล : ",
+                                        style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 10, top: 17),
+                                child: Text(
+                                  totalFlawsPercent.toStringAsFixed(2) +
+                                      " เปอร์เซนต์",
+                                  style: TextStyle(
+                                      color: Color(0xFF42BD41), fontSize: 18),
+                                ),
+                              )
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -338,114 +576,6 @@ class _ResultPageState extends State<ResultPage> {
                               ),
                             ),
                           )
-                        ],
-                      ),
-                    ),
-                    Card(
-                      clipBehavior: Clip.hardEdge,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(20),
-                          bottom: Radius.circular(10),
-                        ),
-                        //set border radius more than 50% of height and width to make circle
-                      ),
-                      color: WhiteColor,
-                      child: Column(
-                        children: [
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF069D73),
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
-                            ),
-                            width: double.infinity,
-                            height: 35,
-                            child: const Padding(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text(
-                                "รายละเอียด",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 25, top: 15, bottom: 8),
-                                child: Text(
-                                  "น้ำหนัก : ",
-                                  style: TextStyle(
-                                      color: Colors.black.withOpacity(0.8),
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 10, top: 17),
-                                child: Text(
-                                  weight.toStringAsFixed(2) + " กรัม",
-                                  style: TextStyle(
-                                      color: Color(0xFF42BD41), fontSize: 18),
-                                ),
-                              )
-                            ],
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 25, top: 15, bottom: 8),
-                                child: Text(
-                                  "ความยาว : ",
-                                  style: TextStyle(
-                                      color: Colors.black.withOpacity(0.8),
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 10, top: 17),
-                                child: Text(
-                                  length.toStringAsFixed(2) + " เซนติเมตร",
-                                  style: TextStyle(
-                                      color: Color(0xFF42BD41), fontSize: 18),
-                                ),
-                              )
-                            ],
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 25, top: 15, bottom: 8),
-                                child: Text(
-                                  "ความกว้าง : ",
-                                  style: TextStyle(
-                                      color: Colors.black.withOpacity(0.8),
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 10, top: 17),
-                                child: Text(
-                                  width.toStringAsFixed(2) + " เซนติเมตร",
-                                  style: TextStyle(
-                                      color: Color(0xFF42BD41), fontSize: 18),
-                                ),
-                              )
-                            ],
-                          ),
                         ],
                       ),
                     ),

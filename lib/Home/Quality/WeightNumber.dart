@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Widgets/Appbar_main_exit.dart';
+import 'package:watalygold/Widgets/Appbar_main_exit_only.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogAlertWNbyGemini.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogChoose.dart';
@@ -215,11 +216,14 @@ class _WeightNumberState extends State<WeightNumber> {
               const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           title: Column(
             children: [
-              const Text(
-                'กำลังตรวจสอบน้ำหนัก . . .',
-                style: TextStyle(color: WhiteColor),
-                textAlign:
-                    TextAlign.center, // Add this line to center the title text
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'กำลังตรวจสอบน้ำหนัก',
+                  style: TextStyle(color: WhiteColor, fontSize: 20),
+                  textAlign: TextAlign
+                      .center, // Add this line to center the title text
+                ),
               ),
               const SizedBox(
                 height: 15,
@@ -300,11 +304,14 @@ class _WeightNumberState extends State<WeightNumber> {
                 const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
             title: Column(
               children: [
-                const Text(
-                  'กำลังตรวจสอบน้ำหนัก . . .',
-                  style: TextStyle(color: WhiteColor),
-                  textAlign: TextAlign
-                      .center, // Add this line to center the title text
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'กำลังตรวจสอบน้ำหนัก',
+                    style: TextStyle(color: WhiteColor, fontSize: 20),
+                    textAlign: TextAlign
+                        .center, // Add this line to center the title text
+                  ),
                 ),
                 const SizedBox(
                   height: 15,
@@ -540,6 +547,7 @@ class _WeightNumberState extends State<WeightNumber> {
         if (results == "") {
           debugPrint("ไม่มีน้ำหนักที่ได้มา");
         } else {
+          numbersOnly = results;
           debugPrint(results);
           await useFunctionandresult();
           // ทำอะไรต่อกับ results ตามที่ต้องการ
@@ -695,7 +703,7 @@ class _WeightNumberState extends State<WeightNumber> {
     final Size screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppbarMainExit(
+      appBar: AppbarMainExit_only(
         name: 'น้ำหนักมะม่วง',
         actions: IconButton(
           color: Colors.white,

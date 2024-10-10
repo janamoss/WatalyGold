@@ -51,6 +51,7 @@ class _Dialog_WeightNumberState extends State<Dialog_WeightNumber> {
           children: [
             TextField(
               controller: numberController,
+              keyboardType: TextInputType.number,
               style: TextStyle(fontSize: 18, color: Colors.black),
               decoration: InputDecoration(
                   contentPadding: EdgeInsets.only(left: 5, bottom: 0),
@@ -107,7 +108,8 @@ class _Dialog_WeightNumberState extends State<Dialog_WeightNumber> {
               height: 50,
               child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop("${numberController.text.toString()} g");
+                    Navigator.of(context)
+                        .pop("${numberController.text.toString()} g");
                   },
                   child: Text(
                     "ยืนยัน",

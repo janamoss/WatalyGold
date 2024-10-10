@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -214,7 +215,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       }
       setState(() {
         updateStatusMangoColorByStatusImage(index, numberresult);
+        checkCapturedImages();
       });
+
       if (capturedImages.length == 4 &&
           capturedImages
               .map((image) => image.statusimage)
@@ -496,17 +499,158 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     });
   }
 
+  String mapIndexToText(int index) {
+    switch (index) {
+      case 1:
+        return "หน้า";
+      case 2:
+        return "หลัง";
+      case 3:
+        return "ล่าง";
+      case 4:
+        return "บน";
+      default:
+        return "ไม่ทราบตำแหน่ง"; // สำหรับค่าที่ไม่อยู่ในช่วง 1-4
+    }
+  }
+
+  void checkCapturedImages() {
+    // ตรวจสอบว่ามี capturedImages ครบ 4 ภาพ
+    if (capturedImages.length == 4) {
+      // ตรวจสอบว่า status ของภาพทั้งหมดถูกประมวลผลแล้ว
+      bool allImagesProcessed = capturedImages.every(
+          (image) => image.statusMango != 0 && image.statusMangoColor != 0);
+
+      // หากทุกภาพได้รับการประมวลผลแล้ว
+      if (allImagesProcessed) {
+        // ภาพที่มีปัญหา (statusMango == 2 หรือ statusMangoColor == 2)
+        List<int> problematicStatusImages = capturedImages
+            .where((image) =>
+                image.statusMango == 2 || image.statusMangoColor == 2)
+            .map((image) => image.statusimage)
+            .toList();
+
+        // ภาพที่ไม่มีปัญหา
+        List<int> passedImages = capturedImages
+            .where((image) =>
+                image.statusMango != 2 && image.statusMangoColor != 2)
+            .map((image) => image.statusimage)
+            .toList();
+
+        // ตรวจสอบว่ามีภาพที่ไม่ผ่านการวิเคราะห์หรือไม่
+        if (problematicStatusImages.isNotEmpty) {
+          problematicStatusImages.sort();
+
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                backgroundColor: WhiteColor,
+                surfaceTintColor: WhiteColor,
+                title: FittedBox(
+                  child: Text(
+                    'พบรูปภาพที่ไม่ผ่านการวิเคราะห์',
+                    style: TextStyle(
+                        color: Colors.red.shade400,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FittedBox(
+                      child: Text(
+                        'ภาพที่ไม่ผ่านการวิเคราะห์มีดังนี้ :',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    for (var index in problematicStatusImages)
+                      ListTile(
+                        leading: Icon(
+                          Icons.image_rounded,
+                          size: 25,
+                          color: Colors.red.shade400,
+                        ),
+                        title: FittedBox(
+                          child: Row(
+                            children: [
+                              Text(
+                                "ภาพด้าน ",
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                "${mapIndexToText(index)} ",
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    color: GPrimaryColor),
+                              ),
+                              Text(
+                                "ไม่ผ่านการวิเคราะห์",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    SizedBox(height: 10),
+                    FittedBox(
+                      child: Text(
+                        'กรุณาถ่ายภาพด้านดังกล่าวใหม่อีกครั้ง',
+                        style: TextStyle(
+                            color: Colors.red.shade300,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  SizedBox(
+                    child: ElevatedButton(
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStatePropertyAll(GPrimaryColor),
+                            elevation: MaterialStatePropertyAll(1)),
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('เข้าใจแล้ว',
+                            style: TextStyle(
+                              color: WhiteColor,
+                              fontSize: 16,
+                            ))),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
+    }
+  }
+
   Future<void> analyzeImage(File image, int index) async {
     if (image != null) {
       final gemini = Gemini.instance;
 
       await gemini.textAndImage(
         text:
-            """ am sending you a picture to check. Could you please let me know if this image is a mango or not? .
-            If it is a mango, please reply 'mango' ,
-            If it is not a mango, please reply 'not mango' .
-            Please note that this image may show different angles of the mango, such as the front, back, top, or bottom. 
-            The bottom may resemble the top of the mango but will not have the stem in the middle, so please be careful when analyzing.""",
+            """ From the picture I gave you, can you check if there is a mango and a 5 baht coin in this picture? If there are both, then answer "mango". 
+            If there are neither or if there is a hand or finger in the picture, then answer "not a mango". 
+            Please note that this picture may show the mango from different angles, such as front, back, top or bottom. 
+            The bottom may look like the top of the mango but there is no stem in the middle.""",
         images: [await image.readAsBytes()],
       ).then((result) {
         final geminiText = (result?.content?.parts?.last.text ?? '').trim();
@@ -518,7 +662,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             runInference(image, index);
           } else {
             updateStatusMangoByStatusImage(index, 2);
+            updateStatusMangoColorByStatusImage(index, 2);
           }
+          checkCapturedImages();
         });
 
         debugPrint("Gemini response: $geminiText");
@@ -728,13 +874,23 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                     decoration: BoxDecoration(
                                       border: image != null
                                           ? Border.all(
-                                              color: GPrimaryColor, width: 2)
+                                              color: (image.statusMango == 2 ||
+                                                      image.statusMangoColor ==
+                                                          2)
+                                                  ? Colors.red
+                                                      .shade400 // Red border for status 2
+                                                  : GPrimaryColor,
+                                              width: 2,
+                                            )
                                           : statusimage == index + 1
                                               ? Border.all(
                                                   color: Colors.cyan.shade400,
-                                                  width: 2)
+                                                  width: 2,
+                                                )
                                               : Border.all(
-                                                  color: WhiteColor, width: 2),
+                                                  color: WhiteColor,
+                                                  width: 2,
+                                                ),
                                       color: Colors.white.withOpacity(0.4),
                                       image: image != null
                                           ? DecorationImage(
@@ -743,6 +899,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                             )
                                           : null,
                                     ),
+
                                     // ใช้ child เพื่อแสดงสถานะของ statusMango ตามที่เลือก
                                     child: image != null
                                         ? Center(
@@ -813,7 +970,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 ),
                               ],
                             ),
-                            // if (image != null && image.statusMango == 2)
+                            // if (image != null && image.statusMango == 1)
                             //   Positioned(
                             //     top: 0,
                             //     right: 5,
