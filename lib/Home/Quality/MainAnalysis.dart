@@ -29,6 +29,18 @@ import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
+class ProblematicImage {
+  final int statusimage;
+  final bool isStatusMangoProblem;
+  final bool isStatusMangoColorProblem;
+
+  ProblematicImage({
+    required this.statusimage,
+    required this.isStatusMangoProblem,
+    required this.isStatusMangoColorProblem,
+  });
+}
+
 class CapturedImage {
   final File image;
   int statusMango;
@@ -514,21 +526,39 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     }
   }
 
+  String _getProblemReason(ProblematicImage image) {
+    if (image.isStatusMangoProblem && image.isStatusMangoColorProblem) {
+      return "ไม่มีมะม่วงในภาพและสีไม่ถูกต้อง";
+    } else if (image.isStatusMangoProblem) {
+      return "ไม่มีมะม่วงในภาพ";
+    } else if (image.isStatusMangoColorProblem) {
+      return "สีของมะม่วงไม่ถูกต้อง";
+    } else {
+      return "เกิดข้อผิดพลาด";
+    }
+  }
+
   void checkCapturedImages() {
     // ตรวจสอบว่ามี capturedImages ครบ 4 ภาพ
     if (capturedImages.length == 4) {
       // ตรวจสอบว่า status ของภาพทั้งหมดถูกประมวลผลแล้ว
       bool allImagesProcessed = capturedImages.every(
-          (image) => image.statusMango != 0 && image.statusMangoColor != 0);
+          (image) => image.statusMango != 0 || image.statusMangoColor != 0);
 
       // หากทุกภาพได้รับการประมวลผลแล้ว
+      debugPrint(allImagesProcessed.toString());
       if (allImagesProcessed) {
         // ภาพที่มีปัญหา (statusMango == 2 หรือ statusMangoColor == 2)
-        List<int> problematicStatusImages = capturedImages
+        List<ProblematicImage> problematicImages = capturedImages
             .where((image) =>
                 image.statusMango == 2 || image.statusMangoColor == 2)
-            .map((image) => image.statusimage)
-            .toList();
+            .map((image) => ProblematicImage(
+                  statusimage: image.statusimage,
+                  isStatusMangoProblem: image.statusMango == 2,
+                  isStatusMangoColorProblem: image.statusMangoColor == 2,
+                ))
+            .toList()
+          ..sort((a, b) => a.statusimage.compareTo(b.statusimage));
 
         // ภาพที่ไม่มีปัญหา
         List<int> passedImages = capturedImages
@@ -538,9 +568,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             .toList();
 
         // ตรวจสอบว่ามีภาพที่ไม่ผ่านการวิเคราะห์หรือไม่
-        if (problematicStatusImages.isNotEmpty) {
-          problematicStatusImages.sort();
-
+        if (problematicImages.isNotEmpty) {
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -548,15 +576,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               return AlertDialog(
                 backgroundColor: WhiteColor,
                 surfaceTintColor: WhiteColor,
-                title: FittedBox(
-                  child: Text(
-                    'พบรูปภาพที่ไม่ผ่านการวิเคราะห์',
-                    style: TextStyle(
-                        color: Colors.red.shade400,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
+                title: Text(
+                  'พบรูปภาพที่ไม่ถูกต้อง',
+                  style: TextStyle(
+                      color: Colors.red.shade400,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -564,7 +590,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                   children: [
                     FittedBox(
                       child: Text(
-                        'ภาพที่ไม่ผ่านการวิเคราะห์มีดังนี้ :',
+                        'ภาพที่ไม่ถูกต้องมีดังนี้ :',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 15,
@@ -572,36 +598,42 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    for (var index in problematicStatusImages)
+                    for (var problematicImage in problematicImages)
                       ListTile(
                         leading: Icon(
                           Icons.image_rounded,
                           size: 25,
                           color: Colors.red.shade400,
                         ),
-                        title: FittedBox(
-                          child: Row(
-                            children: [
-                              Text(
-                                "ภาพด้าน ",
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.bold),
+                        title: Wrap(
+                          alignment: WrapAlignment.start,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              "ภาพด้าน ",
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              "${mapIndexToText(problematicImage.statusimage)} ",
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: GPrimaryColor,
                               ),
-                              Text(
-                                "${mapIndexToText(index)} ",
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: GPrimaryColor),
+                            ),
+                            Text(
+                              "เนื่องจาก ",
+                              style: TextStyle(fontSize: 15),
+                            ),
+                            Text(
+                              _getProblemReason(problematicImage),
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.black,
                               ),
-                              Text(
-                                "ไม่ผ่านการวิเคราะห์",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     SizedBox(height: 10),
@@ -662,7 +694,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             runInference(image, index);
           } else {
             updateStatusMangoByStatusImage(index, 2);
-            updateStatusMangoColorByStatusImage(index, 2);
+            // updateStatusMangoColorByStatusImage(index, 2);
           }
           checkCapturedImages();
         });
@@ -1051,56 +1083,68 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                         Expanded(
                           child: Center(
                             child: GestureDetector(
-                              onTap: () async {
-                                await _initializeControllerFuture;
+                              onTap: capturedImages.length == 4
+                                  ? null
+                                  : () async {
+                                      await _initializeControllerFuture;
 
-                                // ตั้งค่าแฟลชตาม flashstatus
-                                if (flashstatus == 0) {
-                                  _controller.setFlashMode(FlashMode.off);
-                                }
+                                      // ตั้งค่าแฟลชตาม flashstatus
+                                      if (flashstatus == 0) {
+                                        _controller.setFlashMode(FlashMode.off);
+                                      }
 
-                                // ถ่ายรูป
-                                var xFile = await _controller.takePicture();
+                                      // ถ่ายรูป
+                                      var xFile =
+                                          await _controller.takePicture();
 
-                                // ตรวจสอบเลข statusimage ที่ขาด
-                                Set<int> existingStatusImages = capturedImages
-                                    .map((image) => image.statusimage)
-                                    .toSet();
+                                      // ตรวจสอบเลข statusimage ที่ขาด
+                                      Set<int> existingStatusImages =
+                                          capturedImages
+                                              .map((image) => image.statusimage)
+                                              .toSet();
 
-                                // เพิ่ม statusimage ปัจจุบันเข้าไปใน existingStatusImages
-                                existingStatusImages.add(statusimage);
+                                      // เพิ่ม statusimage ปัจจุบันเข้าไปใน existingStatusImages
+                                      existingStatusImages.add(statusimage);
 
-                                List<int> availableStatusImages = [1, 2, 3, 4]
-                                    .where((number) =>
-                                        !existingStatusImages.contains(number))
-                                    .toList();
+                                      List<int> availableStatusImages = [
+                                        1,
+                                        2,
+                                        3,
+                                        4
+                                      ]
+                                          .where((number) =>
+                                              !existingStatusImages
+                                                  .contains(number))
+                                          .toList();
 
-                                // ใช้ statusimage ปัจจุบันเป็น statusN
-                                int statusN = statusimage;
+                                      // ใช้ statusimage ปัจจุบันเป็น statusN
+                                      int statusN = statusimage;
 
-                                // เพิ่มรูปภาพลงใน capturedImages
-                                setState(() {
-                                  capturedImages.add(CapturedImage(
-                                    statusimage: statusN,
-                                    image: File(xFile.path),
-                                    statusMango: 0,
-                                    statusMangoColor: 0,
-                                  ));
-                                  if (availableStatusImages.isNotEmpty) {
-                                    statusimage = availableStatusImages.first;
-                                  } else {
-                                    debugPrint("ครบ 4 รูปแล้วค่า");
-                                  }
-                                });
+                                      // เพิ่มรูปภาพลงใน capturedImages
+                                      setState(() {
+                                        capturedImages.add(CapturedImage(
+                                          statusimage: statusN,
+                                          image: File(xFile.path),
+                                          statusMango: 0,
+                                          statusMangoColor: 0,
+                                        ));
+                                        if (availableStatusImages.isNotEmpty) {
+                                          statusimage =
+                                              availableStatusImages.first;
+                                        } else {
+                                          debugPrint("ครบ 4 รูปแล้วค่า");
+                                        }
+                                      });
 
-                                debugPrint("ตัวเลขสถานะ $statusN");
-                                debugPrint("$capturedImages");
-                                debugPrint(
-                                    "availableStatusImages: $availableStatusImages");
+                                      debugPrint("ตัวเลขสถานะ $statusN");
+                                      debugPrint("$capturedImages");
+                                      debugPrint(
+                                          "availableStatusImages: $availableStatusImages");
 
-                                // เรียก analyzeImage พร้อมส่ง statusN ไป
-                                await analyzeImage(File(xFile.path), statusN);
-                              },
+                                      // เรียก analyzeImage พร้อมส่ง statusN ไป
+                                      await analyzeImage(
+                                          File(xFile.path), statusN);
+                                    },
                               child: Container(
                                 height: 60,
                                 width: 60,

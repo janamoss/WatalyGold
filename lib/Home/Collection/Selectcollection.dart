@@ -122,10 +122,10 @@ class _SelectCollectionState extends State<SelectCollection> {
                       itemCount: _resultincollection.length,
                       itemBuilder: (context, index) {
                         final result = _resultincollection[index];
-                        // debugPrint("${result.collection_id} คือ id ของคอ");
                         DateTime createdAt = DateTime.parse(result.created_at);
                         final formattedDate = DateFormat('dd MMM yyyy', 'th_TH')
                             .format(createdAt);
+                        debugPrint("${index + 1} คือ index ของคอ");
                         return CradforHistory(
                             date: formattedDate,
                             results: result,

@@ -61,6 +61,7 @@ class DefaultFirebaseOptions {
     appId: '1:692047570487:android:2cdcc7f2a5f3ac795281b2',
     messagingSenderId: '692047570487',
     projectId: 'watalygold',
+    databaseURL: 'https://watalygold-default-rtdb.firebaseio.com',
     storageBucket: 'watalygold.appspot.com',
   );
 
@@ -69,7 +70,9 @@ class DefaultFirebaseOptions {
     appId: '1:692047570487:ios:1158a9320f812ce25281b2',
     messagingSenderId: '692047570487',
     projectId: 'watalygold',
+    databaseURL: 'https://watalygold-default-rtdb.firebaseio.com',
     storageBucket: 'watalygold.appspot.com',
     iosBundleId: 'com.example.watalygold',
   );
+
 }

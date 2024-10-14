@@ -114,6 +114,7 @@ class _HomeHistoryState extends State<HomeHistory> {
                             child: CradforHistory(
                               date: formattedDate,
                               results: result,
+                              number: index + 1,
                               refreshCallback: () => refreshList(),
                               collection: _collection,
                             ),

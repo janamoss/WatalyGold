@@ -26,5 +26,7 @@
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:692047570487:ios:1158a9320f812ce25281b2</string>
+	<key>DATABASE_URL</key>
+	<string>https://watalygold-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>

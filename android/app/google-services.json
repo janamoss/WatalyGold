@@ -1,15 +1,54 @@
 {
   "project_info": {
     "project_number": "692047570487",
+    "firebase_url": "https://watalygold-default-rtdb.firebaseio.com",
     "project_id": "watalygold",
     "storage_bucket": "watalygold.appspot.com"
   },
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:692047570487:android:967b9f7abac4bc355281b2",
+        "android_client_info": {
+          "package_name": "com.example.flutter_tests"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBG1W4W2v_-ZPbvrjgOLFJ-vXf3tjs6uog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:692047570487:android:2cdcc7f2a5f3ac795281b2",
         "android_client_info": {
           "package_name": "com.example.watalygold"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBG1W4W2v_-ZPbvrjgOLFJ-vXf3tjs6uog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:692047570487:android:165cd2a764ebcc6a5281b2",
+        "android_client_info": {
+          "package_name": "com.example.watalygold_admin"
         }
       },
       "oauth_client": [],
