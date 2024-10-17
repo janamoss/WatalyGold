@@ -28,29 +28,39 @@ class HistoryDetail extends StatefulWidget {
 }
 
 class _HistoryDetailState extends State<HistoryDetail> {
+  List<double> listflaws_percent = [];
+  List<double> listbrown_spot = [];
+
+  double totalBrownSpot = 0;
+  double totalFlawsPercent = 0;
+
   @override
   void initState() {
     super.initState();
     fetchImage(widget.results.result_id);
   }
 
+  List<double> calculateFixedPercentages(List<double> n) {
+    List<double> percentages = [40, 40, 20, 20];
+
+    double total = n.reduce((a, b) => a + b); // คำนวณผลรวม
+
+    List<double> results = [];
+    for (int i = 0; i < n.length; i++) {
+      if (i < percentages.length) {
+        double result = (percentages[i] / 100) * total;
+        results.add(result);
+      } else {
+        results.add(0); // กรณีที่ n มีความยาวมากกว่าจำนวนเปอร์เซ็นต์ที่กำหนด
+      }
+    }
+
+    return results;
+  }
+
   List<Images> _results = [];
 
   final ValueNotifier<List<Images>> _imageList = ValueNotifier([]);
-
-  double calculateAverageBrownSpot(List<Images> imagesList) {
-    if (imagesList.isEmpty) return 0.0; // ตรวจสอบว่าไม่มีข้อมูลในลิสต์หรือไม่
-    double totalBrownSpot =
-        imagesList.fold(0.0, (sum, item) => sum + item.brown_spot);
-    return totalBrownSpot;
-  }
-
-  double calculateAverageFlawsPercent(List<Images> imagesList) {
-    if (imagesList.isEmpty) return 0.0; // ตรวจสอบว่าไม่มีข้อมูลในลิสต์หรือไม่
-    double totalFlawsPercent =
-        imagesList.fold(0.0, (sum, item) => sum + item.flaws_percent);
-    return totalFlawsPercent;
-  }
 
   String checkMangoGrade(double weight) {
     if (weight >= 450) {
@@ -90,8 +100,31 @@ class _HistoryDetailState extends State<HistoryDetail> {
 
   Future<void> fetchImage(int result_id) async {
     _imageList.value = await Image_DB().fetchImageinResult(result_id);
-    stdout.writeln(_imageList.value.length);
-    return;
+    debugPrint("${_imageList.value.length}");
+
+    // Populate listflaws_percent and listbrown_spot
+    for (var image in _imageList.value) {
+      listflaws_percent.add(image.flaws_percent);
+      listbrown_spot.add(image.brown_spot);
+
+      // Update totals
+
+      // If we have 4 images, calculate fixed percentages
+      if (listflaws_percent.length == 4 && listbrown_spot.length == 4) {
+        List<double> fixedFlawsPercentages =
+            calculateFixedPercentages(listflaws_percent);
+        List<double> fixedBrownSpotPercentages =
+            calculateFixedPercentages(listbrown_spot);
+
+        totalFlawsPercent = fixedFlawsPercentages.reduce((a, b) => a + b);
+        totalBrownSpot = fixedBrownSpotPercentages.reduce((a, b) => a + b);
+        // You can use these fixed percentages as needed
+        print("Fixed Flaws Percentages: $totalFlawsPercent");
+        print("Fixed Brown Spot Percentages: $totalBrownSpot");
+      }
+    }
+
+    setState(() {}); // Trigger a rebuild to reflect the changes
   }
 
   @override
@@ -105,8 +138,6 @@ class _HistoryDetailState extends State<HistoryDetail> {
     return ValueListenableBuilder(
       valueListenable: _imageList,
       builder: (context, images, child) {
-        double averageBrownSpot = calculateAverageBrownSpot(images);
-        double averageFlawsPercent = calculateAverageFlawsPercent(images);
         return Scaffold(
             appBar: const Appbarmain(name: "วิเคราะห์คุณภาพ"),
             body: SingleChildScrollView(
@@ -118,13 +149,6 @@ class _HistoryDetailState extends State<HistoryDetail> {
                             itemCount: images.length,
                             itemBuilder: (context, index, realIndex) {
                               final image = images[index];
-                              debugPrint(
-                                  "จุดตำหนื" + image.brown_spot.toString());
-                              debugPrint("จุดกระสีน้ำตาล" +
-                                  image.flaws_percent.toString());
-                              debugPrint(
-                                  "น้ำหนัก + ${image.image_weight.toDouble()}");
-                              // debugPrint("จุดตำหนื"+image.brown_spot.toString());
                               return Container(
                                 child: Image.file(
                                   File(image.image_url),
@@ -286,78 +310,6 @@ class _HistoryDetailState extends State<HistoryDetail> {
                                   child: ListTile(
                                     contentPadding: EdgeInsets.all(0),
                                     leading: Icon(
-                                      Icons.straighten,
-                                      size: 25,
-                                      color: GPrimaryColor,
-                                    ),
-                                    title: Text(
-                                      "ความยาว : ",
-                                      style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 10, top: 17),
-                              child: Text(
-                                widget.results.lenght.toStringAsFixed(2) +
-                                    " เซนติเมตร",
-                                style: TextStyle(
-                                    color: Color(0xFF42BD41), fontSize: 18),
-                              ),
-                            )
-                          ],
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const FittedBox(
-                              child: Padding(
-                                padding: EdgeInsets.only(left: 15),
-                                child: SizedBox(
-                                  width: 140,
-                                  child: ListTile(
-                                    contentPadding: EdgeInsets.all(0),
-                                    leading: Icon(
-                                      Icons.straighten,
-                                      size: 25,
-                                      color: GPrimaryColor,
-                                    ),
-                                    title: Text(
-                                      "ความกว้าง : ",
-                                      style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 10, top: 17),
-                              child: Text(
-                                widget.results.width.toStringAsFixed(2) +
-                                    " เซนติเมตร",
-                                style: TextStyle(
-                                    color: Color(0xFF42BD41), fontSize: 18),
-                              ),
-                            )
-                          ],
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const FittedBox(
-                              child: Padding(
-                                padding: EdgeInsets.only(left: 15),
-                                child: SizedBox(
-                                  width: 140,
-                                  child: ListTile(
-                                    contentPadding: EdgeInsets.all(0),
-                                    leading: Icon(
                                       Icons.scale,
                                       size: 25,
                                       color: GPrimaryColor,
@@ -453,7 +405,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
                             Padding(
                               padding: EdgeInsets.only(left: 10, top: 17),
                               child: Text(
-                                "${averageFlawsPercent.toStringAsFixed(2)} ตารางเซนติเมตร",
+                                "${totalFlawsPercent.toStringAsFixed(2)} ตารางเซนติเมตร",
                                 style: TextStyle(
                                     color: Color(0xFF42BD41), fontSize: 18),
                               ),
@@ -509,7 +461,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
                             Padding(
                               padding: EdgeInsets.only(left: 10, top: 17),
                               child: Text(
-                                "${averageBrownSpot.toStringAsFixed(2)} เปอร์เซ็นต์",
+                                "${totalBrownSpot.toStringAsFixed(2)} เปอร์เซ็นต์",
                                 style: TextStyle(
                                     color: Color(0xFF42BD41), fontSize: 18),
                               ),

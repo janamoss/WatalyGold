@@ -341,7 +341,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                   const FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      'กำลังวิเคราะห์คุณภาพ',
+                      'กำลังไปยังขั้นตอนต่อไป',
                       style: TextStyle(color: WhiteColor, fontSize: 20),
                       textAlign: TextAlign.center,
                     ),
@@ -370,8 +370,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       List<String> imageNames = [
         'Front_$uniquename',
         'Back_$uniquename',
-        'Top_$uniquename',
         'Bottom_$uniquename',
+        'Top_$uniquename',
       ];
 
       List<String> imageuri = [];
@@ -538,6 +538,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     }
   }
 
+  bool _hasShownDialog =
+      false; // ตัวแปร flag เพื่อตรวจสอบว่า Dialog ได้แสดงหรือยัง
+
   void checkCapturedImages() {
     // ตรวจสอบว่ามี capturedImages ครบ 4 ภาพ
     if (capturedImages.length == 4) {
@@ -547,7 +550,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       // หากทุกภาพได้รับการประมวลผลแล้ว
       debugPrint(allImagesProcessed.toString());
-      if (allImagesProcessed) {
+      if (allImagesProcessed && !_hasShownDialog) {
+        // ตรวจสอบว่าภาพประมวลผลเสร็จและยังไม่เคยแสดง Dialog
         // ภาพที่มีปัญหา (statusMango == 2 หรือ statusMangoColor == 2)
         List<ProblematicImage> problematicImages = capturedImages
             .where((image) =>
@@ -569,6 +573,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
         // ตรวจสอบว่ามีภาพที่ไม่ผ่านการวิเคราะห์หรือไม่
         if (problematicImages.isNotEmpty) {
+          _hasShownDialog = true; // แสดง Dialog แค่ครั้งเดียว
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -656,6 +661,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                 MaterialStatePropertyAll(GPrimaryColor),
                             elevation: MaterialStatePropertyAll(1)),
                         onPressed: () async {
+                          _hasShownDialog =
+                              false; // รีเซ็ต flag เมื่อปิด Dialog
                           Navigator.of(context).pop();
                         },
                         child: Text('เข้าใจแล้ว',
@@ -676,7 +683,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   Future<void> analyzeImage(File image, int index) async {
     if (image != null) {
       final gemini = Gemini.instance;
-
       await gemini.textAndImage(
         text:
             """ From the picture I gave you, can you check if there is a mango and a 5 baht coin in this picture? If there are both, then answer "mango". 
@@ -890,6 +896,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                                   setState(() {
                                                     capturedImages
                                                         .remove(image);
+                                                    statusimage = index + 1;
                                                   });
                                                 }
                                               : () {

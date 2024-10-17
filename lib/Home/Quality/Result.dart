@@ -49,8 +49,6 @@ class _ResultPageState extends State<ResultPage> {
   late String grade = ''; // Initialize grade with a default value
   late String anotherNote = '';
   late double weight = 0.0;
-  late double length = 0.0;
-  late double width = 0.0;
 
   double totalFlawsPercent = 0;
   double maxFlawsPercent = 0;
@@ -82,45 +80,73 @@ class _ResultPageState extends State<ResultPage> {
     }
   }
 
-  double calculateAverageBrownSpot(double totalBrownSpot) {
-    return totalBrownSpot;
-  }
+  List<double> calculateFixedPercentages(List<double> n) {
+    // กำหนดอัตราส่วนคงที่
+    List<double> percentages = [40, 40, 20, 20];
 
-  double calculateAverageFlawsPercent(double totalFlawsPercent) {
-    return totalFlawsPercent;
+    // คำนวณผลรวมของ n
+    double total = n.reduce((a, b) => a + b); // คำนวณผลรวม
+
+    // คำนวณค่าตามอัตราส่วนที่กำหนด
+    List<double> results = [];
+    for (int i = 0; i < n.length; i++) {
+      if (i < percentages.length) {
+        double result = (percentages[i] / 100) * total;
+        results.add(result);
+      } else {
+        results.add(0); // กรณีที่ n มีความยาวมากกว่าจำนวนเปอร์เซ็นต์ที่กำหนด
+      }
+    }
+
+    return results;
   }
 
   Future<void> _insertImage(int resultId) async {
     stdout.writeln(resultId);
     final results = FirebaseFirestore.instance.collection('Image');
+
+    // สร้าง List เพื่อเก็บค่า flawsPercent และ brownSpot
+    List<double> flawsPercentList = [];
+    List<double> brownSpotList = [];
+
     for (int i = 0; i < widget.ID_Image.length; i++) {
       debugPrint("1234");
       final document = await results.doc(widget.ID_Image[i]).get();
       debugPrint(document["img_status"].toString());
-      debugPrint("จุดตำหนิ ${document["mango_weight"].toDouble()}");
-      debugPrint("จุดตำหนิ ${document["mango_weight"].toString()}");
 
+      // ดึงค่า flawsPercent และ brownSpot จาก document
       double flawsPercent = document["flaws_percent"].toDouble();
       double brownSpot = document["brown_spot"].toDouble();
 
-      // รวมค่า
-      totalFlawsPercent += flawsPercent;
-      totalBrownSpot += brownSpot;
+      // เก็บค่า flawsPercent และ brownSpot ไว้ใน List
+      flawsPercentList.add(flawsPercent);
+      brownSpotList.add(brownSpot);
 
       await Image_DB().insertdata(
           result_id: resultId.toInt(),
           image_status: document["img_status"].toString(),
           image_name: widget.ID_Image[i].toString(),
           image_url: widget.ListImagePath[i].toString(),
-          image_lenght: document["mango_length"].toDouble(),
-          image_width: document["mango_width"].toDouble(),
           image_weight: document["mango_weight"].toDouble(),
           flaws_percent: document["flaws_percent"].toDouble(),
           brown_spot: document["brown_spot"].toDouble(),
           color: document["color"].toString());
-      debugPrint("สร้างข้อมูลรูปภาพเสด");
+
+      debugPrint("สร้างข้อมูลรูปภาพเสร็จ");
       setState(() {});
     }
+
+    List<double> fixedFlawsPercentages =
+        calculateFixedPercentages(flawsPercentList);
+    List<double> fixedBrownSpotPercentages =
+        calculateFixedPercentages(brownSpotList);
+
+    // ผลลัพธ์ที่คำนวณได้
+    totalFlawsPercent = fixedFlawsPercentages.reduce((a, b) => a + b);
+    totalBrownSpot = fixedBrownSpotPercentages.reduce((a, b) => a + b);
+
+    debugPrint("Total Flaws Percent: $totalFlawsPercent");
+    debugPrint("Total Brown Spot: $totalBrownSpot");
   }
 
   Future<void> _showToastUpdate() async {
@@ -141,17 +167,13 @@ class _ResultPageState extends State<ResultPage> {
       final document = await results.doc(widget.ID_Result).get();
       grade = document['Quality'];
       weight = document['Weight'];
-      length = document['Length'];
-      width = document['Width'];
       anotherNote = document['Another_note'];
       stdout.writeln("ทำงานอยู่จ้าเด้อ");
       resultId = await Result_DB().create(
           user_id: user_id!,
           another_note: anotherNote,
           quality: grade,
-          lenght: length.toDouble(),
-          width: width.toDouble(),
-          weight: weight.toDouble());
+          weight: weight);
       stdout.writeln("เสร็จสิ้นสร้าง result");
       await _insertImage(resultId!);
       setState(() {
@@ -340,76 +362,6 @@ class _ResultPageState extends State<ResultPage> {
                                     child: ListTile(
                                       contentPadding: EdgeInsets.all(0),
                                       leading: Icon(
-                                        Icons.straighten_rounded,
-                                        size: 25,
-                                        color: GPrimaryColor,
-                                      ),
-                                      title: Text(
-                                        "ความยาว : ",
-                                        style: TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 10, top: 17),
-                                child: Text(
-                                  length.toStringAsFixed(2) + " เซนติเมตร",
-                                  style: TextStyle(
-                                      color: Color(0xFF42BD41), fontSize: 18),
-                                ),
-                              )
-                            ],
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const FittedBox(
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: 15),
-                                  child: SizedBox(
-                                    width: 140,
-                                    child: ListTile(
-                                      contentPadding: EdgeInsets.all(0),
-                                      leading: Icon(
-                                        Icons.straighten_rounded,
-                                        size: 25,
-                                        color: GPrimaryColor,
-                                      ),
-                                      title: Text(
-                                        "ความกว้าง : ",
-                                        style: TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 10, top: 17),
-                                child: Text(
-                                  width.toStringAsFixed(2) + " เซนติเมตร",
-                                  style: TextStyle(
-                                      color: Color(0xFF42BD41), fontSize: 18),
-                                ),
-                              )
-                            ],
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const FittedBox(
-                                child: Padding(
-                                  padding: EdgeInsets.only(left: 15),
-                                  child: SizedBox(
-                                    width: 140,
-                                    child: ListTile(
-                                      contentPadding: EdgeInsets.all(0),
-                                      leading: Icon(
                                         Icons.scale_rounded,
                                         size: 25,
                                         color: GPrimaryColor,
@@ -462,7 +414,7 @@ class _ResultPageState extends State<ResultPage> {
                               Padding(
                                 padding: EdgeInsets.only(left: 10, top: 17),
                                 child: Text(
-                                  totalBrownSpot.toStringAsFixed(2) +
+                                  totalFlawsPercent.toStringAsFixed(2) +
                                       " ตารางเซนติเมตร",
                                   style: TextStyle(
                                       color: Color(0xFF42BD41), fontSize: 18),
@@ -498,7 +450,7 @@ class _ResultPageState extends State<ResultPage> {
                               Padding(
                                 padding: EdgeInsets.only(left: 10, top: 17),
                                 child: Text(
-                                  totalFlawsPercent.toStringAsFixed(2) +
+                                  totalBrownSpot.toStringAsFixed(2) +
                                       " เปอร์เซนต์",
                                   style: TextStyle(
                                       color: Color(0xFF42BD41), fontSize: 18),

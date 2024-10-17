@@ -78,6 +78,7 @@ dependencies:
   google_generative_ai: ^0.4.6
   flutter_gemini: ^2.0.5
   connectivity_plus: ^6.0.5
+  get: ^4.6.6
     
 dev_dependencies:
   flutter_test:

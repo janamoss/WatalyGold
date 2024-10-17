@@ -124,7 +124,7 @@ class _HomeCollectionState extends State<HomeCollection> {
                     contentPadding: EdgeInsets.all(10),
                     fillColor: WhiteColor,
                     filled: true,
-                    hintText: "ค้นหาการวิเคราะห์",
+                    hintText: "ค้นหาคอลเลคชัน",
                     prefixIcon: Icon(
                       Icons.search_rounded,
                       color: Color(0xff767676),

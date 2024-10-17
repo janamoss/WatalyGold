@@ -5,8 +5,6 @@ class Images {
   final String image_status;
   final String image_name;
   final String image_url;
-  final double image_lenght;
-  final double image_width;
   final double image_weight;
   final double flaws_percent;
   final double brown_spot;
@@ -22,8 +20,6 @@ class Images {
     required this.image_status,
     required this.image_name,
     required this.image_url,
-    required this.image_lenght,
-    required this.image_width,
     required this.image_weight,
     required this.flaws_percent,
     required this.brown_spot,
@@ -39,8 +35,6 @@ class Images {
         image_status: map['img_status'] ?? '',
         image_name: map['image_name'] ?? '',
         image_url: map['image_url'] ?? '',
-        image_lenght: map['mango_length']?.toDouble() ?? 0,
-        image_width: map['mango_width']?.toDouble() ?? 0,
         image_weight: map['mango_weight']?.toDouble() ?? 0,
         flaws_percent: map['flaws_percent']?.toDouble() ?? 0,
         brown_spot: map['brown_spot']?.toDouble() ?? 0,

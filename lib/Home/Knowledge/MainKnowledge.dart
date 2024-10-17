@@ -44,11 +44,13 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
   Future<void> _checkInternetConnection() async {
     var connectivityResult = await _connectivity.checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
+      debugPrint("ไม่มีอินเทอร์เน็ต");
       setState(() {
         _noInternet = true;
         _isLoading = false; // Stop loading if no internet
       });
     } else {
+      debugPrint("มีอินเทอร์เน็ต");
       setState(() {
         _noInternet = false; // Reset the flag if there's internet
         _isLoading = true; // Start loading if there's internet

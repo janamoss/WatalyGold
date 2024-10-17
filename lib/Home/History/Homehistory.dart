@@ -30,8 +30,7 @@ class _HomeHistoryState extends State<HomeHistory> {
   @override
   void initState() {
     super.initState();
-    _loadResults();
-    _loadCollections();
+    refreshList();
   }
 
   Future<void> _loadCollections() async {
@@ -47,7 +46,8 @@ class _HomeHistoryState extends State<HomeHistory> {
     setState(() {});
   }
 
-  void refreshList() {
+  Future<void> refreshList() async {
+    debugPrint("working");
     _loadResults();
     _loadCollections();
     setState(() {}); // เรียกใช้ฟังก์ชันนี้เพื่ออัปเดตรายการ
@@ -56,45 +56,44 @@ class _HomeHistoryState extends State<HomeHistory> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF2F6F5),
-      body: Container(
-        child: Padding(
-          padding: EdgeInsets.all(15),
-          child: Column(
-            children: [
-              Container(
-                margin: EdgeInsets.all(5),
-                width: MediaQuery.of(context).size.width * 0.85,
-                height: 50,
-                child: TextField(
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.all(10),
-                    fillColor: WhiteColor,
-                    filled: true,
-                    hintText: "ค้นหาการวิเคราะห์",
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: Color(0xff767676),
-                      size: 30,
-                    ),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none),
+      body: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width * 0.85,
+              height: 50,
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.all(10),
+                  fillColor: WhiteColor,
+                  filled: true,
+                  hintText: "ค้นหาการวิเคราะห์",
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: Color(0xff767676),
+                    size: 30,
                   ),
-                  onChanged: searchHistory,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none),
                 ),
+                onChanged: searchHistory,
               ),
-              SizedBox(
-                height: 10,
-              ),
-              Expanded(
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: refreshList,
                 child: _results.isNotEmpty
                     ? ListView.builder(
                         itemCount: _results.length,
                         itemBuilder: (context, index) {
                           final result = _results[index];
                           debugPrint("${result.collection_id} คือ id ของคอ");
-                          debugPrint("${result.lenght}");
                           DateTime createdAt =
                               DateTime.parse(result.created_at);
                           final formattedDate =
@@ -121,20 +120,22 @@ class _HomeHistoryState extends State<HomeHistory> {
                           );
                         },
                       )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.history_rounded,
-                              size: 50, color: GPrimaryColor),
-                          SizedBox(
-                            height: 25,
-                          ),
-                          Text("คุณยังไม่มีรายการการวิเคราะห์คุณภาพ"),
-                        ],
+                    : Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.history_rounded,
+                                size: 50, color: GPrimaryColor),
+                            SizedBox(
+                              height: 25,
+                            ),
+                            Text("คุณยังไม่มีรายการการวิเคราะห์คุณภาพ"),
+                          ],
+                        ),
                       ),
-              )
-            ],
-          ),
+              ),
+            )
+          ],
         ),
       ),
     );

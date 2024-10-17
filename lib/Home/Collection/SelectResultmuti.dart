@@ -122,33 +122,46 @@ class _SelectResultState extends State<SelectResult> {
           )
         ],
       ),
-      body: ListView.builder(
-        // ใช้จำนวนรายการที่มีอยู่ใน _results
-        itemCount: _results.length,
-        itemBuilder: (context, index) {
-          // ดึง result ที่จะใช้แสดงจาก _results
-          final result = _results[index];
+      body: _results.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.history_rounded, size: 50, color: GPrimaryColor),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Text("คุณยังไม่มีรายการการวิเคราะห์คุณภาพ"),
+                ],
+              ),
+            )
+          : ListView.builder(
+              // ใช้จำนวนรายการที่มีอยู่ใน _results
+              itemCount: _results.length,
+              itemBuilder: (context, index) {
+                // ดึง result ที่จะใช้แสดงจาก _results
+                final result = _results[index];
 
-          // ค้นหา index ของ result นี้ใน _resultsreal เพื่อใช้เป็นลำดับที่แท้จริง
-          final actualIndex = _resultsreal.indexWhere(
-              (realResult) => realResult.result_id == result.result_id);
+                // ค้นหา index ของ result นี้ใน _resultsreal เพื่อใช้เป็นลำดับที่แท้จริง
+                final actualIndex = _resultsreal.indexWhere(
+                    (realResult) => realResult.result_id == result.result_id);
 
-          DateTime createdAt = DateTime.parse(result.created_at);
-          final formattedDate =
-              DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);
+                DateTime createdAt = DateTime.parse(result.created_at);
+                final formattedDate =
+                    DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);
 
-          return CradforHistory(
-            date: formattedDate,
-            results: result,
-            number: actualIndex +
-                1, // ใช้ actualIndex จาก _resultsreal เพื่อแสดงลำดับจริง
-            refreshCallback: () => _loadResults(),
-            statusSelect: 1,
-            isChecked: _selectedResults[result.result_id],
-            onCheckChanged: () => selectresult(result.result_id),
-          );
-        },
-      ),
+                return CradforHistory(
+                  date: formattedDate,
+                  results: result,
+                  number: actualIndex +
+                      1, // ใช้ actualIndex จาก _resultsreal เพื่อแสดงลำดับจริง
+                  refreshCallback: () => _loadResults(),
+                  statusSelect: 1,
+                  isChecked: _selectedResults[result.result_id],
+                  onCheckChanged: () => selectresult(result.result_id),
+                );
+              },
+            ),
     );
   }
 }
