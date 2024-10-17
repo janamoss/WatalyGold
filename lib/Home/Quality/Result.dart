@@ -210,14 +210,30 @@ class _ResultPageState extends State<ResultPage> {
                     CarouselSlider(
                       items: widget.capturedImage
                           .map(
-                            (image) => Image.file(
-                              image,
-                              fit: BoxFit.cover,
+                            (image) => AspectRatio(
+                              aspectRatio: 16 /
+                                  9, // คุณสามารถปรับอัตราส่วนตามต้องการ เช่น 4/3, 1/1 เป็นต้น
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: 5.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.file(
+                                    image,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
                             ),
                           )
                           .toList(),
                       options: CarouselOptions(
-                        height: 300,
+                        aspectRatio: 16 / 9, // ต้องตรงกับ AspectRatio ของ item
+                        viewportFraction: 0.8,
+                        initialPage: 0,
+                        enableInfiniteScroll: true,
+                        reverse: false,
+                        enlargeCenterPage: true,
+                        scrollDirection: Axis.horizontal,
                       ),
                     ),
                     Card(

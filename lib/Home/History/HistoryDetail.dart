@@ -149,15 +149,34 @@ class _HistoryDetailState extends State<HistoryDetail> {
                             itemCount: images.length,
                             itemBuilder: (context, index, realIndex) {
                               final image = images[index];
-                              return Container(
-                                child: Image.file(
-                                  File(image.image_url),
-                                  fit: BoxFit.cover,
+                              return AspectRatio(
+                                aspectRatio: 16 /
+                                    9, // คุณสามารถปรับอัตราส่วนตามต้องการ เช่น 4/3, 1/1 เป็นต้น
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.file(
+                                      File(image.image_url),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                               );
                             },
                             options: CarouselOptions(
-                              height: 300,
+                              aspectRatio:
+                                  16 / 9, // ต้องตรงกับ AspectRatio ของ item
+                              viewportFraction: 0.8,
+                              initialPage: 0,
+                              enableInfiniteScroll: true,
+                              reverse: false,
+                              autoPlayInterval: Duration(seconds: 3),
+                              autoPlayAnimationDuration:
+                                  Duration(milliseconds: 800),
+                              autoPlayCurve: Curves.fastOutSlowIn,
+                              enlargeCenterPage: true,
+                              scrollDirection: Axis.horizontal,
                             ),
                           )
                         : Container(

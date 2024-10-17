@@ -1,8 +1,9 @@
-import 'package:carousel_slider/carousel_slider.dart'; 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dots_indicator/dots_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:flutter/widgets.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 // import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
@@ -24,7 +25,7 @@ class _KnowledgePageState extends State<KnowledgePage> {
   late String detail =
       widget.knowledge?.knowledgeDetail.replaceAll('\n', '\n\n') ?? '';
 
-  late CarouselController controller ; 
+  late CarouselController controller;
   int currentIndex = 0;
 
   @override
@@ -60,6 +61,21 @@ class _KnowledgePageState extends State<KnowledgePage> {
                     fit: BoxFit.cover,
                     height: 300,
                     width: double.infinity,
+                    loadingBuilder: (BuildContext context, Widget child,
+                        ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child; // รูปภาพโหลดเสร็จแล้ว
+                      } else {
+                        return Center(
+                          child: LoadingAnimationWidget.discreteCircle(
+                            color: WhiteColor,
+                            secondRingColor: GPrimaryColor,
+                            thirdRingColor: YPrimaryColor,
+                            size: 100,
+                          ),
+                        );
+                      }
+                    },
                     errorBuilder: (context, error, stackTrace) {
                       debugPrint('Error loading image: $error');
                       return Icon(Icons.error);
@@ -72,6 +88,21 @@ class _KnowledgePageState extends State<KnowledgePage> {
                     fit: BoxFit.cover,
                     height: 300,
                     width: double.infinity,
+                    loadingBuilder: (BuildContext context, Widget child,
+                        ImageChunkEvent? loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child; // รูปภาพโหลดเสร็จแล้ว
+                      } else {
+                        return Center(
+                          child: LoadingAnimationWidget.discreteCircle(
+                            color: WhiteColor,
+                            secondRingColor: GPrimaryColor,
+                            thirdRingColor: YPrimaryColor,
+                            size: 100,
+                          ),
+                        );
+                      }
+                    },
                     errorBuilder: (context, error, stackTrace) {
                       debugPrint('Error loading image: $error');
                       return Icon(Icons.error);
@@ -88,6 +119,23 @@ class _KnowledgePageState extends State<KnowledgePage> {
                                   img,
                                   fit: BoxFit.cover,
                                   width: double.infinity,
+                                  loadingBuilder: (BuildContext context,
+                                      Widget child,
+                                      ImageChunkEvent? loadingProgress) {
+                                    if (loadingProgress == null) {
+                                      return child; // รูปภาพโหลดเสร็จแล้ว
+                                    } else {
+                                      return Center(
+                                        child: LoadingAnimationWidget
+                                            .discreteCircle(
+                                          color: WhiteColor,
+                                          secondRingColor: GPrimaryColor,
+                                          thirdRingColor: YPrimaryColor,
+                                          size: 100,
+                                        ),
+                                      );
+                                    }
+                                  },
                                   errorBuilder: (context, error, stackTrace) {
                                     debugPrint('Error loading image: $error');
                                     return Icon(Icons.error);
@@ -99,6 +147,23 @@ class _KnowledgePageState extends State<KnowledgePage> {
                                   img,
                                   fit: BoxFit.cover,
                                   width: double.infinity,
+                                  loadingBuilder: (BuildContext context,
+                                      Widget child,
+                                      ImageChunkEvent? loadingProgress) {
+                                    if (loadingProgress == null) {
+                                      return child; // รูปภาพโหลดเสร็จแล้ว
+                                    } else {
+                                      return Center(
+                                        child: LoadingAnimationWidget
+                                            .discreteCircle(
+                                          color: WhiteColor,
+                                          secondRingColor: GPrimaryColor,
+                                          thirdRingColor: YPrimaryColor,
+                                          size: 100,
+                                        ),
+                                      );
+                                    }
+                                  },
                                   errorBuilder: (context, error, stackTrace) {
                                     debugPrint('Error loading image: $error');
                                     return Icon(Icons.error);

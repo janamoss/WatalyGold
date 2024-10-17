@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:platform_device_id/platform_device_id.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -89,6 +91,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   int statusimage = 1;
 
+  bool _noInternet = false;
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  bool _isBottomSheetShown = false;
+
   void _getDeviceId() async {
     //Recieving device id in the result
     String? result = await PlatformDeviceId.getDeviceId;
@@ -127,6 +134,107 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         });
   }
 
+  Future<bool> _checkRealInternetConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _checkInternetConnection() async {
+    var connectivityResult = await _connectivity.checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      _updateNoInternetState(true);
+      return true; // ส่ง true เมื่อไม่มีการเชื่อมต่ออินเทอร์เน็ต
+    } else {
+      bool hasRealConnectivity = await _checkRealInternetConnectivity();
+      _updateNoInternetState(!hasRealConnectivity);
+      return !hasRealConnectivity; // ส่ง true เมื่อไม่มีการเชื่อมต่ออินเทอร์เน็ตจริง ๆ
+    }
+  }
+
+  void _updateNoInternetState(bool noInternet) {
+    setState(() {
+      _noInternet = noInternet;
+    });
+
+    if (_noInternet) {
+      _showNoInternetModal();
+    } else {
+      _dismissNoInternetModal();
+    }
+  }
+
+  void _showNoInternetModal() {
+    if (!_isBottomSheetShown) {
+      _isBottomSheetShown = true;
+      showMaterialModalBottomSheet(
+        context: context,
+        isDismissible: false, // ไม่ให้ปิด Modal โดยการแตะด้านนอก
+        enableDrag: true, // อนุญาตให้ลากปิด Modal
+        builder: (BuildContext context) {
+          return WillPopScope(
+            onWillPop: () async {
+              // เมื่อผู้ใช้กดปุ่มย้อนกลับ
+              capturedImages.clear(); // เคลียร์ capturedImages ก่อนปิด Modal
+              _isBottomSheetShown = false; // รีเซ็ตสถานะเมื่อปิด Modal
+              Navigator.of(context).pop(); // ปิด Modal
+              setState(() {});
+              return false; // บอกว่าจะไม่ให้ปิด Modal โดยอัตโนมัติ
+            },
+            child: Container(
+              height: 250,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.wifi_off,
+                    size: 80,
+                    color: Colors.red.shade300,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "ตอนนี้คุณไม่ได้เชื่อมต่ออินเทอร์เน็ต",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.red.shade400,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      _checkInternetConnection();
+                      capturedImages.clear();
+                    },
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all(Colors.red.shade300),
+                    ),
+                    child: const Text(
+                      "ลองใหม่",
+                      style: TextStyle(color: WhiteColor, fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ).whenComplete(() {
+        _isBottomSheetShown = false; // รีเซ็ตสถานะเมื่อปิด Modal
+      });
+    }
+  }
+
+  void _dismissNoInternetModal() {
+    if (_isBottomSheetShown) {
+      Navigator.of(context).pop();
+      _isBottomSheetShown = false;
+    }
+  }
+
   int selectedCamera = 0;
   List<CapturedImage> capturedImages = [];
   // List<File> capturedImages = [];
@@ -138,24 +246,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         // Define the resolution to use.
         ResolutionPreset.max, // new resolution
         enableAudio: false);
-
-    // Initialize the controller
     _initializeControllerFuture = _controller.initialize();
-
-    // Wait for the initialization to complete
-    // try {
-    //   await _initializeControllerFuture;
-
-    //   // Now that initialization is complete, start the image stream
-    //   if (_controller != null) {
-    //     await _controller!.startImageStream(_processImage);
-    //     _startLightMeter();
-    //     setState(() {});
-    //   }
-    // } catch (e) {
-    //   debugPrint('Error initializing camera: $e');
-    //   // Handle the error appropriately
-    // }
   }
 
   void _startLightMeter() {
@@ -264,24 +355,33 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     return;
   }
 
-  Future<void> Gallery() async {
+  Future Gallery() async {
     try {
-      final List<XFile> images =
-          await picker.pickMultiImage(imageQuality: 50, limit: 4);
+      // เลือกรูปภาพไม่เกิน 4 รูป
+      final List<XFile> images = await picker.pickMultiImage(
+        imageQuality: 70,
+        limit: 4,
+      );
 
       if (images.isNotEmpty) {
+        // ตรวจสอบว่าจำนวนรูปมากกว่า 4 หรือไม่ ถ้ามากกว่าให้เอาแค่ 4 รูปแรก
+        List<XFile> selectedImages = images.length > 4
+            ? images.sublist(0, 4) // เลือก 4 รูปแรก
+            : images; // ถ้าน้อยกว่าหรือเท่ากับ 4 ก็ใช้รายการเต็ม
+
         Set<int> existingStatusImages =
             capturedImages.map((image) => image.statusimage).toSet();
-        List<Future> analysisFutures = [];
 
-        for (int i = 0; i < images.length; i++) {
+        List<Future<void>> analysisFutures = [];
+
+        for (int i = 0; i < selectedImages.length; i++) {
           int nextAvailableStatus = 1;
           while (existingStatusImages.contains(nextAvailableStatus)) {
             nextAvailableStatus++;
           }
 
           // แปลง XFile เป็น File
-          File imageFile = File(images[i].path);
+          File imageFile = File(selectedImages[i].path);
 
           setState(() {
             capturedImages.add(CapturedImage(
@@ -295,19 +395,32 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             List<int> availableStatusImages = [1, 2, 3, 4]
                 .where((number) => !existingStatusImages.contains(number))
                 .toList();
+
             if (availableStatusImages.isNotEmpty) {
               statusimage = availableStatusImages.first;
             } else {
               debugPrint("ครบ 4 รูปแล้วค่า");
             }
           });
+          print(capturedImages.length);
 
           // ส่ง File แทน XFile ไปยัง analyzeImage
           analysisFutures.add(analyzeImage(imageFile, nextAvailableStatus));
         }
-
-        await Future.wait(analysisFutures);
-        debugPrint("analysis");
+        print(capturedImages.length);
+        // ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต
+        bool noInternet = await _checkInternetConnection();
+        if (noInternet) {
+          // ถ้าไม่มีอินเทอร์เน็ตให้ทำสิ่งนี้
+          print("ไม่มีการเชื่อมต่ออินเทอร์เน็ต");
+          return; // หยุดการทำงานหรือเรียกฟังก์ชันอื่น
+        } else {
+          // ถ้ามีอินเทอร์เน็ตให้ทำสิ่งที่คุณต้องการ
+          await Future.wait(analysisFutures);
+          debugPrint("analysis");
+          print("มีการเชื่อมต่ออินเทอร์เน็ต");
+          // เรียกฟังก์ชันหรือทำสิ่งที่คุณต้องการต่อไป
+        }
       }
     } on PlatformException catch (e) {
       debugPrint('เกิดข้อผิดพลาด: $e');
@@ -1149,8 +1262,13 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                           "availableStatusImages: $availableStatusImages");
 
                                       // เรียก analyzeImage พร้อมส่ง statusN ไป
-                                      await analyzeImage(
-                                          File(xFile.path), statusN);
+                                      bool noInternet =
+                                          await _checkInternetConnection();
+                                      if (noInternet) {
+                                      } else {
+                                        await analyzeImage(
+                                            File(xFile.path), statusN);
+                                      }
                                     },
                               child: Container(
                                 height: 60,

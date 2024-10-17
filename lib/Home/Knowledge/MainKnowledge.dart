@@ -35,6 +35,15 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
         .toList();
   }
 
+  Future<bool> _checkRealInternetConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -44,21 +53,33 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
   Future<void> _checkInternetConnection() async {
     var connectivityResult = await _connectivity.checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      debugPrint("ไม่มีอินเทอร์เน็ต");
+      debugPrint("ไม่มีการเชื่อมต่อเครือข่าย");
       setState(() {
         _noInternet = true;
-        _isLoading = false; // Stop loading if no internet
+        _isLoading = false;
       });
     } else {
-      debugPrint("มีอินเทอร์เน็ต");
+      bool hasRealConnectivity = await _checkRealInternetConnectivity();
+      if (!hasRealConnectivity) {
+        debugPrint(
+            "มีการเชื่อมต่อเครือข่าย แต่ไม่สามารถเข้าถึงอินเทอร์เน็ตได้");
+        setState(() {
+          _noInternet = true;
+          _isLoading = false;
+        });
+        return;
+      }
+
+      debugPrint("มีการเชื่อมต่ออินเทอร์เน็ต");
       setState(() {
-        _noInternet = false; // Reset the flag if there's internet
-        _isLoading = true; // Start loading if there's internet
+        _noInternet = false;
+        _isLoading = true;
       });
 
-      getKnowledges().then((value) {
+      try {
+        final knowledges = await getKnowledges();
         setState(() {
-          knowledgelist = value;
+          knowledgelist = knowledges;
           _isLoading = false;
         });
 
@@ -67,7 +88,13 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
           debugPrint('Knowledge : ${knowledge.knowledgeDetail}');
           debugPrint('Contents : ${knowledge.contents}');
         }
-      });
+      } catch (e) {
+        debugPrint("เกิดข้อผิดพลาดในการโหลดข้อมูล: $e");
+        setState(() {
+          _noInternet = true;
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -97,21 +124,31 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
                       children: [
                         Icon(
                           Icons.wifi_off,
-                          size: 100,
+                          size: 80,
                           color: Colors.red.shade300,
                         ),
                         const SizedBox(height: 20),
-                        const Text(
+                        Text(
                           "ตอนนี้คุณไม่ได้เชื่อมต่ออินเทอร์เน็ต",
                           style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.black54,
+                            fontSize: 18,
+                            color: Colors.red.shade400,
                           ),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: _checkInternetConnection,
-                          child: const Text("ลองใหม่"),
+                          onPressed: () {
+                            _checkInternetConnection();
+                            // Do not dismiss the modal here, let _updateNoInternetState handle it
+                          },
+                          style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.red.shade300),
+                          ),
+                          child: const Text(
+                            "ลองใหม่",
+                            style: TextStyle(color: WhiteColor, fontSize: 15),
+                          ),
                         ),
                       ],
                     ),
