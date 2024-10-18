@@ -54,7 +54,7 @@ class _HomeCollectionState extends State<HomeCollection> {
     setState(() {}); // refresh state of DialogCollection
   }
 
-  void refreshList() {
+  Future<void> refreshList() async {
     _loadCollections(); // เรียกใช้ฟังก์ชันนี้เพื่ออัปเดตรายการ
   }
 
@@ -142,22 +142,29 @@ class _HomeCollectionState extends State<HomeCollection> {
               ),
               Expanded(
                 child: _collection.isNotEmpty
-                    ? GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // จำนวนคอลัมน์
-                          childAspectRatio:
-                              2.6 / 4, // อัตราส่วน width ต่อ height
-                        ),
-                        itemCount: _collection.length,
-                        itemBuilder: (context, index) {
-                          final collection = _collection[index];
+                    ? RefreshIndicator(
+                        color: GPrimaryColor,
+                        backgroundColor: WhiteColor,
+                        
+                        onRefresh: refreshList,
+                        child: GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // จำนวนคอลัมน์
+                            childAspectRatio:
+                                2.6 / 4, // อัตราส่วน width ต่อ height
+                          ),
+                          itemCount: _collection.length,
+                          itemBuilder: (context, index) {
+                            final collection = _collection[index];
 
-                          return SizedBox(
-                            child: CradforColletion(
-                                collections: collection,
-                                refreshCallback: refreshList),
-                          );
-                        },
+                            return SizedBox(
+                              child: CradforColletion(
+                                  collections: collection,
+                                  refreshCallback: refreshList),
+                            );
+                          },
+                        ),
                       )
                     : Center(
                         child: Column(

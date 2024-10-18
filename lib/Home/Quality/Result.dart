@@ -82,7 +82,7 @@ class _ResultPageState extends State<ResultPage> {
 
   List<double> calculateFixedPercentages(List<double> n) {
     // กำหนดอัตราส่วนคงที่
-    List<double> percentages = [40, 40, 20, 20];
+    List<double> percentages = [40, 40, 10, 10];
 
     // คำนวณผลรวมของ n
     double total = n.reduce((a, b) => a + b); // คำนวณผลรวม

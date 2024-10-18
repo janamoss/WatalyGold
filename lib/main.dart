@@ -35,18 +35,7 @@ Future<void> main() async {
   // await DatabaseService().deleteDatabases(await getDatabasesPath());
   if (await DatabaseService().isDatabaseExists()) {
     final results = await User_db().create(user_ipaddress: _deviceId!);
-    // try {
-    //   final r_id = await Result_DB().create(
-    //       user_id: 1,
-    //       another_note: "anotherNote",
-    //       quality: "grade",
-    //       lenght: 1.toDouble(),
-    //       width: 2.toDouble(),
-    //       weight: 3.toDouble());
-    //   log(r_id);
-    // } on Exception catch (e) {
-    //   stdout.writeln(e);
-    // }
+    
     log('Database exists!');
   } else {
     log('Database does not exist.');

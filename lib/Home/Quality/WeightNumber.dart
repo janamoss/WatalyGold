@@ -621,7 +621,7 @@ class _WeightNumberState extends State<WeightNumber> {
     //   width: originalImage.width * 2, // ขยายความกว้างเป็น 2 เท่า
     //   height: originalImage.height * 2, // ขยายความสูงเป็น 2 เท่า
     // );
-    // final processedImage = preprocessImagesHSV(originalImage);
+    final processedImage = preprocessImagesHSV(originalImage);
     // Define the threshold value (0-255)
     const int threshold = 32;
     // // ปรับแสงและความคม (เพิ่ม contrast, brightness)
@@ -630,10 +630,10 @@ class _WeightNumberState extends State<WeightNumber> {
     // // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
     // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
     // Loop through each pixel to apply thresholding
-    for (int y = 0; y < originalImage.height; y++) {
-      for (int x = 0; x < originalImage.width; x++) {
+    for (int y = 0; y < processedImage.height; y++) {
+      for (int x = 0; x < processedImage.width; x++) {
         // Get the Pixel object
-        final pixel = originalImage.getPixel(x, y);
+        final pixel = processedImage.getPixel(x, y);
         // Extract RGBA values and cast to int
         int r = pixel.r.toInt();
         int g = pixel.g.toInt();
@@ -642,9 +642,9 @@ class _WeightNumberState extends State<WeightNumber> {
         int luminance = (0.299 * r + 0.587 * g + 0.114 * b).toInt();
         // Apply thresholding: set pixel to black or white
         if (luminance < threshold) {
-          originalImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+          processedImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
         } else {
-          originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
+          processedImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
         }
         // if (luminance < threshold) {
         //   originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White

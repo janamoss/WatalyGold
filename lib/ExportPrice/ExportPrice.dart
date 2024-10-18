@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:watalygold/Widgets/Appbar_mains_notbotton.dart';
@@ -253,14 +254,54 @@ class _ExportPriceState extends State<ExportPrice> {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text('Loading...');
+            return Center(
+              child: LoadingAnimationWidget.discreteCircle(
+                color: WhiteColor,
+                secondRingColor: GPrimaryColor,
+                thirdRingColor: YPrimaryColor,
+                size: 200,
+              ),
+            );
           }
 
           Map<String, dynamic>? data =
               snapshot.data?.data() as Map<String, dynamic>?;
 
           if (data == null || data.isEmpty) {
-            return Text('No data available');
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.wifi_off,
+                    size: 80,
+                    color: Colors.red.shade300,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "ตอนนี้คุณไม่ได้เชื่อมต่ออินเทอร์เน็ต",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.red.shade400,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     // Do not dismiss the modal here, let _updateNoInternetState handle it
+                  //   },
+                  //   style: ButtonStyle(
+                  //     backgroundColor:
+                  //         MaterialStateProperty.all(Colors.red.shade300),
+                  //   ),
+                  //   child: const Text(
+                  //     "ลองใหม่",
+                  //     style: TextStyle(color: WhiteColor, fontSize: 15),
+                  //   ),
+                  // ),
+                ],
+              ),
+            );
           }
 
           String? unit = data['unit'];

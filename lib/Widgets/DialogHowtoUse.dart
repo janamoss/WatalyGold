@@ -393,7 +393,7 @@ class _Dialog_HowtoUseState extends State<Dialog_HowtoUse> {
                                     Container(
                                       decoration: BoxDecoration(
                                         border: Border.all(
-                                          color: GPrimaryColor,
+                                          color: Colors.red.shade400,
                                           width: 5,
                                         ),
                                         borderRadius: BorderRadius.all(

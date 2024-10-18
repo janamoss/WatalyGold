@@ -41,7 +41,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
   }
 
   List<double> calculateFixedPercentages(List<double> n) {
-    List<double> percentages = [40, 40, 20, 20];
+    List<double> percentages = [40, 40, 10, 10];
 
     double total = n.reduce((a, b) => a + b); // คำนวณผลรวม
 
@@ -139,7 +139,7 @@ class _HistoryDetailState extends State<HistoryDetail> {
       valueListenable: _imageList,
       builder: (context, images, child) {
         return Scaffold(
-            appBar: const Appbarmain(name: "วิเคราะห์คุณภาพ"),
+            appBar: const Appbarmain(name: "ผลวิเคราะห์คุณภาพ"),
             body: SingleChildScrollView(
               child: Column(
                 children: [

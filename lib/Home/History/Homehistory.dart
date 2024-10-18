@@ -87,6 +87,8 @@ class _HomeHistoryState extends State<HomeHistory> {
             ),
             Expanded(
               child: RefreshIndicator(
+                color: GPrimaryColor,
+                backgroundColor: WhiteColor,
                 onRefresh: refreshList,
                 child: _results.isNotEmpty
                     ? ListView.builder(

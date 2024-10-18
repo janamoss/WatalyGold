@@ -153,37 +153,39 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
                       ],
                     ),
                   )
-                : SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20.0),
-                        Column(
-                          children: [
-                            for (var knowledge in knowledgelist)
-                              KnowlegdeCol(
-                                onTap: () {
-                                  knowledge.contents.isNotEmpty
-                                      ? null
-                                      : Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => KnowledgePage(
-                                              knowledge: knowledge,
-                                              icons: knowledge.knowledgeIcons,
-                                            ),
-                                          ),
-                                        );
-                                },
-                                title: knowledge.knowledgeName,
-                                icons: knowledge.knowledgeIcons,
-                                ismutible:
-                                    knowledge.contents.isEmpty ? false : true,
-                                contents: knowledge.contents,
-                              ),
-                          ],
-                        )
-                      ],
+                : RefreshIndicator(
+                    color: GPrimaryColor,
+                    backgroundColor: WhiteColor,
+                    onRefresh: getKnowledges,
+                    child: ListView.builder(
+                      itemCount:
+                          knowledgelist.length + 1, // +1 สำหรับ SizedBox ด้านบน
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return const SizedBox(height: 20.0);
+                        }
+
+                        final knowledge = knowledgelist[index - 1];
+                        return KnowlegdeCol(
+                          onTap: () {
+                            if (knowledge.contents.isEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => KnowledgePage(
+                                    knowledge: knowledge,
+                                    icons: knowledge.knowledgeIcons,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          title: knowledge.knowledgeName,
+                          icons: knowledge.knowledgeIcons,
+                          ismutible: knowledge.contents.isNotEmpty,
+                          contents: knowledge.contents,
+                        );
+                      },
                     ),
                   ),
       ),

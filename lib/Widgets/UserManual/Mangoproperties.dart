@@ -13,7 +13,7 @@ class Mangoproperties extends StatefulWidget {
 
 class _MangopropertiesState extends State<Mangoproperties> {
   int _current = 0;
-   int _circleNumber = 1; 
+  int _circleNumber = 1;
   final CarouselController _controller = CarouselController();
 
   final List<String> imgListClassone = [
@@ -39,49 +39,45 @@ class _MangopropertiesState extends State<Mangoproperties> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-           width: MediaQuery.of(context).size.width * 1,
-          height: 1600,
-          color: Colors.white,
-          padding: EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildSection(
-                title: 'ชั้นพิเศษ (Extra Class)',
-                images: imgListExtraClass,
-                description: [
-                  'สีหรือรูปร่าง : เหลืองทอง ไม่มีความผิดปกติทางรูปร่างของมะม่วง',
-                  'จุดตำหนิ : ไม่มีจุดตำหนิและจุดกระสีน้ำตาลที่ผิวของมะม่วง',
-                  'น้ำหนัก : 450 กรัมขึ้นไป',
-                ],
-                circleNumber: 1,
-              ),
-              buildSection(
-                title: 'ชั้นที่หนึ่ง (Class 1)',
-                images: imgListClassone,
-                description: [
-                  'สีหรือรูปร่าง : เหลืองทอง ไม่มีความผิดปกติทางรูปร่างของมะม่วง',
-                  'จุดตำหนิ : มีจุดตำหนิที่ผิวของมะม่วงรวมกันไม่เกิน 4 ตารางเซนติเมตร และจุดกระสีน้ำตาลรวมกันไม่เกิน 30% ของพื้นที่ผิว',
-                  'น้ำหนัก : 350-449 กรัมขึ้นไป',
-                ],
-                circleNumber: 2,
-              ),
-              buildSection(
-                title: 'ชั้นที่สอง (Class 2)',
-                images: imgListClasstwo,
-                description: [
-                  'สีหรือรูปร่าง : เหลืองทอง มีความผิดปกติทางรูปร่างของมะม่วงเล็กน้อย',
-                  'จุดตำหนิ : มีจุดตำหนิที่ผิวของมะม่วงรวมกันไม่เกิน 5 ตารางเซนติเมตร และจุดกระสีน้ำตาลรวมกันไม่เกิน 40% ของพื้นที่ผิว',
-                  'น้ำหนัก : 250-349 กรัมขึ้นไป',
-                ],
-                circleNumber: 3,
-              ),
+    return Container(
+      width: MediaQuery.of(context).size.width * 1,
+      // height: 1600,
+      color: Colors.white,
+      padding: EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildSection(
+            title: 'ชั้นพิเศษ (Extra Class)',
+            images: imgListExtraClass,
+            description: [
+              'สีหรือรูปร่าง : เหลืองทอง ไม่มีความผิดปกติทางรูปร่างของมะม่วง',
+              'จุดตำหนิ : ไม่มีจุดตำหนิและจุดกระสีน้ำตาลที่ผิวของมะม่วง',
+              'น้ำหนัก : 450 กรัมขึ้นไป',
             ],
+            circleNumber: 1,
           ),
-        ),
+          buildSection(
+            title: 'ชั้นที่หนึ่ง (Class 1)',
+            images: imgListClassone,
+            description: [
+              'สีหรือรูปร่าง : เหลืองทอง ไม่มีความผิดปกติทางรูปร่างของมะม่วง',
+              'จุดตำหนิ : มีจุดตำหนิที่ผิวของมะม่วงรวมกันไม่เกิน 4 ตารางเซนติเมตร และจุดกระสีน้ำตาลรวมกันไม่เกิน 30% ของพื้นที่ผิว',
+              'น้ำหนัก : 350-449 กรัมขึ้นไป',
+            ],
+            circleNumber: 2,
+          ),
+          buildSection(
+            title: 'ชั้นที่สอง (Class 2)',
+            images: imgListClasstwo,
+            description: [
+              'สีหรือรูปร่าง : เหลืองทอง มีความผิดปกติทางรูปร่างของมะม่วงเล็กน้อย',
+              'จุดตำหนิ : มีจุดตำหนิที่ผิวของมะม่วงรวมกันไม่เกิน 5 ตารางเซนติเมตร และจุดกระสีน้ำตาลรวมกันไม่เกิน 40% ของพื้นที่ผิว',
+              'น้ำหนัก : 250-349 กรัมขึ้นไป',
+            ],
+            circleNumber: 3,
+          ),
+        ],
       ),
     );
   }
@@ -90,7 +86,7 @@ class _MangopropertiesState extends State<Mangoproperties> {
     required String title,
     required List<String> images,
     required List<String> description,
-     int circleNumber = 1,
+    int circleNumber = 1,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
