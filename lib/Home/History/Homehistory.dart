@@ -131,7 +131,13 @@ class _HomeHistoryState extends State<HomeHistory> {
                             SizedBox(
                               height: 25,
                             ),
-                            Text("คุณยังไม่มีรายการการวิเคราะห์คุณภาพ"),
+                            Text(
+                              "คุณยังไม่มีรายการการวิเคราะห์คุณภาพ",
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: GPrimaryColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),

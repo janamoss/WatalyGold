@@ -25,12 +25,12 @@ class _KnowledgePageState extends State<KnowledgePage> {
   late String detail =
       widget.knowledge?.knowledgeDetail.replaceAll('\n', '\n\n') ?? '';
 
-  late CarouselController controller;
+  late CarouselSliderController controller;
   int currentIndex = 0;
 
   @override
   void initState() {
-    controller = CarouselController();
+    controller = CarouselSliderController();
     super.initState();
   }
 

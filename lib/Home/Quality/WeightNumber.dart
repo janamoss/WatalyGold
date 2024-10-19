@@ -486,18 +486,18 @@ class _WeightNumberState extends State<WeightNumber> {
       final gemini = Gemini.instance;
       final result = await gemini.textAndImage(
         text:
-            """The image shows a digital scale display with digital numbers and decimal points. 
-            There is a weight attached to the image, with a white background and black numbers. 
-            However, if you cannot find the numbers or there is no digital scale display, 
-            you would answer "ไม่มีตัวเลขหรือตาชั่งในภาพนี้" 
-            I would like you to read the weight on the scale, for example, 325.25 g .""",
+            """The picture shows a digital scale with digital numbers and decimal points.
+    There is a weight attached to the picture, with a white background and black numbers.
+    However, if you do not see the numbers on the digital scale screen,
+    you will have to answer "There are no numbers or scales in this picture."
+    I would like you to read the weight on the scale, for example 325.25 grams.""",
         images: [file.readAsBytesSync()],
       );
 
       var geminiText = result?.content?.parts?.last.text ?? '';
       debugPrint("Gemini response: $geminiText");
       // var geminiText = "258.8 g";
-      if (geminiText == 'ไม่มีตัวเลขหรือตาชั่งในภาพนี้') {
+      if (geminiText == 'There are no numbers or scales in this picture') {
         Navigator.of(context).pop(); // ปิด dialog กำลังโหลด
         await showDialog(
           context: context,
@@ -853,95 +853,98 @@ class _WeightNumberState extends State<WeightNumber> {
           ),
           Expanded(
             flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 85),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: _pickImage,
-                                // onPressed: () {
-                                //   Gallery();
-                                // },
-                                icon: const Icon(
-                                  Icons.image_rounded,
-                                  color: GPrimaryColor,
-                                  size: 40,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 50),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: _pickImage,
+                                  // onPressed: () {
+                                  //   Gallery();
+                                  // },
+                                  icon: const Icon(
+                                    Icons.image_rounded,
+                                    color: GPrimaryColor,
+                                    size: 40,
+                                  ),
                                 ),
-                              ),
-                              const Text(
-                                "รูปภาพ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 12),
-                              )
-                            ],
+                                const Text(
+                                  "รูปภาพ",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 12),
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: GestureDetector(
-                            onTap: () => _captureAndProcess(),
-                            // onTap: () async {
-                            //   await _initializeControllerFuture;
-                            //   var xFile = await _controller.takePicture();
-                            //   setState(() {
-                            //     capturedImages.add(File(xFile.path));
-                            //   });
-                            // },
-                            child: Container(
-                              height: 60,
-                              width: 60,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: GPrimaryColor,
+                        Expanded(
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () => _captureAndProcess(),
+                              // onTap: () async {
+                              //   await _initializeControllerFuture;
+                              //   var xFile = await _controller.takePicture();
+                              //   setState(() {
+                              //     capturedImages.add(File(xFile.path));
+                              //   });
+                              // },
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: GPrimaryColor,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  showDialog(
-                                    barrierDismissible: false,
-                                    context: context,
-                                    builder: (context) {
-                                      return const Dialog_HowtoUse_NW();
-                                    },
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.help_outline_rounded,
-                                  color: GPrimaryColor,
-                                  size: 40,
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return const Dialog_HowtoUse_NW();
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.help_outline_rounded,
+                                    color: GPrimaryColor,
+                                    size: 40,
+                                  ),
                                 ),
-                              ),
-                              const Text(
-                                "คู่มือการถ่ายภาพ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 12),
-                              )
-                            ],
+                                const Text(
+                                  "คู่มือการถ่ายภาพ",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 12),
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                ],
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           ),

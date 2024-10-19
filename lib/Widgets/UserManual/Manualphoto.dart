@@ -19,7 +19,7 @@ final List<Map<String, String>> mangoImages = [
 
 class _ManualphotoState extends State<Manualphoto> {
   int _current = 0;
-  final CarouselController _controller = CarouselController();
+  final CarouselSliderController _controller = CarouselSliderController();
 
   @override
   Widget build(BuildContext context) {

@@ -175,7 +175,9 @@ class _HomeCollectionState extends State<HomeCollection> {
                             SizedBox(
                               height: 25,
                             ),
-                            Text("คุณยังไม่มีคอลเลคชั่น"),
+                            Text("คุณยังไม่มีคอลเลคชั่น",style: TextStyle(
+                                      fontSize: 15, color: GPrimaryColor,
+                                      fontWeight: FontWeight.bold),),
                           ],
                         ),
                       ),

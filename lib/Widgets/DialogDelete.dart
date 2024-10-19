@@ -66,9 +66,9 @@ class _DialogDeleteState extends State<DialogDelete> {
           children: [
             ElevatedButton(
                 style: ButtonStyle(
-                    elevation: MaterialStateProperty.all(2),
+                    elevation: WidgetStateProperty.all(2),
                     backgroundColor:
-                        MaterialStateProperty.all(Colors.red.shade400)),
+                        WidgetStateProperty.all(Colors.red.shade400)),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -76,9 +76,9 @@ class _DialogDeleteState extends State<DialogDelete> {
                     style: TextStyle(color: WhiteColor, fontSize: 16))),
             ElevatedButton(
                 style: ButtonStyle(
-                    elevation: MaterialStateProperty.all(2),
+                    elevation: WidgetStateProperty.all(2),
                     backgroundColor:
-                        MaterialStateProperty.all(Colors.green.shade400)),
+                        WidgetStateProperty.all(Colors.green.shade400)),
                 onPressed: () async {
                   final status = widget.statusdelete ?? 0;
                   if (status == 0) {

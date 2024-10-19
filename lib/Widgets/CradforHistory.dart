@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Image_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
@@ -51,11 +49,11 @@ class _CradforHistoryState extends State<CradforHistory> {
   bool isCheck = false;
 
   Collection? collections;
-  List<Images> _results = [];
+  final List<Images> _results = [];
   final ValueNotifier<List<Images>> _imageList = ValueNotifier([]);
 
-  Future<void> fetchImage(int result_id) async {
-    _imageList.value = await Image_DB().fetchImageinResult(result_id);
+  Future<void> fetchImage(int resultId) async {
+    _imageList.value = await Image_DB().fetchImageinResult(resultId);
     stdout.writeln(_imageList.value.length);
     return;
   }
@@ -97,6 +95,7 @@ class _CradforHistoryState extends State<CradforHistory> {
     Result_DB().updatecollection(0, widget.results.result_id);
   }
 
+  @override
   Widget build(BuildContext context) {
     fetchImage(int.parse(widget.results.result_id.toString()));
     const Map<String, Color> gradeColor = {
@@ -120,6 +119,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                   BorderRadius.circular(15.0), // กำหนด radius ของการ์ด
             ),
             surfaceTintColor: WhiteColor,
+            color: WhiteColor,
             child: SizedBox(
               // width: 450,
               height: 170,
@@ -212,23 +212,23 @@ class _CradforHistoryState extends State<CradforHistory> {
                                             backgroundColor:
                                                 widget.results.collection_id ==
                                                         0
-                                                    ? MaterialStateProperty.all(
+                                                    ? WidgetStateProperty.all(
                                                         Colors.green.shade400)
-                                                    : MaterialStateProperty.all(
+                                                    : WidgetStateProperty.all(
                                                         Colors.transparent),
                                             surfaceTintColor:
                                                 widget.results.collection_id ==
                                                         0
-                                                    ? MaterialStateProperty.all(
+                                                    ? WidgetStateProperty.all(
                                                         Colors.green.shade400)
-                                                    : MaterialStateProperty.all(
+                                                    : WidgetStateProperty.all(
                                                         Colors.transparent),
-                                            padding: MaterialStateProperty.all(
+                                            padding: WidgetStateProperty.all(
                                                 const EdgeInsets.symmetric(
                                                     horizontal: 10,
                                                     vertical: 5)),
                                             minimumSize:
-                                                MaterialStateProperty.all(
+                                                WidgetStateProperty.all(
                                                     const Size(50, 25)),
                                           ),
                                           onPressed: widget
@@ -299,16 +299,14 @@ class _CradforHistoryState extends State<CradforHistory> {
                                 padding: const EdgeInsets.only(right: 10),
                                 child: ElevatedButton(
                                     style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
-                                      surfaceTintColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
-                                      padding: MaterialStateProperty.all(
+                                      backgroundColor: WidgetStateProperty.all(
+                                          Colors.red.shade400),
+                                      surfaceTintColor: WidgetStateProperty.all(
+                                          Colors.red.shade400),
+                                      padding: WidgetStateProperty.all(
                                           const EdgeInsets.symmetric(
                                               horizontal: 10, vertical: 5)),
-                                      minimumSize: MaterialStateProperty.all(
+                                      minimumSize: WidgetStateProperty.all(
                                           const Size(30, 30)),
                                     ),
                                     onPressed: () async {
@@ -422,6 +420,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                   BorderRadius.circular(15.0), // กำหนด radius ของการ์ด
             ),
             surfaceTintColor: WhiteColor,
+            color: WhiteColor,
             child: SizedBox(
               // width: 450,
               height: 170,
@@ -493,25 +492,25 @@ class _CradforHistoryState extends State<CradforHistory> {
                                                 backgroundColor: widget.results
                                                             .collection_id ==
                                                         0
-                                                    ? MaterialStateProperty.all(
+                                                    ? WidgetStateProperty.all(
                                                         Colors.green.shade400)
-                                                    : MaterialStateProperty.all(
+                                                    : WidgetStateProperty.all(
                                                         Colors.transparent),
                                                 surfaceTintColor: widget.results
                                                             .collection_id ==
                                                         0
-                                                    ? MaterialStateProperty.all(
+                                                    ? WidgetStateProperty.all(
                                                         Colors.green.shade400)
-                                                    : MaterialStateProperty.all(
+                                                    : WidgetStateProperty.all(
                                                         Colors.transparent),
                                                 padding:
-                                                    MaterialStateProperty.all(
+                                                    WidgetStateProperty.all(
                                                         const EdgeInsets
                                                             .symmetric(
                                                             horizontal: 10,
                                                             vertical: 5)),
                                                 minimumSize:
-                                                    MaterialStateProperty.all(
+                                                    WidgetStateProperty.all(
                                                         const Size(50, 25)),
                                               ),
                                               onPressed: widget.results
@@ -581,16 +580,14 @@ class _CradforHistoryState extends State<CradforHistory> {
                                 padding: const EdgeInsets.only(right: 10),
                                 child: ElevatedButton(
                                     style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
-                                      surfaceTintColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
-                                      padding: MaterialStateProperty.all(
+                                      backgroundColor: WidgetStateProperty.all(
+                                          Colors.red.shade400),
+                                      surfaceTintColor: WidgetStateProperty.all(
+                                          Colors.red.shade400),
+                                      padding: WidgetStateProperty.all(
                                           const EdgeInsets.symmetric(
                                               horizontal: 10, vertical: 5)),
-                                      minimumSize: MaterialStateProperty.all(
+                                      minimumSize: WidgetStateProperty.all(
                                           const Size(30, 30)),
                                     ),
                                     onPressed: () async {
@@ -734,7 +731,7 @@ class _CradforHistoryState extends State<CradforHistory> {
               children: <Widget>[
                 for (int i = 0; i < widget.collection!.length; i++)
                   ListTile(
-                    leading: new Icon(
+                    leading: Icon(
                       Icons.collections_rounded,
                       color: Colors.grey.shade700,
                       size: 30,

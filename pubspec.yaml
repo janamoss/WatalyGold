@@ -37,27 +37,27 @@ dependencies:
   cupertino_icons: ^1.0.2
   google_fonts: ^6.1.0
   google_nav_bar: ^5.0.6
-  camera: ^0.10.5
+  camera: ^0.11.0+2
   video_player : ^2.8.1
   image_picker: ^1.1.2
-  firebase_core: ^2.24.2
-  cloud_firestore: ^4.13.6
-  firebase_storage: ^11.5.6
-  firebase_ml_model_downloader: ^0.2.4+8
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+  firebase_storage: ^12.3.3
+  firebase_ml_model_downloader: ^0.3.1+3
   image: ^4.1.3
   logger: ^2.0.2+1
   path_provider: ^2.1.1
-  cloud_functions: ^4.5.8
+  cloud_functions: ^5.1.3
   platform_device_id: ^1.0.1
   shimmer: ^3.0.0
-  carousel_slider: ^4.2.1
-  intl: ^0.18.1
-  fl_chart: ^0.66.0
-  syncfusion_flutter_charts: ^21.2.4
+  carousel_slider: ^5.0.0
+  intl: ^0.19.0
+  fl_chart: ^0.69.0
+  syncfusion_flutter_charts: ^27.1.53
   custom_date_range_picker: ^1.0.6
   d_chart: ^2.6.4
   community_charts_flutter: ^1.0.2
-  tflite_flutter: ^0.10.4
+  tflite_flutter: ^0.11.0
   sqflite: ^2.3.3
   path: ^1.9.0
   flutter_svg: ^2.0.10+1
@@ -65,16 +65,16 @@ dependencies:
   
   flutter_localizations:
     sdk: flutter 
-  flutter_widget_from_html: ^0.14.11
+  flutter_widget_from_html: ^0.15.2
   flutter_easyloading: ^3.0.5
   loading_animation_widget: ^1.2.1
   fluttertoast: ^8.2.5
-  share_plus: ^9.0.0
+  share_plus: ^10.1.0
   font_awesome_flutter: ^10.7.0
-  screenshot: ^2.3.0
+  screenshot: ^3.0.0
   dots_indicator: ^3.0.0
   shared_preferences: ^2.2.3
-  google_mlkit_text_recognition: ^0.13.0
+  google_mlkit_text_recognition: ^0.14.0
   google_generative_ai: ^0.4.6
   flutter_gemini: ^2.0.5
   connectivity_plus: ^6.0.5
@@ -89,8 +89,8 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.1
-  flutter_launcher_icons: ^0.13.1
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
 
 
 flutter_launcher_icons:

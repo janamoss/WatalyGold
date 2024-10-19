@@ -1,2 +1,2 @@
-Not_Yellow
-Yellow
+Not_Ripe
+Ripe

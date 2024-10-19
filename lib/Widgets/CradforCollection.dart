@@ -82,6 +82,7 @@ class _CradforColletionState extends State<CradforColletion> {
           borderRadius: BorderRadius.circular(15.0), // กำหนด radius ของการ์ด
         ),
         surfaceTintColor: WhiteColor,
+        color: WhiteColor,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -147,6 +148,7 @@ class _CradforColletionState extends State<CradforColletion> {
               children: [
                 PopupMenuButton(
                   surfaceTintColor: WhiteColor,
+                  color: WhiteColor,
                   elevation: 5,
                   itemBuilder: (context) {
                     return [

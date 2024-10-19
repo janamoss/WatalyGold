@@ -37,31 +37,31 @@ class _DialogCollectionState extends State<DialogCollection> {
   }
 
   Future<bool> InsertCollection() async {
-  try {
-    if (nameController.text.isNotEmpty) {
-      final s = await Collection_DB().create(
-        user_id: user_id!.toInt(),
-        collection_name: nameController.text.toString(),
-        collection_image: capturedImages!.path.toString(),
-      );
-      stdout.writeln(s.toString());
-      if (s == 0) {
-        await _showToastUpdate();
+    try {
+      if (nameController.text.isNotEmpty) {
+        final s = await Collection_DB().create(
+          user_id: user_id!.toInt(),
+          collection_name: nameController.text.toString(),
+          collection_image: capturedImages!.path.toString(),
+        );
+        stdout.writeln(s.toString());
+        if (s == 0) {
+          await _showToastUpdate();
+          return false;
+        }
+        Navigator.of(context).pop(true); // ส่งค่า true กลับไปยัง HomeCollection
+        return true;
+      } else {
+        setState(() {
+          _isNotValidate = true;
+        });
         return false;
       }
-      Navigator.of(context).pop(true); // ส่งค่า true กลับไปยัง HomeCollection
-      return true;
-    } else {
-      setState(() {
-        _isNotValidate = true;
-      });
+    } catch (e) {
+      stdout.writeln(e);
       return false;
     }
-  } catch (e) {
-    stdout.writeln(e);
-    return false;
   }
-}
 
   Future<void> _fetchUserId() async {
     // ดึง user_id จากฐานข้อมูล
@@ -156,11 +156,14 @@ class _DialogCollectionState extends State<DialogCollection> {
                 Material(
                   elevation: 3,
                   shadowColor: Colors.black,
+                  color: WhiteColor,
                   borderRadius: BorderRadius.all(Radius.circular(15)),
                   child: TextField(
+                    cursorColor: WhiteColor,
                     maxLength: 20,
                     controller: nameController,
                     decoration: InputDecoration(
+                      focusColor: WhiteColor,
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(

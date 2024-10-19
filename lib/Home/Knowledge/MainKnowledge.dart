@@ -103,6 +103,7 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppbarMains(name: 'คลังความรู้'),
@@ -143,7 +144,7 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
                           },
                           style: ButtonStyle(
                             backgroundColor:
-                                MaterialStateProperty.all(Colors.red.shade300),
+                                WidgetStateProperty.all(Colors.red.shade300),
                           ),
                           child: const Text(
                             "ลองใหม่",
@@ -157,36 +158,48 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
                     color: GPrimaryColor,
                     backgroundColor: WhiteColor,
                     onRefresh: getKnowledges,
-                    child: ListView.builder(
-                      itemCount:
-                          knowledgelist.length + 1, // +1 สำหรับ SizedBox ด้านบน
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return const SizedBox(height: 20.0);
-                        }
-
-                        final knowledge = knowledgelist[index - 1];
-                        return KnowlegdeCol(
-                          onTap: () {
-                            if (knowledge.contents.isEmpty) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => KnowledgePage(
-                                    knowledge: knowledge,
-                                    icons: knowledge.knowledgeIcons,
-                                  ),
+                    child: knowledgelist.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.library_books_rounded,
+                                    size: 50, color: GPrimaryColor),
+                                SizedBox(height: 25),
+                                Text(
+                                  "ไม่มีคลังความรู้ ณ ขณะนี้",
+                                  style: TextStyle(
+                                      fontSize: 15, color: GPrimaryColor,
+                                      fontWeight: FontWeight.bold),
                                 ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: knowledgelist.length,
+                            itemBuilder: (context, index) {
+                              final knowledge = knowledgelist[index];
+                              return KnowlegdeCol(
+                                onTap: () {
+                                  if (knowledge.contents.isEmpty) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => KnowledgePage(
+                                          knowledge: knowledge,
+                                          icons: knowledge.knowledgeIcons,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                title: knowledge.knowledgeName,
+                                icons: knowledge.knowledgeIcons,
+                                ismutible: knowledge.contents.isNotEmpty,
+                                contents: knowledge.contents,
                               );
-                            }
-                          },
-                          title: knowledge.knowledgeName,
-                          icons: knowledge.knowledgeIcons,
-                          ismutible: knowledge.contents.isNotEmpty,
-                          contents: knowledge.contents,
-                        );
-                      },
-                    ),
+                            },
+                          ),
                   ),
       ),
     );

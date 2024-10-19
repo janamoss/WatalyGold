@@ -45,7 +45,6 @@ class _ExportPriceState extends State<ExportPrice> {
     _dateController.text =
         DateFormat('d/M/yyyy').format(selectedDate); //ตั้งค่าเร่ิมต้น
     checkDataForSelectedDate(context);
-    _tooltipBehavior = TooltipBehavior(enable: true);
     fetchDataAndSaveToFirestore(context);
   }
 
@@ -532,81 +531,88 @@ class _ExportPriceState extends State<ExportPrice> {
                 ]),
                 Padding(
                   padding: EdgeInsets.all(7),
-                  child: Container(
-                    height: MediaQuery.of(context).size.width * 0.65,
-                    child: Stack(
-                      children: [
-                        SfCartesianChart(
-                          tooltipBehavior: _tooltipBehavior,
-                          series: <ChartSeries>[
-                            LineSeries<NumericData, double>(
-                              name: 'ราคาสูงสุด',
-                              dataSource: maxDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: GPrimaryColor,
-                              markerSettings: MarkerSettings(
-                                isVisible: true,
-                                shape: DataMarkerType.circle,
-                                color: GPrimaryColor,
-                                height: 5,
-                                width: 5,
-                              ),
-                            ),
-                            AreaSeries<NumericData, double>(
-                              name: 'ราคาสูงสุด',
-                              dataSource: maxDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: YPrimaryColor.withOpacity(0.2),
-                            ),
-                            LineSeries<NumericData, double>(
-                              name: 'ราคาต่ำสุด',
-                              dataSource: minDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: yellowColor,
-                              markerSettings: MarkerSettings(
-                                isVisible: true,
-                                shape: DataMarkerType.circle,
-                                color: yellowColor,
-                                height: 5,
-                                width: 5,
-                              ),
-                            ),
-                            AreaSeries<NumericData, double>(
-                              name: 'ราคาต่ำสุด',
-                              dataSource: minDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: YPrimaryColor.withOpacity(0.2),
-                            ),
-                          ],
+                  child: Stack(
+                    children: [
+                      SfCartesianChart(
+                        tooltipBehavior: TooltipBehavior(
+                          enable: true,
+                          color: Colors.white,
+                          textStyle:
+                              TextStyle(color: Colors.black, fontSize: 14),
+                          borderColor: Colors.grey,
+                          borderWidth: 1,
+                          duration: 3000, // แสดง tooltip นาน 3 วินาที
+                          animationDuration:
+                              500, // ใช้เวลาในการแสดง/ซ่อน tooltip 500 มิลลิวินาที
                         ),
-                        if (maxDataList.isEmpty && minDataList.isEmpty)
-                          Center(
-                            child: Container(
-                              child: const Text(
-                                'ไม่พบข้อมูลราคาตลาดกลางสำหรับเดือนนี้',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.red),
-                              ),
+                        series: <CartesianSeries<NumericData, double>>[
+                          LineSeries<NumericData, double>(
+                            name: 'ราคาสูงสุด',
+                            dataSource: maxDataList,
+                            xValueMapper: (NumericData data, _) =>
+                                data.domain,
+                            yValueMapper: (NumericData data, _) =>
+                                data.measure,
+                            enableTooltip: true,
+                            color: GPrimaryColor,
+                            markerSettings: MarkerSettings(
+                              isVisible: true,
+                              shape: DataMarkerType.circle,
+                              color: GPrimaryColor,
+                              height: 5,
+                              width: 5,
                             ),
                           ),
-                      ],
-                    ),
+                          AreaSeries<NumericData, double>(
+                            name: 'ราคาสูงสุด',
+                            dataSource: maxDataList,
+                            xValueMapper: (NumericData data, _) =>
+                                data.domain,
+                            yValueMapper: (NumericData data, _) =>
+                                data.measure,
+                            enableTooltip: true,
+                            color: YPrimaryColor.withOpacity(0.2),
+                          ),
+                          LineSeries<NumericData, double>(
+                            name: 'ราคาต่ำสุด',
+                            dataSource: minDataList,
+                            xValueMapper: (NumericData data, _) =>
+                                data.domain,
+                            yValueMapper: (NumericData data, _) =>
+                                data.measure,
+                            enableTooltip: true,
+                            color: yellowColor,
+                            markerSettings: MarkerSettings(
+                              isVisible: true,
+                              shape: DataMarkerType.circle,
+                              color: yellowColor,
+                              height: 5,
+                              width: 5,
+                            ),
+                          ),
+                          AreaSeries<NumericData, double>(
+                            name: 'ราคาต่ำสุด',
+                            dataSource: minDataList,
+                            xValueMapper: (NumericData data, _) =>
+                                data.domain,
+                            yValueMapper: (NumericData data, _) =>
+                                data.measure,
+                            enableTooltip: true,
+                            color: YPrimaryColor.withOpacity(0.2),
+                          ),
+                        ],
+                      ),
+                      if (maxDataList.isEmpty && minDataList.isEmpty)
+                        Center(
+                          child: Container(
+                            child: const Text(
+                              'ไม่พบข้อมูลราคาตลาดกลางสำหรับเดือนนี้',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.red),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],

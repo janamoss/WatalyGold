@@ -19,7 +19,7 @@ class Dialog_HowtoUse extends StatefulWidget {
 
 class _Dialog_HowtoUseState extends State<Dialog_HowtoUse> {
   int _current = 0;
-  final CarouselController _controller = CarouselController();
+  final CarouselSliderController _controller = CarouselSliderController();
   int _currentPage = 0; // เก็บค่าหน้าปัจจุบัน
   PageController _controllers = PageController();
 

@@ -14,7 +14,7 @@ class Mangoproperties extends StatefulWidget {
 class _MangopropertiesState extends State<Mangoproperties> {
   int _current = 0;
   int _circleNumber = 1;
-  final CarouselController _controller = CarouselController();
+  final CarouselSliderController _controller = CarouselSliderController();
 
   final List<String> imgListClassone = [
     "assets/images/Classonefront.jpg",

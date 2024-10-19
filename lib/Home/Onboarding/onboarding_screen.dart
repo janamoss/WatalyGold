@@ -9,7 +9,8 @@ import 'package:watalygold/Widgets/Color.dart';
 class Myonboardingscreen extends StatefulWidget {
   final List<CameraDescription> camera;
   const Myonboardingscreen({
-    Key? key, required this.camera,
+    Key? key,
+    required this.camera,
   }) : super(key: key);
 
   // const Myonboardingscreen({Key? key, required this.cameras}) : super(key: key);
@@ -39,27 +40,24 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
       'image': ['assets/images/onboarding-11.gif'],
       'description':
           'แอปพลิเคชันสามารถวิเคราะห์คุณภาพผลมะม่วงน้ำดอกไม้สีทองให้ตรงตามมาตรฐานสินค้าเกษตร(มกษ.) ติดตามราคาส่งออกของมะม่วงน้ำดอกไม้สีทองและมีคลังความรู้เกี่ยวกับมะม่วงน้ำดอกไม้สีทอง',
- 
+
       // 'cameras': widget.cameras,
     },
     {
       'color': "ffFFEE58",
       'H1': 'การถ่ายภาพมะม่วง',
-      'H2': 'เพื่อให้การวิเคราะห์มีความแม่นยำ ต้องถ่ายภาพผลมะม่วงให้ครบ 4 ด้าน ได้แก่ ด้านหน้า ด้านหลัง ด้านบน และด้านล่าง โดยมีระยะห่างจากผลมะม่วงประมาณ 30 ซม. และวางเหรียญ 5 บาทข้างๆ ผลมะม่วง',
+      'H2':
+          'เพื่อให้การวิเคราะห์มีความแม่นยำ ต้องถ่ายภาพผลมะม่วงให้ครบ 4 ด้าน ได้แก่ ด้านหน้า ด้านหลัง ด้านบน และด้านล่าง โดยมีระยะห่างจากผลมะม่วงประมาณ 30 ซม. และวางเหรียญ 5 บาทข้างๆ ผลมะม่วง',
       'image': ['assets/images/onboarding-22.gif'],
-      'description':
-          '',
-      
+      'description': '',
     },
     {
       'color': "ffFFEE58",
-      'H1':
-          'ตัวอย่างผลลัพธ์การวิเคราะห์',
-      'H2': 'หลังจากทำการวิเคราะห์ผลมะม่วงน้ำดอกไม้สีทอง แอปพลิเคชันจะแสดงผลลัพธ์ที่ประกอบด้วยข้อมูลคุณภาพของผลมะม่วง คือ เกรดของมะม่วง ความกว้าง ความยาว และน้ำหนัก',
+      'H1': 'ตัวอย่างผลลัพธ์การวิเคราะห์',
+      'H2':
+          'หลังจากทำการวิเคราะห์ผลมะม่วงน้ำดอกไม้สีทอง แอปพลิเคชันจะแสดงผลลัพธ์ที่ประกอบด้วยข้อมูลคุณภาพของผลมะม่วง คือ เกรดของมะม่วง ความกว้าง ความยาว และน้ำหนัก',
       'image': ['assets/images/onboarding-33.gif'],
-      'description':
-          '',
-   
+      'description': '',
     },
   ];
 
@@ -72,13 +70,12 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
           color: GPrimaryColor,
           child: isLastPage
               ? Padding(
-                 padding: const EdgeInsets.only(bottom: 30),
-                child: Getstart(),
-              )
-             
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: Getstart(),
+                )
               : Padding(
-                padding: const EdgeInsets.only(bottom: 20,left: 20),
-                child: Row(
+                  padding: const EdgeInsets.only(bottom: 20, left: 20),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
@@ -97,6 +94,10 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
                           ),
                         ),
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _buildIndicator(),
+                      ),
                       Padding(
                         padding: const EdgeInsets.only(right: 20),
                         child: TextButton(
@@ -113,48 +114,68 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
                           ),
                         ),
                       ),
-                      
                     ],
                   ),
-              ),
+                ),
         ),
-        body: Stack(
-          children: [
-            PageView.builder(
-                
-                controller: _pageController,
-                itemCount: _pages.length,
-                onPageChanged: (int page) {
-                  setState(() {
-                    _activePage = page;
-                    isLastPage = (page == _pages.length - 1);
-                  });
-                },
-                itemBuilder: (BuildContext context, int index) {
-                  return Myonboarding_widget(
-                    color: _pages[index]['color'],
-                    h1: _pages[index]['H1'],
-                    h2: _pages[index]['H2'],
-                    description: _pages[index]['description'],
-                    image: List<String>.from(_pages[index]['image']),
-                 
-                  );
-                }),
-            Positioned(
-              top: MediaQuery.of(context).size.height / 1.15,
-              bottom: 0,
-              right: 0,
-              left: 0,
-              child: Column(
-                children: [
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: _buildIndicator())
-                ],
-              ),
-            ),
-          ],
-        ));
+        body: PageView.builder(
+            controller: _pageController,
+            itemCount: _pages.length,
+            onPageChanged: (int page) {
+              setState(() {
+                _activePage = page;
+                isLastPage = (page == _pages.length - 1);
+              });
+            },
+            itemBuilder: (BuildContext context, int index) {
+              return Myonboarding_widget(
+                color: _pages[index]['color'],
+                h1: _pages[index]['H1'],
+                h2: _pages[index]['H2'],
+                description: _pages[index]['description'],
+                image: List<String>.from(_pages[index]['image']),
+                indicators: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _buildIndicator(),
+                ),
+              );
+            })
+        // body: Stack(
+        //   children: [
+        //     PageView.builder(
+        //         controller: _pageController,
+        //         itemCount: _pages.length,
+        //         onPageChanged: (int page) {
+        //           setState(() {
+        //             _activePage = page;
+        //             isLastPage = (page == _pages.length - 1);
+        //           });
+        //         },
+        //         itemBuilder: (BuildContext context, int index) {
+        //           return Myonboarding_widget(
+        //             color: _pages[index]['color'],
+        //             h1: _pages[index]['H1'],
+        //             h2: _pages[index]['H2'],
+        //             description: _pages[index]['description'],
+        //             image: List<String>.from(_pages[index]['image']),
+        //           );
+        //         }),
+        //     Positioned(
+        //       top: MediaQuery.of(context).size.height / 1.18,
+        //       bottom: 0,
+        //       right: 0,
+        //       left: 0,
+        //       child: Column(
+        //         children: [
+        //           Row(
+        //               mainAxisAlignment: MainAxisAlignment.center,
+        //               children: _buildIndicator())
+        //         ],
+        //       ),
+        //     ),
+        //   ],
+        // )
+        );
   }
 
   Widget Getstart() {
@@ -180,7 +201,11 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
-        child: const Text("เริ่มต้นใช้งาน" ,style: TextStyle(fontSize: 18, color: GPrimaryColor , fontWeight: FontWeight.bold),),
+        child: const Text(
+          "เริ่มต้นใช้งาน",
+          style: TextStyle(
+              fontSize: 18, color: GPrimaryColor, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
