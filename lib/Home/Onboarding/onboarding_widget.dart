@@ -11,6 +11,7 @@ class Myonboarding_widget extends StatelessWidget {
     required this.h2,
     required this.description,
     required this.image,
+    required this.indicators,
   });
 
   final String color;
@@ -18,6 +19,7 @@ class Myonboarding_widget extends StatelessWidget {
   final String h2;
   final String description;
   final List<String> image;
+  final Widget indicators; 
 
   @override
   Widget build(BuildContext context) {
@@ -66,48 +68,57 @@ class Myonboarding_widget extends StatelessWidget {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 45),
-                child: Column(
-                  children: [
-                    SizedBox(height: 45),
-                    Text(
-                      h1,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: WhiteColor,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      h2,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: WhiteColor,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: WhiteColor,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-
+             padding: EdgeInsets.symmetric(horizontal: 45),
+             child: Column(
+               children: [
+                 Expanded(
+                   flex: 2,
+                   child: Column(
+                     children: [
+                       SizedBox(height: 45),
+                       Text(
+                         h1,
+                         style: TextStyle(
+                           fontSize: 18,
+                           fontWeight: FontWeight.bold,
+                           color: WhiteColor,
+                         ),
+                         textAlign: TextAlign.center,
+                       ),
+                       SizedBox(height: 10),
+                       Text(
+                         h2,
+                         style: TextStyle(
+                           fontSize: 16,
+                           color: WhiteColor,
+                         ),
+                         textAlign: TextAlign.center,
+                       ),
+                       SizedBox(height: 10),
+                       Text(
+                         description,
+                         style: TextStyle(
+                           fontSize: 16,
+                           color: WhiteColor,
+                         ),
+                         textAlign: TextAlign.center,
+                       ),
+                     ],
+                   ),
+                 ),
+                 Expanded(
+                   child: Container(
+                     alignment: Alignment.bottomCenter,
+                     margin: EdgeInsets.only(bottom: 100),
+                     child: indicators
+                   ),
+                 ),
+               ],
+             ),
+           ),
+         ),
+       ),
+     ],
+   ),
+ );
+}}

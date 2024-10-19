@@ -90,7 +90,7 @@ Future<void> main() async {
       title: "Wataly Gold",
       // home: const Myonboardingscreen(),
      home: onboarding
-          ? BasePage(camera: cameras)
+          ? WeightNumber(camera: cameras)
           : Myonboardingscreen(camera: cameras),
       builder: EasyLoading.init(),
     ),
