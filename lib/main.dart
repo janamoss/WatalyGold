@@ -1,78 +1,125 @@
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile_device_identifier/mobile_device_identifier.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:watalygold/Database/Databasesqlite.dart';
+import 'package:watalygold/Database/User_DB.dart';
+import 'package:watalygold/Home/Onboarding/onboarding_screen.dart';
+import 'package:watalygold/Home/Quality/test.dart';
+import 'Home/basepage.dart';
+import 'package:camera/camera.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
-  var app = myApp();
-  runApp(app);
+String? _deviceId;
+
+Future<String?> getDeviceId() async {
+  var deviceInfo = DeviceInfoPlugin();
+  if (Platform.isAndroid) {
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    return androidInfo.id; // Unique ID on Android
+  } else if (Platform.isIOS) {
+    IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+    return iosInfo.identifierForVendor; // Unique ID on iOS
+  }
+  return null;
 }
 
-// Widget  stateless
-class myApp extends StatelessWidget {
-  const myApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Gemini.init(apiKey: "AIzaSyByGLUAfh3-KjTmTY2MV_i32u2MJFUtEDE");
+
+  final prefs = await SharedPreferences.getInstance();
+  final onboarding = prefs.getBool("onboarding") ?? false;
+  // prefs.setBool("checkhowtouse", false);
+  debugPrint("$onboarding");
+
+  final mobileDeviceIdentifier = await getDeviceId();
+  print('Device ID: $mobileDeviceIdentifier');
+  prefs.setString("device", mobileDeviceIdentifier!);
+  await DatabaseService().database;
+  // await DatabaseService().deleteDatabases(await getDatabasesPath());
+  if (await DatabaseService().isDatabaseExists()) {
+    final results = await User_db()
+        .create(user_ipaddress: mobileDeviceIdentifier.toString());
+
+    log('Database exists!');
+  } else {
+    log('Database does not exist.');
+  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // FirebaseFunctions.instanceFor(region: 'asia-southeast1')
+  //     .useFunctionsEmulator('192.168.1.120', 5001);
+  // Obtain a list of the available cameras on the device.
+  final cameras = await availableCameras();
+  if (cameras.isEmpty) {
+    // Handle the case where no cameras are available
+    log('No cameras available');
+    return;
+  }
+
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      locale: Locale('th', 'TH'),
+      supportedLocales: [
+        const Locale('th', 'TH'),
+        const Locale('en', 'US'),
+      ],
+      // initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
+      routes: {
+        '/base': (context) => BasePage(camera: cameras),
+        // '/base': (context) => const ResultPage(),
+      },
+      theme: ThemeData(
+        fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
+      ),
       title: "Wataly Gold",
-      home: Myapp2(),
-    );
-  }
+      // home: const Myonboardingscreen(),
+      home: onboarding
+          ? BasePage(camera: cameras)
+          : Myonboardingscreen(camera: cameras),
+      // home: const Testing(),
+      builder: EasyLoading.init(),
+    ),
+  );
 }
 
-// Widget stateful
-class Myapp2 extends StatefulWidget {
-  const Myapp2({super.key});
+// Future<void> main() async {
+//   // Ensure that plugin services are initialized so that `availableCameras()`
+//   // can be called before `runApp()`
+//   WidgetsFlutterBinding.ensureInitialized();
 
-  @override
-  State<Myapp2> createState() => _Myapp2State();
-}
+//   // Obtain a list of the available cameras on the device.
+//   final cameras = await availableCameras();
 
-class _Myapp2State extends State<Myapp2> {
-  int number = 0;
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text(
-            "Wataly Gold",
-            style: TextStyle(
-                fontSize: 30,
-                color: Colors.amber,
-                fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily),
-          ),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage('assets/images/WatalyGold.png'),
-                  fit: BoxFit.cover)),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("สวัสดีค่ะ ชื่อมอสนะคะ"),
-            const Text("Hello"),
-            Text(
-              number.toString(),
-              style: const TextStyle(fontSize: 50),
-            )
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addNumber,
-        child: Icon(Icons.add),
-      ),
-      backgroundColor: Colors.lightGreenAccent,
-    );
-  }
+//   // Get a specific camera from the list of available cameras.
+//   final firstCamera = cameras.first;
 
-  void addNumber() {
-    setState(() {
-      number++;
-    });
-  }
-}
+//   runApp(
+//     MaterialApp(
+//       theme: ThemeData.dark(),
+//       home: TakePictureScreen(
+//         // Pass the appropriate camera to the TakePictureScreen widget.
+//         camera: firstCamera,
+//       ),
+//     ),
+//   );
+// }
+
