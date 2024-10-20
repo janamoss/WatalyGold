@@ -12,7 +12,6 @@ import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:platform_device_id/platform_device_id.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';

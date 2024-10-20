@@ -1,15 +1,12 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Home/History/HistoryDetail.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforHistory.dart';
-import 'package:watalygold/Widgets/DialogSuccess.dart';
 import 'package:watalygold/models/Collection.dart';
 import 'package:watalygold/models/Result_ana.dart';
 
@@ -21,7 +18,7 @@ class HomeHistory extends StatefulWidget {
 }
 
 class _HomeHistoryState extends State<HomeHistory> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   List<Result> _results = [];
   List<Result> _originalresults = [];
@@ -53,6 +50,7 @@ class _HomeHistoryState extends State<HomeHistory> {
     setState(() {}); // เรียกใช้ฟังก์ชันนี้เพื่ออัปเดตรายการ
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xffF2F6F5),
@@ -60,7 +58,7 @@ class _HomeHistoryState extends State<HomeHistory> {
         padding: const EdgeInsets.all(15),
         child: Column(
           children: [
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width * 0.85,
               height: 50,
               child: TextField(

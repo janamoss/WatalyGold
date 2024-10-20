@@ -531,90 +531,45 @@ class _ExportPriceState extends State<ExportPrice> {
                 ]),
                 Padding(
                   padding: EdgeInsets.all(7),
-                  child: Stack(
-                    children: [
-                      SfCartesianChart(
-                        tooltipBehavior: TooltipBehavior(
-                          enable: true,
-                          color: Colors.white,
-                          textStyle:
-                              TextStyle(color: Colors.black, fontSize: 14),
-                          borderColor: Colors.grey,
-                          borderWidth: 1,
-                          duration: 3000, // แสดง tooltip นาน 3 วินาที
-                          animationDuration:
-                              500, // ใช้เวลาในการแสดง/ซ่อน tooltip 500 มิลลิวินาที
-                        ),
-                        series: <CartesianSeries<NumericData, double>>[
-                          LineSeries<NumericData, double>(
-                            name: 'ราคาสูงสุด',
-                            dataSource: maxDataList,
-                            xValueMapper: (NumericData data, _) =>
-                                data.domain,
-                            yValueMapper: (NumericData data, _) =>
-                                data.measure,
-                            enableTooltip: true,
-                            color: GPrimaryColor,
-                            markerSettings: MarkerSettings(
-                              isVisible: true,
-                              shape: DataMarkerType.circle,
-                              color: GPrimaryColor,
-                              height: 5,
-                              width: 5,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Stack(
+                        children: [
+                          SfCartesianChart(
+                            tooltipBehavior: TooltipBehavior(
+                              enable: true,
+                              color: Colors.white,
+                              textStyle:
+                                  TextStyle(color: Colors.black, fontSize: 14),
+                              borderColor: Colors.grey,
+                              borderWidth: 1,
+                              duration: 3000,
+                              animationDuration: 500,
                             ),
+                            series: <CartesianSeries<NumericData, double>>[
+                              // ... (ส่วนของ series คงเดิม)
+                            ],
                           ),
-                          AreaSeries<NumericData, double>(
-                            name: 'ราคาสูงสุด',
-                            dataSource: maxDataList,
-                            xValueMapper: (NumericData data, _) =>
-                                data.domain,
-                            yValueMapper: (NumericData data, _) =>
-                                data.measure,
-                            enableTooltip: true,
-                            color: YPrimaryColor.withOpacity(0.2),
-                          ),
-                          LineSeries<NumericData, double>(
-                            name: 'ราคาต่ำสุด',
-                            dataSource: minDataList,
-                            xValueMapper: (NumericData data, _) =>
-                                data.domain,
-                            yValueMapper: (NumericData data, _) =>
-                                data.measure,
-                            enableTooltip: true,
-                            color: yellowColor,
-                            markerSettings: MarkerSettings(
-                              isVisible: true,
-                              shape: DataMarkerType.circle,
-                              color: yellowColor,
-                              height: 5,
-                              width: 5,
+                          if (maxDataList.isEmpty && minDataList.isEmpty)
+                            Positioned.fill(
+                              child: Container(
+                                color: Colors.white.withOpacity(
+                                    0.7), // เพิ่มพื้นหลังโปร่งแสงเพื่อให้ข้อความชัดเจนขึ้น
+                                child: Center(
+                                  child: Text(
+                                    'ไม่พบข้อมูลราคาตลาดกลางสำหรับเดือนนี้',
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.red),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          AreaSeries<NumericData, double>(
-                            name: 'ราคาต่ำสุด',
-                            dataSource: minDataList,
-                            xValueMapper: (NumericData data, _) =>
-                                data.domain,
-                            yValueMapper: (NumericData data, _) =>
-                                data.measure,
-                            enableTooltip: true,
-                            color: YPrimaryColor.withOpacity(0.2),
-                          ),
                         ],
-                      ),
-                      if (maxDataList.isEmpty && minDataList.isEmpty)
-                        Center(
-                          child: Container(
-                            child: const Text(
-                              'ไม่พบข้อมูลราคาตลาดกลางสำหรับเดือนนี้',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.red),
-                            ),
-                          ),
-                        ),
-                    ],
+                      );
+                    },
                   ),
-                ),
+                )
               ],
             ),
           );

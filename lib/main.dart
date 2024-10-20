@@ -1,11 +1,13 @@
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:platform_device_id/platform_device_id.dart';
+import 'package:mobile_device_identifier/mobile_device_identifier.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
@@ -19,6 +21,18 @@ import 'firebase_options.dart';
 
 String? _deviceId;
 
+Future<String?> getDeviceId() async {
+  var deviceInfo = DeviceInfoPlugin();
+  if (Platform.isAndroid) {
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    return androidInfo.id; // Unique ID on Android
+  } else if (Platform.isIOS) {
+    IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+    return iosInfo.identifierForVendor; // Unique ID on iOS
+  }
+  return null;
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -29,13 +43,15 @@ Future<void> main() async {
   // prefs.setBool("checkhowtouse", false);
   debugPrint("$onboarding");
 
-  _deviceId = await PlatformDeviceId.getDeviceId;
-  log(_deviceId!);
+  final mobileDeviceIdentifier = await getDeviceId();
+  print('Device ID: $mobileDeviceIdentifier');
+  prefs.setString("device", mobileDeviceIdentifier!);
   await DatabaseService().database;
   // await DatabaseService().deleteDatabases(await getDatabasesPath());
   if (await DatabaseService().isDatabaseExists()) {
-    final results = await User_db().create(user_ipaddress: _deviceId!);
-    
+    final results = await User_db()
+        .create(user_ipaddress: mobileDeviceIdentifier.toString());
+
     log('Database exists!');
   } else {
     log('Database does not exist.');

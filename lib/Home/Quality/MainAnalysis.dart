@@ -1,19 +1,16 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
 
+import 'package:background_remover/background_remover.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:platform_device_id/platform_device_id.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
@@ -22,16 +19,12 @@ import 'package:tflite_flutter/tflite_flutter.dart' as tfl;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 // import 'package:watalygold/Home/Quality/Gallerypage.dart';
-import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Home/Quality/WeightNumber.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
 import 'package:watalygold/Widgets/Quality/DialogWarningDel.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogError.dart';
-import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_SelectNW.dart';
-import 'package:watalygold/Widgets/WeightNumber/DialogHowtoUse_WN.dart';
-import 'package:watalygold/Widgets/WeightNumber/DialogWeightNumber.dart';
 
 class ProblematicImage {
   final int statusimage;
@@ -73,7 +66,7 @@ class TakePictureScreen extends StatefulWidget {
 
 class TakePictureScreenState extends State<TakePictureScreen> {
   late tfl.Interpreter _interpreter;
-  dynamic _probability = 0;
+  final dynamic _probability = 0;
   List<String>? _labels;
   String? result;
 
@@ -84,7 +77,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   late File model;
-  String? _deviceId;
+  String _mobileDeviceIdentifier = "";
   int selectedIndex = 0;
   FirebaseModelDownloader downloader = FirebaseModelDownloader.instance;
   final List _predictions = [];
@@ -98,17 +91,22 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   bool _isBottomSheetShown = false;
 
-  void _getDeviceId() async {
-    //Recieving device id in the result
-    String? result = await PlatformDeviceId.getDeviceId;
-    setState(() {
-      _deviceId = result;
-    });
+  Future<String?> getDeviceId() async {
+    var deviceInfo = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      return androidInfo.id; // Unique ID on Android
+    } else if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      return iosInfo.identifierForVendor; // Unique ID on iOS
+    }
+    return null;
   }
 
   void _checkHowtoUse() async {
     final prefs = await SharedPreferences.getInstance();
     checkhowtouse = prefs.getBool("checkhowtouse") ?? false;
+    _mobileDeviceIdentifier = prefs.getString("device") ?? "unknow";
     if (!checkhowtouse) {
       showDialog(
         barrierDismissible: false,
@@ -125,7 +123,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   void initState() {
     super.initState();
     initializeCamera(selectedCamera); //Initially selectedCamera = 0
-    _getDeviceId();
+    getDeviceId();
     _checkHowtoUse();
     loadmodel().then((_) => {
           loadlabels().then((loadedLabels) {
@@ -186,7 +184,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               setState(() {});
               return false; // บอกว่าจะไม่ให้ปิด Modal โดยอัตโนมัติ
             },
-            child: Container(
+            child: SizedBox(
               height: 250,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -212,7 +210,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     },
                     style: ButtonStyle(
                       backgroundColor:
-                          MaterialStateProperty.all(Colors.red.shade300),
+                          WidgetStateProperty.all(Colors.red.shade300),
                     ),
                     child: const Text(
                       "ลองใหม่",
@@ -286,9 +284,26 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   File? image;
   String imageUrl = '';
 
-  Future<Uint8List> preProcessingImage(File capturedImages) async {
+  int processAndRunInference(File images) {
+    // แปลงภาพและเตรียมข้อมูล input
+    Uint8List inputBytes = preProcessingImage(images);
+
+    var input = inputBytes.buffer.asFloat32List().reshape([1, 64, 64, 3]);
+
+    var outputBuffer = List<double>.filled(1, 0).reshape([1, 1]);
+
+    // รันโมเดล
+    _interpreter.run(input, outputBuffer);
+
+    double output = outputBuffer[0][0];
+
+    // ตรวจสอบค่าผลลัพธ์และแปลงเป็นสถานะ
+    return output > 0.5 ? 1 : 2; // สีเหลือง หรือ ไม่ใช่สีเหลือง
+  }
+
+  Uint8List preProcessingImage(File capturedImages) {
     // อ่านภาพและ resize ให้เป็น 64x64
-    img.Image? image = img.decodeImage(await capturedImages.readAsBytes());
+    img.Image? image = img.decodeImage(capturedImages.readAsBytesSync());
     img.Image? resizedImage = img.copyResize(image!, width: 64, height: 64);
 
     // แปลงเป็น Uint8List (พิกเซลในรูปแบบตัวเลข)
@@ -300,46 +315,34 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       normalizedBytes[i] = bytes[i] / 255.0;
     }
 
-    return normalizedBytes.buffer.asUint8List(); // คืนค่ากลับเป็น Uint8List
+    return normalizedBytes.buffer.asUint8List();
   }
+
+  /// รันโมเดลกับภาพที่เลือก
+  ///
+  /// [images] ภาพที่จะส่งเข้าโมเดล
+  /// [index] ลำดับที่ของภาพในรายการ capturedImages
+  ///
+  /// จะแปลงภาพให้เป็นขนาด 64x64 และเตรียมข้อมูล input สำหรับโมเดล
+  /// จากนั้นจะรันโมเดลและตรวจสอบค่าผลลัพธ์เพื่อแปลงเป็นสถานะ
+  /// สุดท้ายจะอัปเดตสถานะ UI ด้วย
 
   Future<void> runInference(File images, int index) async {
     if (_labels == null) {
       return;
     }
-
     try {
       // แปลงภาพและเตรียมข้อมูล input
-      Uint8List inputBytes = await preProcessingImage(images);
-
-      // ตรวจสอบขนาดและค่า input
-      print("Input bytes length: ${inputBytes.length}");
-      print("Input bytes: $inputBytes");
-
+      Uint8List inputBytes = preProcessingImage(images);
       var input = inputBytes.buffer.asFloat32List().reshape([1, 64, 64, 3]);
-
-      print("Reshaped input: $input");
-
       // สำหรับ output แบบ sigmoid คุณจะมี output ขนาด [1, 1]
       var outputBuffer = List<double>.filled(1, 0).reshape([1, 1]);
-
       // รันโมเดล
       _interpreter.run(input, outputBuffer);
-
-      // ตรวจสอบ output ที่ได้จากโมเดล
-      print("Output buffer: $outputBuffer");
-
       double output = outputBuffer[0][0];
       print('Raw output: $output');
-
-      // โมเดล sigmoid คืนค่าความน่าจะเป็นของคลาส 1 (มะม่วง)
-      int numberresult = 0;
-      if (output > 0.5) {
-        numberresult = 1; // สีเหลือง
-      } else {
-        numberresult = 2; // ไม่ใช่สีเหลือง
-      }
-
+      // ตรวจสอบค่าผลลัพธ์และแปลงเป็นสถานะ
+      int numberresult = output > 0.5 ? 1 : 2;
       // อัปเดตสถานะ UI
       setState(() {
         updateStatusMangoColorByStatusImage(index, numberresult);
@@ -357,7 +360,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         await uploadImageAndUpdateState();
       }
     } catch (e) {
-      debugPrint('Error processing Image $e');
+      debugPrint('Error processing Image: $e');
     }
   }
 
@@ -462,6 +465,31 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     }
   }
 
+  Future<File> processAndSaveImage(Uint8List imageBytes) async {
+    // ลบพื้นหลังของรูปภาพ
+    final resultImage = await removeBackground(imageBytes: imageBytes);
+
+    // แปลง Uint8List เป็น Image object
+    final image = img.decodeImage(resultImage);
+
+    // แปลง Image เป็น PNG
+    final pngBytes = img.encodePng(image!);
+
+    // สร้างชื่อไฟล์ที่ไม่ซ้ำกัน
+    final String fileName =
+        'processed_image_${DateTime.now().millisecondsSinceEpoch}.png';
+
+    // หาตำแหน่งที่จะบันทึกไฟล์
+    final directory = await getApplicationDocumentsDirectory();
+    final String filePath = '${directory.path}/$fileName';
+
+    // บันทึกไฟล์
+    final File file = File(filePath);
+    await file.writeAsBytes(pngBytes);
+
+    return file;
+  }
+
   Future uploadImageAndUpdateState() async {
     if (capturedImages.length == 4) {
       showDialog(
@@ -523,11 +551,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         if (capturedImage != null) {
           final result = await uploadImageToCloudStorage(
               capturedImage.image, imageNames[i - 1]);
-          if (result == null) {
-            print("Result is null for image $i");
-          }
 
-          if (result != null && result.containsKey('downloadURL')) {
+          if (result.containsKey('downloadURL')) {
             final imagePath =
                 await saveImageToDevice(capturedImage.image, imageNames[i - 1]);
 
@@ -555,7 +580,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       final previewResult = {
         'downloadurl': downloadurl,
         "imagename": concatenatedString,
-        "ip": _deviceId,
+        "ip": _mobileDeviceIdentifier,
         "result": "Yellow"
       };
 
@@ -796,8 +821,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                     child: ElevatedButton(
                         style: ButtonStyle(
                             backgroundColor:
-                                MaterialStatePropertyAll(GPrimaryColor),
-                            elevation: MaterialStatePropertyAll(1)),
+                                WidgetStatePropertyAll(GPrimaryColor),
+                            elevation: WidgetStatePropertyAll(1)),
                         onPressed: () async {
                           _hasShownDialog =
                               false; // รีเซ็ต flag เมื่อปิด Dialog
@@ -819,35 +844,33 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   Future<void> analyzeImage(File image, int index) async {
-    if (image != null) {
-      final gemini = Gemini.instance;
-      await gemini.textAndImage(
-        text:
-            """ From the picture I gave you, can you check if there is a mango and a 5 baht coin in this picture? If there are both, then answer "mango". 
-            If there are neither or if there is a hand or finger in the picture, then answer "not a mango". 
-            Please note that this picture may show the mango from different angles, such as front, back, top or bottom. 
-            The bottom may look like the top of the mango but there is no stem in the middle.""",
-        images: [await image.readAsBytes()],
-      ).then((result) {
-        final geminiText = (result?.content?.parts?.last.text ?? '').trim();
+    final gemini = Gemini.instance;
+    await gemini.textAndImage(
+      text:
+          """ From the picture I gave you, can you check if there is a mango and a 5 baht coin in this picture? If there are both, then answer "mango". 
+          If there are neither or if there is a hand or finger in the picture, then answer "not a mango". 
+          Please note that this picture may show the mango from different angles, such as front, back, top or bottom. 
+          The bottom may look like the top of the mango but there is no stem in the middle.""",
+      images: [await image.readAsBytes()],
+    ).then((result) {
+      final geminiText = (result?.content?.parts?.last.text ?? '').trim();
 
-        debugPrint(geminiText);
-        setState(() {
-          if (geminiText == "mango" || geminiText == "mango.") {
-            updateStatusMangoByStatusImage(index, 1);
-            runInference(image, index);
-          } else {
-            updateStatusMangoByStatusImage(index, 2);
-            // updateStatusMangoColorByStatusImage(index, 2);
-          }
-          checkCapturedImages();
-        });
-
-        debugPrint("Gemini response: $geminiText");
-      }).catchError((error) {
-        debugPrint("Error: $error");
+      debugPrint(geminiText);
+      setState(() {
+        if (geminiText == "mango" || geminiText == "mango.") {
+          updateStatusMangoByStatusImage(index, 1);
+          runInference(image, index);
+        } else {
+          updateStatusMangoByStatusImage(index, 2);
+          // updateStatusMangoColorByStatusImage(index, 2);
+        }
+        checkCapturedImages();
       });
-    }
+
+      debugPrint("Gemini response: $geminiText");
+    }).catchError((error) {
+      debugPrint("Error: $error");
+    });
   }
 
   @override
@@ -868,8 +891,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                   child: FutureBuilder<void>(
                     future: _initializeControllerFuture,
                     builder: (context, snapshot) {
-                      if (_controller == null ||
-                          !_controller!.value.isInitialized) {
+                      if (!_controller.value.isInitialized) {
                         return const Center(
                             child:
                                 CircularProgressIndicator()); // หรือ loading indicator
