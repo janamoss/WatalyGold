@@ -207,39 +207,7 @@ class _WeightNumberState extends State<WeightNumber> {
   }
 
   Future useFunctionandresult() async {
-    showDialog(
-      context: context,
-      builder: (context) => Center(
-        child: AlertDialog(
-          backgroundColor: GPrimaryColor.withOpacity(0.6),
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          title: Column(
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'กำลังตรวจสอบน้ำหนัก',
-                  style: TextStyle(color: WhiteColor, fontSize: 20),
-                  textAlign: TextAlign
-                      .center, // Add this line to center the title text
-                ),
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              LoadingAnimationWidget.discreteCircle(
-                color: WhiteColor,
-                secondRingColor: GPrimaryColor,
-                thirdRingColor: YPrimaryColor,
-                size: 70,
-              ),
-            ],
-          ),
-          // actions: [],
-        ),
-      ),
-    );
+    showdialogloadingprocessing();
     weight = numbersOnly.toString();
     debugPrint("ค่าน้ำหนัก $weight");
     widget.httpscall["weight"] = weight;
@@ -295,9 +263,20 @@ class _WeightNumberState extends State<WeightNumber> {
     try {
       final XFile image = await _controller.takePicture();
       setState(() {});
-      showDialog(
-        context: context,
-        builder: (context) => Center(
+      showdialogloadingprocessing();
+      await _cropAndOCR(image);
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
+  }
+
+  void showdialogloadingprocessing() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: Center(
           child: AlertDialog(
             backgroundColor: GPrimaryColor.withOpacity(0.6),
             contentPadding:
@@ -327,11 +306,8 @@ class _WeightNumberState extends State<WeightNumber> {
             // actions: [],
           ),
         ),
-      );
-      await _cropAndOCR(image);
-    } catch (e) {
-      print('Error capturing image: $e');
-    }
+      ),
+    );
   }
 
   Future<void> _cropAndOCR(XFile image) async {
@@ -390,43 +366,7 @@ class _WeightNumberState extends State<WeightNumber> {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => PopScope(
-            canPop: false,
-            child: Center(
-              child: AlertDialog(
-                backgroundColor: GPrimaryColor.withOpacity(0.6),
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                title: Column(
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        'กำลังตรวจสอบน้ำหนัก',
-                        style: TextStyle(color: WhiteColor, fontSize: 20),
-                        textAlign: TextAlign
-                            .center, // Add this line to center the title text
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    LoadingAnimationWidget.discreteCircle(
-                      color: WhiteColor,
-                      secondRingColor: GPrimaryColor,
-                      thirdRingColor: YPrimaryColor,
-                      size: 70,
-                    ),
-                  ],
-                ),
-                // actions: [],
-              ),
-            ),
-          ),
-        );
+        showdialogloadingprocessing();
         final file = File(image.path);
         final img.Image originalImage =
             img.decodeImage(await file.readAsBytes())!;
