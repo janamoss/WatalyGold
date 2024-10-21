@@ -261,9 +261,9 @@ class _WeightNumberState extends State<WeightNumber> {
 
   Future<void> _captureAndProcess() async {
     try {
+      showdialogloadingprocessing();
       final XFile image = await _controller.takePicture();
       setState(() {});
-      showdialogloadingprocessing();
       await _cropAndOCR(image);
     } catch (e) {
       print('Error capturing image: $e');
@@ -430,7 +430,7 @@ class _WeightNumberState extends State<WeightNumber> {
     There is a weight attached to the picture, with a white background and black numbers.
     However, if you do not see the numbers on the digital scale screen,
     you will have to answer "There are no numbers or scales in this picture."
-    I would like you to read the weight on the scale, for example 325.25 grams.""",
+    I would like you to read the weight on the scale, for example 325.25 g .""",
         images: [file.readAsBytesSync()],
       );
 
@@ -465,6 +465,7 @@ class _WeightNumberState extends State<WeightNumber> {
                 content: "ไม่สามารถแยกตัวเลขจากข้อความที่ได้รับ");
           },
         );
+        _alertChoose();
         return; // หยุดการทำงานต่อไป
       }
 
@@ -495,6 +496,8 @@ class _WeightNumberState extends State<WeightNumber> {
       } else {
         debugPrint("น้ำหนักไม่ถูกต้อง");
         debugPrint("น้ำหนักที่ได้มา : $results");
+        _alertChoose();
+        return;
       }
     } catch (error) {
       Navigator.of(context).pop(); // ปิด dialog กำลังโหลด ในกรณีเกิด error
@@ -507,6 +510,7 @@ class _WeightNumberState extends State<WeightNumber> {
               content: "เกิดข้อผิดพลาดในการวิเคราะห์รูปภาพ: $error");
         },
       );
+      _alertChoose();
       if (error is HttpException) {
         print('Error connecting to the server');
       } else if (error is FormatException) {
@@ -530,19 +534,6 @@ class _WeightNumberState extends State<WeightNumber> {
           hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 0.0); // ทำให้โปร่งใส
           // hsv = HSVColor.fromAHSV(1, 0.0, 0.0, 0.7);
         }
-        // hue สีน้ำเงิน 180-240
-        // if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
-        //   // เพิ่มความสว่างและลดความอิ่มตัว
-        //   // hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 1);
-        //   hsv = HSVColor.fromAHSV(1.0, 0.0, 0.0, 1);
-        // } else if (hsv.value < 0.3) {
-        //   // สำหรับตัวเลขที่มืด ปรับให้เข้มขึ้นเล็กน้อย
-        //   // hsv = HSVColor.fromAHSV(1.0, hsv.hue, hsv.saturation, hsv.value * 0.5);
-        //   hsv = HSVColor.fromAHSV(1.0, 0.0, 0.0, 0.0);
-        // } else {
-        //   // ไม่พบสีน้ำเงิน ให้เพิ่มความสว่าง
-        //   hsv =
-        //       HSVColor.fromAHSV(1.0, hsv.hue, hsv.saturation, 0.5);
         // }
         var rgb = hsv.toColor();
         image.setPixelRgba(x, y, rgb.red, rgb.green, rgb.blue, rgb.alpha);
