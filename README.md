@@ -1,6 +1,14 @@
-# watalygold
+# WatalyGold Application
 
-A new Flutter project.
+แอปพลิเคชั่นวิเคราะห์คุณภาพมะม่วงน้ำดอกไม้สีทอง โดยใช้การประมวลผลภาพ ซึ่งจะช่วยให้ผู้ใช้งานทราบว่ามะม่วงลูกนี้ มีคุณภาพอยู่ในระดับใด โดยอ้างอิงเกณฑ์ตามมาตราฐาน มกษ. ปี 2558
+
+## Preview Application
+
+![plot](./assets/images/ถ่ายมะม่วง_0.png)
+
+![plot](./assets/images/ถ่ายมะม่วง_2.png)
+
+![plot](./assets/images/ถ่ายมะม่วง_10.png)
 
 ## Getting Started
 
