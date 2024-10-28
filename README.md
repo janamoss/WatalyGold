@@ -4,11 +4,9 @@
 
 ## Preview Application
 
-![alt](./assets/images/ถ่ายมะม่วง_0.png){: width="50%"}
-
-![plot](./assets/images/ถ่ายมะม่วง_2.png)
-
-![plot](./assets/images/ถ่ายมะม่วง_10.png)
+<img src="./assets/images/ถ่ายมะม่วง_0.png" width="300">
+<img src="./assets/images/ถ่ายมะม่วง_2.png" width="300">
+<img src="./assets/images/ถ่ายมะม่วง_10.png" width="300">
 
 ## Getting Started
 
