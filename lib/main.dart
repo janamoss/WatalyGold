@@ -16,6 +16,7 @@ import 'package:watalygold/Database/User_DB.dart';
 import 'package:watalygold/Home/Model/Image_State.dart';
 import 'package:watalygold/Home/Model/Model_Analysis.dart';
 import 'package:watalygold/Home/Model/Model_Gemini.dart';
+import 'package:watalygold/Home/Model/gemini_state.dart';
 import 'package:watalygold/Home/Onboarding/onboarding_screen.dart';
 import 'package:watalygold/Home/Quality/test.dart';
 import 'Home/basepage.dart';
@@ -75,6 +76,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ModelState()),
         ChangeNotifierProvider(create: (_) => ImageState()),
+        ChangeNotifierProvider(create: (_) => ProcessCountProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

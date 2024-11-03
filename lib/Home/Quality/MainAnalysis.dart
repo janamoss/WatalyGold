@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_remover/background_remover.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_ml_model_downloader/firebase_ml_model_downloader.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,11 +24,13 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:watalygold/Home/Model/Image_State.dart';
 import 'package:watalygold/Home/Model/Model_Gemini.dart';
+import 'package:watalygold/Home/Model/gemini_state.dart';
 // import 'package:watalygold/Home/Quality/Gallerypage.dart';
 import 'package:watalygold/Home/Quality/WeightNumber.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/DialogHowtoUse.dart';
+import 'package:watalygold/Widgets/Quality/BottomSheetGemini.dart';
 import 'package:watalygold/Widgets/Quality/DialogWarningDel.dart';
 import 'package:watalygold/Widgets/WeightNumber/DialogError.dart';
 import 'package:provider/provider.dart';
@@ -118,6 +122,23 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     initializeCamera(selectedCamera); //Initially selectedCamera = 0
     getDeviceId();
     _checkHowtoUse();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkAndShowBottomSheet();
+    });
+  }
+
+  void checkAndShowBottomSheet() async {
+    final provider = Provider.of<ProcessCountProvider>(context, listen: false);
+    await provider.checkProcessCount();
+
+    if (provider.isLimitReached && mounted) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => BottomSheetGemini(),
+        isDismissible: false,
+        enableDrag: true,
+      );
+    }
   }
 
   Future<bool> _checkRealInternetConnectivity() async {
@@ -176,7 +197,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.wifi_off,
+                    Icons.portable_wifi_off,
                     size: 80,
                     color: Colors.red.shade300,
                   ),
@@ -544,6 +565,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     }
   }
 
+  bool _hasSavedToFirebase = false;
   bool _hasShownDialog =
       false; // ตัวแปร flag เพื่อตรวจสอบว่า Dialog ได้แสดงหรือยัง
 
@@ -675,6 +697,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               );
             },
           );
+        } else if (!_hasSavedToFirebase) {
+          _hasSavedToFirebase = true;
+          saveGeminiCountToFirebase();
         }
       }
     }
@@ -682,6 +707,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
   Future<void> analyzeImage(File image, int index) async {
     try {
+      setState(() {
+        geminiProcessCount++;
+      });
+
       final gemini = Gemini.instance;
       final result = await gemini.textAndImage(
         // text:
@@ -696,6 +725,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         """,
         images: [await image.readAsBytes()],
       );
+
+      debugPrint("จำนวนครั้งที่ส่งไป Gemini: $geminiProcessCount");
 
       final geminiText = (result?.content?.parts?.last.text ?? '').trim();
 
@@ -712,8 +743,32 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       debugPrint("Gemini response: $geminiText");
     } catch (error) {
+      setState(() {
+        geminiProcessCount--;
+      });
       debugPrint("Error: $error");
       // จัดการ error ตามที่ต้องการ
+    }
+  }
+
+  int geminiProcessCount = 0;
+  Future<void> saveGeminiCountToFirebase() async {
+    try {
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      await FirebaseFirestore.instance
+          .collection('GeminiProcesscount')
+          .doc(today)
+          .set(
+              {
+            'process_count': FieldValue.increment(
+                geminiProcessCount), // เพิ่มค่าครั้งการประมวลผล
+            'last_updated': FieldValue.serverTimestamp(),
+          },
+              SetOptions(
+                  merge: true)); // ใช้ merge เพื่ออัปเดตข้อมูลเดิมหากมีอยู่แล้ว
+      debugPrint('บันทึกจำนวนครั้งลง Firebase สำเร็จ');
+    } catch (e) {
+      debugPrint('เกิดข้อผิดพลาดในการบันทึกลง Firebase: $e');
     }
   }
 

@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Home/Quality/result_screen.dart';
@@ -413,44 +415,6 @@ class _WeightNumberState extends State<WeightNumber> {
         final processedImageBW = await _preprocessImageblackandwhite(file);
 
         await processImageAndAnalyze(processedImageBW);
-
-        // // OCR
-        // final processedImage = await _preprocessImage(file);
-        // final inputImage = InputImage.fromFile(processedImage);
-        // final recognizedText = await textRecognizer.processImage(inputImage);
-        // debugPrint("recognizedText.text ${recognizedText}");
-        // String numbersOnly = _extractNumbersOCR(recognizedText.text);
-        // debugPrint("numbersOnly ${numbersOnly}");
-
-        // // Integrate Gemini
-        // final gemini = Gemini.instance;
-        // gemini.textAndImage(
-        //   text:
-        //       "What are the numbers in the picture and what are the units of measurement? I want you to answer with just numbers and units of measurement without any further explanation. Just answer with numbers, such as 53.3 g or 32 g ?",
-        //   images: [file.readAsBytesSync()],
-        // ).then((value) {
-        //   final geminiText = value?.content?.parts?.last.text ?? '';
-        //   numbersOnly = _extractNumbersGeminiText(geminiText)!;
-        //   debugPrint("Gemini analysis: $geminiText");
-        //   debugPrint("Gemini extractedNumbers: $numbersOnly");
-        // }).catchError((error) {
-        //   if (error is HttpException) {
-        //     print('Error connecting to the server');
-        //   } else if (error is FormatException) {
-        //     print('Invalid data format');
-        //   } else {
-        //     print('An unexpected error occurred: $error');
-        //   }
-        // });
-        // debugPrint("ค่าน้ำหนักหลังทำงานเสร็จ $numbersOnly");
-        // Navigator.of(context).push(
-        //   MaterialPageRoute(
-        //     builder: (BuildContext context) => ResultScreen(
-        //       text: numbersOnly,
-        //       imgs: fullImage!, // ส่งภาพไปยัง ResultScreen
-        //     ),
-        //   ),
-        // );
       }
     } else {
       debugPrint("Error");
@@ -459,6 +423,10 @@ class _WeightNumberState extends State<WeightNumber> {
 
   Future<void> processImageAndAnalyze(File file) async {
     try {
+      setState(() {
+        geminiProcessCount++;
+      });
+
       final gemini = Gemini.instance;
       final result = await gemini.textAndImage(
         text:
@@ -507,6 +475,7 @@ class _WeightNumberState extends State<WeightNumber> {
 
       numbersOnly = extractedNumbers;
       debugPrint("ค่าน้ำหนักหลังทำงานเสร็จ $numbersOnly");
+      await saveGeminiCountToFirebase();
 
       Navigator.of(context).pop(); // ปิด dialog กำลังโหลด
 
@@ -536,6 +505,10 @@ class _WeightNumberState extends State<WeightNumber> {
         return;
       }
     } catch (error) {
+      setState(() {
+        geminiProcessCount--;
+      });
+      await saveGeminiCountToFirebase();
       Navigator.of(context).pop(); // ปิด dialog กำลังโหลด ในกรณีเกิด error
       await showDialog(
         context: context,
@@ -554,6 +527,27 @@ class _WeightNumberState extends State<WeightNumber> {
       } else {
         print('An unexpected error occurred: $error');
       }
+    }
+  }
+
+  int geminiProcessCount = 0;
+  Future<void> saveGeminiCountToFirebase() async {
+    try {
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      await FirebaseFirestore.instance
+          .collection('GeminiProcesscount')
+          .doc(today)
+          .set(
+              {
+            'process_count': FieldValue.increment(
+                geminiProcessCount), // เพิ่มค่าครั้งการประมวลผล
+            'last_updated': FieldValue.serverTimestamp(),
+          },
+              SetOptions(
+                  merge: true)); // ใช้ merge เพื่ออัปเดตข้อมูลเดิมหากมีอยู่แล้ว
+      debugPrint('บันทึกจำนวนครั้งลง Firebase สำเร็จ');
+    } catch (e) {
+      debugPrint('เกิดข้อผิดพลาดในการบันทึกลง Firebase: $e');
     }
   }
 
