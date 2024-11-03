@@ -8,10 +8,14 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile_device_identifier/mobile_device_identifier.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/User_DB.dart';
+import 'package:watalygold/Home/Model/Image_State.dart';
+import 'package:watalygold/Home/Model/Model_Analysis.dart';
+import 'package:watalygold/Home/Model/Model_Gemini.dart';
 import 'package:watalygold/Home/Onboarding/onboarding_screen.dart';
 import 'package:watalygold/Home/Quality/test.dart';
 import 'Home/basepage.dart';
@@ -59,44 +63,47 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // FirebaseFunctions.instanceFor(region: 'asia-southeast1')
-  //     .useFunctionsEmulator('192.168.1.120', 5001);
-  // Obtain a list of the available cameras on the device.
+
   final cameras = await availableCameras();
   if (cameras.isEmpty) {
-    // Handle the case where no cameras are available
     log('No cameras available');
     return;
   }
 
   runApp(
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ModelState()),
+        ChangeNotifierProvider(create: (_) => ImageState()),
       ],
-      locale: Locale('th', 'TH'),
-      supportedLocales: [
-        const Locale('th', 'TH'),
-        const Locale('en', 'US'),
-      ],
-      // initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
-      routes: {
-        '/base': (context) => BasePage(camera: cameras),
-        // '/base': (context) => const ResultPage(),
-      },
-      theme: ThemeData(
-        fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        locale: Locale('th', 'TH'),
+        supportedLocales: [
+          const Locale('th', 'TH'),
+          const Locale('en', 'US'),
+        ],
+        // initialRoute: '/base', // กำหนด initialRoute หรือหน้าแรกของแอพ
+        routes: {
+          '/base': (context) => BasePage(camera: cameras),
+          // '/base': (context) => const ResultPage(),
+        },
+        theme: ThemeData(
+          fontFamily: GoogleFonts.ibmPlexSansThai().fontFamily,
+        ),
+        title: "Wataly Gold",
+        // home: const Myonboardingscreen(),
+        home: onboarding
+            ? BasePage(camera: cameras)
+            : Myonboardingscreen(camera: cameras),
+        // home: const Testing(),
+        builder: EasyLoading.init(),
       ),
-      title: "Wataly Gold",
-      // home: const Myonboardingscreen(),
-      home: onboarding
-          ? BasePage(camera: cameras)
-          : Myonboardingscreen(camera: cameras),
-      // home: const Testing(),
-      builder: EasyLoading.init(),
     ),
   );
 }
