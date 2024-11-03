@@ -81,6 +81,7 @@ dependencies:
   background_remover: ^0.0.3
   mobile_device_identifier: ^0.0.2
   device_info_plus: ^11.1.0
+  provider: ^6.1.2
     
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,7 @@
+import 'package:provider/provider.dart';
 import 'package:watalygold/ExportPrice/ExportPrice.dart';
 import 'package:watalygold/Home/Collection/baseColoorHis.dart';
+import 'package:watalygold/Home/Model/Model_Analysis.dart';
 import 'package:watalygold/Home/Quality/WeightNumber.dart';
 import 'package:watalygold/Home/UserManual/usermanual.dart';
 import 'package:watalygold/Widgets/Color.dart';
@@ -67,6 +69,9 @@ class _BasePageState extends State<BasePage> {
 
   @override
   Widget build(BuildContext context) {
+    Future.microtask(() {
+      context.read<ModelState>().initializeModel(context);
+    });
     return Scaffold(
       body: Center(
         child: _widgetOption.elementAt(selectedIndex),
