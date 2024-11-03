@@ -21,12 +21,14 @@ class SelectResult extends StatefulWidget {
 
 class _SelectResultState extends State<SelectResult> {
   List<Result> _results = [];
+  List<Result> _resultsreal = [];
   Map<int, bool> _selectedResults = {}; // เก็บค่า isCheck ของแต่ละ Result
 
   bool isDone = false;
 
   Future<void> _loadResults() async {
     _results = await Result_DB().fetchResultinCol();
+    _resultsreal = await Result_DB().fetchAll();
     _selectedResults = {}; // เริ่มต้นให้ _selectedResults เป็น Map ว่าง
 
     for (var result in _results) {
@@ -120,24 +122,46 @@ class _SelectResultState extends State<SelectResult> {
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: _results.length,
-        itemBuilder: (context, index) {
-          final result = _results[index];
-          stdout.writeln("${result.collection_id} คือ id ของคอ");
-          DateTime createdAt = DateTime.parse(result.created_at);
-          final formattedDate =
-              DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);
-          return CradforHistory(
-            date: formattedDate,
-            results: result,
-            refreshCallback: () => _loadResults(),
-            statusSelect: 1,
-            isChecked: _selectedResults[result.result_id],
-            onCheckChanged: () => selectresult(result.result_id),
-          );
-        },
-      ),
+      body: _results.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.history_rounded, size: 50, color: GPrimaryColor),
+                  SizedBox(
+                    height: 25,
+                  ),
+                  Text("คุณยังไม่มีรายการการวิเคราะห์คุณภาพ"),
+                ],
+              ),
+            )
+          : ListView.builder(
+              // ใช้จำนวนรายการที่มีอยู่ใน _results
+              itemCount: _results.length,
+              itemBuilder: (context, index) {
+                // ดึง result ที่จะใช้แสดงจาก _results
+                final result = _results[index];
+
+                // ค้นหา index ของ result นี้ใน _resultsreal เพื่อใช้เป็นลำดับที่แท้จริง
+                final actualIndex = _resultsreal.indexWhere(
+                    (realResult) => realResult.result_id == result.result_id);
+
+                DateTime createdAt = DateTime.parse(result.created_at);
+                final formattedDate =
+                    DateFormat('dd MMM yyyy', 'th_TH').format(createdAt);
+
+                return CradforHistory(
+                  date: formattedDate,
+                  results: result,
+                  number: actualIndex +
+                      1, // ใช้ actualIndex จาก _resultsreal เพื่อแสดงลำดับจริง
+                  refreshCallback: () => _loadResults(),
+                  statusSelect: 1,
+                  isChecked: _selectedResults[result.result_id],
+                  onCheckChanged: () => selectresult(result.result_id),
+                );
+              },
+            ),
     );
   }
 }

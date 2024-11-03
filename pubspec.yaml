@@ -81,6 +81,10 @@ dependencies:
   google_generative_ai: ^0.4.6
   flutter_gemini: ^2.0.4-dev.1 
   color: ^3.0.0
+  device_info_plus: ^10.1.2
+  connectivity_plus: ^6.1.0
+  background_remover: ^0.0.3
+  mobile_device_identifier: ^0.0.2
 
 
 
@@ -119,6 +123,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/images/WeightNumber/
+    - assets/images/HowtoUse/
     - assets/lebels.txt
     - assets/mango_color.tflite
     - assets/model.tflite

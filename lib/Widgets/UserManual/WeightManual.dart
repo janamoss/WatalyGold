@@ -17,154 +17,145 @@ class _WeightManualState extends State<WeightManual> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 1,
-          height: MediaQuery.of(context).size.width * 2.1,
-          color: Colors.white,
-          padding: EdgeInsets.all(10),
-          child: Column(
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      color: Colors.white,
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      color: GPrimaryColor,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '1',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0, right: 10.0),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: GPrimaryColor,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "1",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
                       ),
                     ),
                   ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "ถ่ายภาพจากตาชั่งดิจิทัลที่เห็นตัวเลขและหน่วย\nของตาชั่งดิจิทัลอย่างชัดเจนห้ามถ่ายใกล้หรือ\nไกลเกิน",
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    "ถ่ายภาพจากตาชั่งดิจิทัลที่เห็นตัวเลขและหน่วยของตาชั่งดิจิทัลอย่างชัดเจน ห้ามถ่ายใกล้หรือไกลเกิน",
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 16,
                     ),
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Center(
-                child: Container(
-                  child: Image.asset(
-                    "assets/images/closefar.png",
-                    width: 250,
-                    height: 200,
-                    fit: BoxFit.contain,
+                    softWrap: true,
                   ),
                 ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      color: GPrimaryColor,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '2',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "ถ่ายภาพตาชั่งดิจิทัลในพื้นที่มีแสงเพียงพอ",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                    ),
-                  )
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Center(
-                child: Container(
-                  child: Image.asset(
-                    "assets/images/Whiteblack.png",
-                    width: 250,
-                    height: 200,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      color: GPrimaryColor,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '3',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    "ครอบภาพให้คล้ายคลึงกับตัวอย่างให้ใกล้เคียง\nมากที่สุด",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                    ),
-                  )
-                ],
-              ),
-              Center(
-                child: Container(
-                  child: Image.asset(
-                    "assets/images/WeightNumber_Cut.png",
-                    width: 250,
-                    height: 200,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
+              )
             ],
           ),
-        ),
+          const SizedBox(height: 20),
+          Center(
+            child: Image.asset(
+              "assets/images/closefar.png",
+              width: 250,
+              height: 200,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: GPrimaryColor,
+                ),
+                child: const Center(
+                  child: Text(
+                    '2',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "ถ่ายภาพตาชั่งดิจิทัลในพื้นที่มีแสงเพียงพอ",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              )
+            ],
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: Image.asset(
+              "assets/images/Whiteblack.png",
+              width: 250,
+              height: 200,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: GPrimaryColor,
+                ),
+                child: const Center(
+                  child: Text(
+                    '3',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "ครอบภาพให้คล้ายคลึงกับตัวอย่างให้ใกล้เคียงมากที่สุด",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              )
+            ],
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: Image.asset(
+              "assets/images/WeightNumber_Cut.png",
+              width: 250,
+              height: 200,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ],
       ),
     );
   }

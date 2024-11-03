@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Home/Collection/SelectResultmuti.dart';
+import 'package:watalygold/Home/History/HistoryDetail.dart';
 import 'package:watalygold/Widgets/Appbar_main.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:watalygold/Widgets/CradforHistory.dart';
@@ -39,7 +40,7 @@ class _SelectCollectionState extends State<SelectCollection> {
     setState(() {});
   }
 
-  void refresh() {
+  Future<void> refresh() async {
     // debugPrint('Refreshing data...');
     _loadResultinColletion();
   }
@@ -118,21 +119,40 @@ class _SelectCollectionState extends State<SelectCollection> {
             ),
             Expanded(
               child: _resultincollection.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: _resultincollection.length,
-                      itemBuilder: (context, index) {
-                        final result = _resultincollection[index];
-                        // debugPrint("${result.collection_id} คือ id ของคอ");
-                        DateTime createdAt = DateTime.parse(result.created_at);
-                        final formattedDate = DateFormat('dd MMM yyyy', 'th_TH')
-                            .format(createdAt);
-                        return CradforHistory(
-                            date: formattedDate,
-                            results: result,
-                            number: index + 1,
-                            refreshCallback: refresh,
-                            statusdelete: 1);
-                      },
+                  ? RefreshIndicator(
+                      color: GPrimaryColor,
+                      backgroundColor: WhiteColor,
+                      onRefresh: refresh,
+                      child: ListView.builder(
+                        itemCount: _resultincollection.length,
+                        itemBuilder: (context, index) {
+                          final result = _resultincollection[index];
+                          DateTime createdAt =
+                              DateTime.parse(result.created_at);
+                          final formattedDate =
+                              DateFormat('dd MMM yyyy', 'th_TH')
+                                  .format(createdAt);
+                          debugPrint("${index + 1} คือ index ของคอ");
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HistoryDetail(
+                                    results: result,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: CradforHistory(
+                                date: formattedDate,
+                                results: result,
+                                number: index + 1,
+                                refreshCallback: refresh,
+                                statusdelete: 1),
+                          );
+                        },
+                      ),
                     )
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,

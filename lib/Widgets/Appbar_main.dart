@@ -37,9 +37,10 @@ class Appbarmain extends StatelessWidget implements PreferredSizeWidget {
 
 class AppbarMains extends StatefulWidget implements PreferredSizeWidget {
   final String name;
+  final Widget? actions;
   final VoidCallback? refresh;
 
-  const AppbarMains({Key? key, required this.name, this.refresh})
+  const AppbarMains({Key? key, required this.name, this.refresh, this.actions})
       : super(key: key);
 
   @override
@@ -78,6 +79,9 @@ class _AppbarMainsState extends State<AppbarMains> {
       ),
       title: Text(widget.name, style: TextStyle(color: Colors.white)),
       centerTitle: true,
+      actions: widget.actions != null ? [
+        widget.actions!
+      ] : null
     );
   }
 }

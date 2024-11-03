@@ -270,6 +270,7 @@ class _DialogCollectionEditState extends State<DialogCollectionEdit> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Material(
+                  color: WhiteColor,
                   elevation: 3,
                   shadowColor: Colors.black,
                   borderRadius: BorderRadius.all(Radius.circular(15)),

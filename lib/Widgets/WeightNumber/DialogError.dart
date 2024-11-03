@@ -26,7 +26,7 @@ class Dialog_Error extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.warning_amber_rounded,
+              Icons.sentiment_dissatisfied_rounded,
               color: WhiteColor,
               size: 50,
             ),

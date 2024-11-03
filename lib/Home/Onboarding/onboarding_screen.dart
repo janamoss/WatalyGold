@@ -41,7 +41,7 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
       'description':
           'แอปพลิเคชันสามารถวิเคราะห์คุณภาพผลมะม่วงน้ำดอกไม้สีทองให้ตรงตามมาตรฐานสินค้าเกษตร(มกษ.) ติดตามราคาส่งออกของมะม่วงน้ำดอกไม้สีทองและมีคลังความรู้เกี่ยวกับมะม่วงน้ำดอกไม้สีทอง',
 
-      // 'cameras': widget.cameras,
+      
     },
     {
       'color': "ffFFEE58",
@@ -93,6 +93,10 @@ class _MyonboardingscreenState extends State<Myonboardingscreen> {
                             color: WhiteColor,
                           ),
                         ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: _buildIndicator(),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(right: 20),

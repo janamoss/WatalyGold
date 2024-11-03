@@ -48,22 +48,20 @@ class _UserManualState extends State<UserManual> {
                     const Center(
                       child: SizedBox(
                         child: Text(
-                          "วิธีถ่ายภาพมะม่วง ",
+                          "วิธีถ่ายภาพมะม่วง",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                           ),
+                          softWrap: true,
+                          overflow: TextOverflow.clip,
                         ),
                       ),
                     ),
                   ],
                 ),
                 children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 1,
-                    height: MediaQuery.of(context).size.width * 1.7,
-                    child: const Manualphoto(),
-                  ),
+                  Manualphoto(),
                 ],
               ),
               SizedBox(height: 10),
@@ -79,33 +77,27 @@ class _UserManualState extends State<UserManual> {
                 iconColor: Colors.white,
                 collapsedIconColor: Colors.white,
                 title: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // SizedBox(width: 10),
-                    Image.asset(
-                      "assets/images/weightdigitalLogo.png",
-                      width: 60,
-                      height: 60,
-                      color: Colors.white,
-                    ),
-                    // SizedBox(width: 10),
-                    const Center(
-                      child: SizedBox(
-                        child: Text(
-                          "วิธีถ่ายภาพหน้าจอเครื่องชั่งน้ำหนัก",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
+                    SizedBox(width: 10),
+                    Image.asset("assets/images/weightdigitalLogo.png",
+                        width: 50, height: 50, color: Colors.white),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        "วิธีถ่ายภาพหน้าจอเครื่องชั่งน้ำหนัก",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                         ),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                   ],
                 ),
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.width * 2.1,
-                    child: WeightManual(),
-                  ),
+                  WeightManual(),
                 ],
                 // children: [
                 //   Expanded(
@@ -126,6 +118,7 @@ class _UserManualState extends State<UserManual> {
                 iconColor: Colors.white,
                 collapsedIconColor: Colors.white,
                 title: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     SizedBox(width: 10),
                     Image.asset(
@@ -134,29 +127,24 @@ class _UserManualState extends State<UserManual> {
                       height: 50,
                     ),
                     SizedBox(width: 10),
-                    const Center(
-                      child: SizedBox(
-                        child: Text(
-                          "คุณสมบัติของมะม่วงแต่ละเกรด ",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
+                    Expanded(
+                      child: Text(
+                        "คุณสมบัติของมะม่วงแต่ละเกรด",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
                         ),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
                       ),
                     ),
                   ],
                 ),
                 children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.width * 3.9,
-                    child: Mangoproperties(),
-                  ),
+                  Mangoproperties(),
                 ],
-               
               ),
-              SizedBox(height: 10),
-              
+              SizedBox(height: 20),
             ],
           ),
         ),

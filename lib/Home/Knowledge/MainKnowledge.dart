@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -19,7 +20,9 @@ class KnowledgeMain extends StatefulWidget {
 
 class _KnowledgeMainState extends State<KnowledgeMain> {
   bool _isLoading = true;
+  bool _noInternet = false;
   List<Knowledge> knowledgelist = [];
+  final Connectivity _connectivity = Connectivity();
 
   Future<List<Knowledge>> getKnowledges() async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -32,27 +35,75 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
         .toList();
   }
 
+  Future<bool> _checkRealInternetConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _isLoading = true; // Set loading state to true
-    });
-
-    getKnowledges().then((value) {
-      setState(() {
-        knowledgelist = value;
-        _isLoading = false; // Set loading state to false once data is fetched
-      });
-
-      for (var knowledge in knowledgelist) {
-        debugPrint('Knowledge : ${knowledge.knowledgeImg}');
-        debugPrint('Knowledge : ${knowledge.knowledgeDetail}');
-        debugPrint('Contents : ${knowledge.contents}');
-      }
-    });
+    _checkInternetConnection();
   }
 
+  Future<void> _checkInternetConnection() async {
+    var connectivityResult = await _connectivity.checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      debugPrint("ไม่มีการเชื่อมต่อเครือข่าย");
+      setState(() {
+        _noInternet = true;
+        _isLoading = false;
+      });
+    } else {
+      bool hasRealConnectivity = await _checkRealInternetConnectivity();
+      if (!hasRealConnectivity) {
+        debugPrint(
+            "มีการเชื่อมต่อเครือข่าย แต่ไม่สามารถเข้าถึงอินเทอร์เน็ตได้");
+        setState(() {
+          _noInternet = true;
+          _isLoading = false;
+        });
+        return;
+      }
+
+      debugPrint("มีการเชื่อมต่ออินเทอร์เน็ต");
+      setState(() {
+        _noInternet = false;
+        _isLoading = true;
+      });
+
+      try {
+        final knowledges = await getKnowledges();
+        setState(() {
+          knowledgelist = knowledges;
+          _isLoading = false;
+        });
+
+        for (var knowledge in knowledgelist) {
+          debugPrint('Knowledge : ${knowledge.knowledgeImg}');
+          debugPrint('Knowledge : ${knowledge.knowledgeDetail}');
+          debugPrint('Contents : ${knowledge.contents}');
+        }
+      } catch (e) {
+        debugPrint("เกิดข้อผิดพลาดในการโหลดข้อมูล: $e");
+        setState(() {
+          _noInternet = true;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppbarMains(name: 'คลังความรู้'),
@@ -67,19 +118,71 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
                   size: 200,
                 ),
               )
-            : SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20.0),
-                    Column(
+            : _noInternet
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        for (var knowledge in knowledgelist)
-                          KnowlegdeCol(
-                            onTap: () {
-                              knowledge.contents.isNotEmpty
-                                  ? null
-                                  : Navigator.push(
+                        Icon(
+                          Icons.wifi_off,
+                          size: 80,
+                          color: Colors.red.shade300,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          "ตอนนี้คุณไม่ได้เชื่อมต่ออินเทอร์เน็ต",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.red.shade400,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            _checkInternetConnection();
+                            // Do not dismiss the modal here, let _updateNoInternetState handle it
+                          },
+                          style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.red.shade300),
+                          ),
+                          child: const Text(
+                            "ลองใหม่",
+                            style: TextStyle(color: WhiteColor, fontSize: 15),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    color: GPrimaryColor,
+                    backgroundColor: WhiteColor,
+                    onRefresh: getKnowledges,
+                    child: knowledgelist.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.library_books_rounded,
+                                    size: 50, color: GPrimaryColor),
+                                SizedBox(height: 25),
+                                Text(
+                                  "ไม่มีคลังความรู้ ณ ขณะนี้",
+                                  style: TextStyle(
+                                      fontSize: 15, color: GPrimaryColor,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: knowledgelist.length,
+                            itemBuilder: (context, index) {
+                              final knowledge = knowledgelist[index];
+                              return KnowlegdeCol(
+                                onTap: () {
+                                  if (knowledge.contents.isEmpty) {
+                                    Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => KnowledgePage(
@@ -88,18 +191,16 @@ class _KnowledgeMainState extends State<KnowledgeMain> {
                                         ),
                                       ),
                                     );
+                                  }
+                                },
+                                title: knowledge.knowledgeName,
+                                icons: knowledge.knowledgeIcons,
+                                ismutible: knowledge.contents.isNotEmpty,
+                                contents: knowledge.contents,
+                              );
                             },
-                            title: knowledge.knowledgeName,
-                            icons: knowledge.knowledgeIcons,
-                            ismutible:
-                                knowledge.contents.isEmpty ? false : true,
-                            contents: knowledge.contents,
                           ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
+                  ),
       ),
     );
   }

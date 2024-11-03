@@ -39,7 +39,7 @@ class _SharePageState extends State<SharePage> {
 
   @override
   Widget build(BuildContext context) {
-    // นำข้อมูลไปใช้ตามต้องการ
+    
     return Scaffold(
       appBar: const AppbarMains(name: 'แชร์คลังความรู้'),
       backgroundColor: GreyColor,

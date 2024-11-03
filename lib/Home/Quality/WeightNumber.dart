@@ -1,6 +1,7 @@
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
 import 'package:watalygold/Home/Quality/result_screen.dart';
@@ -208,39 +209,7 @@ class _WeightNumberState extends State<WeightNumber> {
   }
 
   Future useFunctionandresult() async {
-    showDialog(
-      context: context,
-      builder: (context) => Center(
-        child: AlertDialog(
-          backgroundColor: GPrimaryColor.withOpacity(0.6),
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          title: Column(
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'กำลังตรวจสอบน้ำหนัก',
-                  style: TextStyle(color: WhiteColor, fontSize: 20),
-                  textAlign: TextAlign
-                      .center, // Add this line to center the title text
-                ),
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              LoadingAnimationWidget.discreteCircle(
-                color: WhiteColor,
-                secondRingColor: GPrimaryColor,
-                thirdRingColor: YPrimaryColor,
-                size: 70,
-              ),
-            ],
-          ),
-          // actions: [],
-        ),
-      ),
-    );
+    showdialogloadingprocessing();
     weight = numbersOnly.toString();
     debugPrint("ค่าน้ำหนัก $weight");
     widget.httpscall["weight"] = weight;
@@ -296,9 +265,20 @@ class _WeightNumberState extends State<WeightNumber> {
     try {
       final XFile image = await _controller.takePicture();
       setState(() {});
-      showDialog(
-        context: context,
-        builder: (context) => Center(
+      showdialogloadingprocessing();
+      await _cropAndOCR(image);
+    } catch (e) {
+      print('Error capturing image: $e');
+    }
+  }
+
+  void showdialogloadingprocessing() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: Center(
           child: AlertDialog(
             backgroundColor: GPrimaryColor.withOpacity(0.6),
             contentPadding:
@@ -328,11 +308,8 @@ class _WeightNumberState extends State<WeightNumber> {
             // actions: [],
           ),
         ),
-      );
-      await _cropAndOCR(image);
-    } catch (e) {
-      print('Error capturing image: $e');
-    }
+      ),
+    );
   }
 
   Future<void> _cropAndOCR(XFile image) async {
@@ -343,13 +320,12 @@ class _WeightNumberState extends State<WeightNumber> {
       throw Exception('ไม่สามารถอ่านภาพได้');
     }
 
-    // Proportional position and size of the frame
-    final double frameLeftPercent = 0.15; // 15% from the left
-    final double frameTopPercent = 0.5; // 30% from the top
-    final double frameWidthPercent = 0.7; // 70% of screen width
-    final double frameHeightPercent = 0.12; // 12% of screen height
+    // กำหนดตาม position กรอบ
+    final double frameLeftPercent = 0.15;
+    final double frameTopPercent = 0.5;
+    final double frameWidthPercent = 0.7;
+    final double frameHeightPercent = 0.12;
 
-    // Calculate the position and size of the cropping area
     final int cropX = (frameLeftPercent * fullImage.width).round();
     final int cropY = (frameTopPercent * fullImage.height).round();
     final int cropWidth = (frameWidthPercent * fullImage.width).round();
@@ -365,7 +341,6 @@ class _WeightNumberState extends State<WeightNumber> {
       height: cropHeight,
     );
 
-    // Save the cropped image to a temporary file
     final Directory tempDir = await getTemporaryDirectory();
     final String tempPath = tempDir.path;
     final File croppedFile = File('$tempPath/cropped_image.png')
@@ -391,47 +366,7 @@ class _WeightNumberState extends State<WeightNumber> {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => PopScope(
-            canPop: false,
-            child: Center(
-              child: AlertDialog(
-                backgroundColor: GPrimaryColor.withOpacity(0.6),
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                title: Column(
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        'กำลังตรวจสอบน้ำหนัก',
-                        style: TextStyle(color: WhiteColor, fontSize: 20),
-                        textAlign: TextAlign
-                            .center, // Add this line to center the title text
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    LoadingAnimationWidget.discreteCircle(
-                      color: WhiteColor,
-                      secondRingColor: GPrimaryColor,
-                      thirdRingColor: YPrimaryColor,
-                      size: 70,
-                    ),
-                  ],
-                ),
-                // actions: [],
-              ),
-            ),
-          ),
-        );
-
-        
-
-
+        showdialogloadingprocessing();
         final file = File(image.path);
         final img.Image originalImage =
             img.decodeImage(await file.readAsBytes())!;
@@ -439,7 +374,6 @@ class _WeightNumberState extends State<WeightNumber> {
         // final processedImageHSV = await preprocessImagesHSV(originalImage);
         // final processedImageFile = File('${file.path}_processed.png')
         //   ..writeAsBytesSync(img.encodePng(processedImageHSV));
-
         final processedImageBW = await _preprocessImageblackandwhite(file);
 
         await processImageAndAnalyze(processedImageBW);
@@ -451,21 +385,26 @@ class _WeightNumberState extends State<WeightNumber> {
 
   Future<void> processImageAndAnalyze(File file) async {
     try {
+      setState(() {
+        geminiProcessCount++;
+      });
+
       final gemini = Gemini.instance;
       final result = await gemini.textAndImage(
         text:
-            """The image shows a digital scale display with digital numbers and decimal points. 
-            There is a weight attached to the image, with a white background and black numbers. 
-            However, if you cannot find the numbers or there is no digital scale display, 
-            you would answer "ไม่มีตัวเลขหรือตาชั่งในภาพนี้" 
-            I would like you to read the weight on the scale, for example, 325.25 g .""",
+            """The picture shows a digital scale with digital numbers and decimal points.
+    There is a weight attached to the picture, with a white background and black numbers.
+    However, if you do not see the numbers on the digital scale screen,
+    you will have to answer "There are no numbers or scales in this picture."
+    I would like you to read the weight on the scale, for example 325.25 grams.""",
         images: [file.readAsBytesSync()],
       );
 
       var geminiText = result?.content?.parts?.last.text ?? '';
+      debugPrint("จำนวนครั้งที่ส่งไป Gemini: $geminiProcessCount");
       debugPrint("Gemini response: $geminiText");
       // var geminiText = "258.8 g";
-      if (geminiText == 'ไม่มีตัวเลขหรือตาชั่งในภาพนี้') {
+      if (geminiText == 'There are no numbers or scales in this picture') {
         Navigator.of(context).pop(); // ปิด dialog กำลังโหลด
         await showDialog(
           context: context,
@@ -498,7 +437,7 @@ class _WeightNumberState extends State<WeightNumber> {
 
       numbersOnly = extractedNumbers;
       debugPrint("ค่าน้ำหนักหลังทำงานเสร็จ $numbersOnly");
-
+      await saveGeminiCountToFirebase();
       Navigator.of(context).pop(); // ปิด dialog กำลังโหลด
 
       String? results = await showDialog(
@@ -525,6 +464,10 @@ class _WeightNumberState extends State<WeightNumber> {
         debugPrint("น้ำหนักที่ได้มา : $results");
       }
     } catch (error) {
+      setState(() {
+        geminiProcessCount--;
+      });
+      await saveGeminiCountToFirebase();
       Navigator.of(context).pop(); // ปิด dialog กำลังโหลด ในกรณีเกิด error
       await showDialog(
         context: context,
@@ -545,6 +488,27 @@ class _WeightNumberState extends State<WeightNumber> {
     }
   }
 
+  int geminiProcessCount = 0;
+    Future<void> saveGeminiCountToFirebase() async {
+  try {
+   
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    await FirebaseFirestore.instance
+        .collection('GeminiProcesscount')
+        .doc(today) 
+        .set({
+      'process_count': FieldValue.increment(geminiProcessCount),  // เพิ่มค่าครั้งการประมวลผล
+      'last_updated': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));  // ใช้ merge เพื่ออัปเดตข้อมูลเดิมหากมีอยู่แล้ว
+
+    debugPrint('บันทึกจำนวนครั้งลง Firebase สำเร็จ');
+  } catch (e) {
+    debugPrint('เกิดข้อผิดพลาดในการบันทึกลง Firebase: $e');
+  }
+}
+
+
   img.Image preprocessImagesHSV(img.Image image) {
     for (var y = 0; y < image.height; y++) {
       for (var x = 0; x < image.width; x++) {
@@ -553,10 +517,10 @@ class _WeightNumberState extends State<WeightNumber> {
         var color = Color.fromARGB(
             pixel.a.toInt(), pixel.r.toInt(), pixel.g.toInt(), pixel.b.toInt());
         var hsv = HSVColor.fromColor(color);
-        if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
+        if (hsv.hue >= 210 && hsv.hue <= 240 && hsv.value > 0.5) {
           // ลบพื้นที่สีน้ำเงินออก
-          hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 0.0); // ทำให้โปร่งใส
-          // hsv = HSVColor.fromAHSV(1, 0.0, 0.0, 0.7);
+          // hsv = HSVColor.fromAHSV(0.0, hsv.hue, 0.0, 0.0); // ทำให้โปร่งใส
+          hsv = HSVColor.fromAHSV(1, 0.0, 0.0, 0.7);
         }
         // hue สีน้ำเงิน 180-240
         // if (hsv.hue >= 210 && hsv.hue <= 270 && hsv.value > 0.5) {
@@ -583,30 +547,39 @@ class _WeightNumberState extends State<WeightNumber> {
   Future<File> _preprocessImageblackandwhite(File imageFile) async {
     final originalImage = img.decodeImage(imageFile.readAsBytesSync());
     if (originalImage == null) return imageFile;
-    final processedImageHSV = preprocessImagesHSV(originalImage);
+
+    final processedImage = preprocessImagesHSV(originalImage);
+
     const int threshold = 32;
-    for (int y = 0; y < processedImageHSV.height; y++) {
-      for (int x = 0; x < processedImageHSV.width; x++) {
-        // Get the Pixel object
-        final pixel = processedImageHSV.getPixel(x, y);
+
+    for (int y = 0; y < processedImage.height; y++) {
+      for (int x = 0; x < processedImage.width; x++) {
+        final pixel = processedImage.getPixel(x, y);
+
         // Extract RGBA values and cast to int
         int r = pixel.r.toInt();
         int g = pixel.g.toInt();
         int b = pixel.b.toInt();
-        // Calculate the luminance (brightness) using the average of RGB components
+
+        // สูตร luminance ปรับภาพขาวดำให้แม่นขึ้น
         int luminance = (0.299 * r + 0.587 * g + 0.114 * b).toInt();
-        // Apply thresholding: set pixel to black or white
+
         if (luminance < threshold) {
-          processedImageHSV.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+          processedImage.setPixelRgb(x, y, 0, 0, 0); // Black
         } else {
-          processedImageHSV.setPixelRgba(x, y, 255, 255, 255, 255); // White
+          processedImage.setPixelRgb(x, y, 255, 255, 255); // White
         }
+        // if (luminance < threshold) {
+        //   originalImage.setPixelRgba(x, y, 255, 255, 255, 255); // White
+        // } else {
+        //   originalImage.setPixelRgba(x, y, 0, 0, 0, 255); // Black
+        // }
       }
     }
 
     // Save the processed image into a temporary file
     final processedFile = File(imageFile.path)
-      ..writeAsBytesSync(img.encodeJpg(processedImageHSV)); // บันทึก processedImage
+      ..writeAsBytesSync(img.encodeJpg(originalImage)); // บันทึก processedImage
     return processedFile;
   }
 
@@ -630,6 +603,21 @@ class _WeightNumberState extends State<WeightNumber> {
     return null;
   }
 
+  Future<File> _preprocessImage(File imageFile) async {
+    final originalImage = img.decodeImage(imageFile.readAsBytesSync());
+    if (originalImage == null) return imageFile;
+    // แปลงภาพเป็น grayscale
+    // final grayscaleImage = img.grayscale(originalImage);
+    // ปรับแสงและความคม (เพิ่ม contrast, brightness)
+    // final contrastImage = img.adjustColor(originalImage, contrast: 1, brightness:);
+    // ทำให้ภาพเบลอเล็กน้อยเพื่อให้เส้นขอบอ่อนลง (ถ้าได้ผลดี ให้เพิ่ม sharpen)
+    // final sharpenedImage = img.adjustColor(contrastImage, contrast: 2);
+    // บันทึกภาพใหม่ลงในไฟล์ชั่วคราว
+    final processedFile = File(imageFile.path)
+      ..writeAsBytesSync(img.encodeJpg(originalImage));
+
+    return processedFile;
+  }
 
   late int flashstatus = 0;
 
@@ -788,95 +776,98 @@ class _WeightNumberState extends State<WeightNumber> {
           ),
           Expanded(
             flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 85),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: _pickImage,
-                                // onPressed: () {
-                                //   Gallery();
-                                // },
-                                icon: const Icon(
-                                  Icons.image_rounded,
-                                  color: GPrimaryColor,
-                                  size: 40,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 50),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: _pickImage,
+                                  // onPressed: () {
+                                  //   Gallery();
+                                  // },
+                                  icon: const Icon(
+                                    Icons.image_rounded,
+                                    color: GPrimaryColor,
+                                    size: 40,
+                                  ),
                                 ),
-                              ),
-                              const Text(
-                                "รูปภาพ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 12),
-                              )
-                            ],
+                                const Text(
+                                  "รูปภาพ",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 12),
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: GestureDetector(
-                            onTap: () => _captureAndProcess(),
-                            // onTap: () async {
-                            //   await _initializeControllerFuture;
-                            //   var xFile = await _controller.takePicture();
-                            //   setState(() {
-                            //     capturedImages.add(File(xFile.path));
-                            //   });
-                            // },
-                            child: Container(
-                              height: 60,
-                              width: 60,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: GPrimaryColor,
+                        Expanded(
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () => _captureAndProcess(),
+                              // onTap: () async {
+                              //   await _initializeControllerFuture;
+                              //   var xFile = await _controller.takePicture();
+                              //   setState(() {
+                              //     capturedImages.add(File(xFile.path));
+                              //   });
+                              // },
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: GPrimaryColor,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  showDialog(
-                                    barrierDismissible: false,
-                                    context: context,
-                                    builder: (context) {
-                                      return const Dialog_HowtoUse_NW();
-                                    },
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.help_outline_rounded,
-                                  color: GPrimaryColor,
-                                  size: 40,
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return const Dialog_HowtoUse_NW();
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.help_outline_rounded,
+                                    color: GPrimaryColor,
+                                    size: 40,
+                                  ),
                                 ),
-                              ),
-                              const Text(
-                                "คู่มือการถ่ายภาพ",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 12),
-                              )
-                            ],
+                                const Text(
+                                  "คู่มือการถ่ายภาพ",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: GPrimaryColor, fontSize: 12),
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                ],
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           ),

@@ -2,11 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-import 'package:watalygold/Database/Collection_DB.dart';
 import 'package:watalygold/Database/Image_DB.dart';
 import 'package:watalygold/Database/Result_DB.dart';
 import 'package:watalygold/Widgets/Color.dart';
@@ -51,11 +49,11 @@ class _CradforHistoryState extends State<CradforHistory> {
   bool isCheck = false;
 
   Collection? collections;
-  List<Images> _results = [];
+  final List<Images> _results = [];
   final ValueNotifier<List<Images>> _imageList = ValueNotifier([]);
 
-  Future<void> fetchImage(int result_id) async {
-    _imageList.value = await Image_DB().fetchImageinResult(result_id);
+  Future<void> fetchImage(int resultId) async {
+    _imageList.value = await Image_DB().fetchImageinResult(resultId);
     stdout.writeln(_imageList.value.length);
     return;
   }
@@ -97,6 +95,7 @@ class _CradforHistoryState extends State<CradforHistory> {
     Result_DB().updatecollection(0, widget.results.result_id);
   }
 
+  @override
   Widget build(BuildContext context) {
     fetchImage(int.parse(widget.results.result_id.toString()));
     const Map<String, Color> gradeColor = {
@@ -120,6 +119,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                   BorderRadius.circular(15.0), // กำหนด radius ของการ์ด
             ),
             surfaceTintColor: WhiteColor,
+            color: WhiteColor,
             child: SizedBox(
               // width: 450,
               height: 170,
@@ -154,118 +154,138 @@ class _CradforHistoryState extends State<CradforHistory> {
                         children: [
                           Row(
                             children: [
-                              Text(
-                                widget.number != null
-                                    ? 'รายการที่ ${widget.number}'
-                                    : 'รายการที่ ${widget.results.result_id}',
-                                style: const TextStyle(
-                                  color: GPrimaryColor,
-                                  fontSize: 15,
-                                ),
-                                textAlign: TextAlign.start,
-                              ),
+                              widget.number != null
+                                  ? Text(
+                                      widget.number != null
+                                          ? 'รายการที่ ${widget.number}'
+                                          : '',
+                                      style: const TextStyle(
+                                        color: GPrimaryColor,
+                                        fontSize: 15,
+                                      ),
+                                      textAlign: TextAlign.start,
+                                    )
+                                  : Row(
+                                      children: [
+                                        Text(
+                                          "ระดับ",
+                                          style: TextStyle(
+                                              color: GPrimaryColor,
+                                              fontSize: 15),
+                                        ),
+                                        const SizedBox(
+                                            width:
+                                                15), // เว้นระยะห่างระหว่างข้อความ
+                                        Text(
+                                          widget.results.quality,
+                                          style: TextStyle(
+                                              color: gradeColor[
+                                                  widget.results.quality],
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
                               Spacer(),
-                              widget.number == null
-                                  ? widget.statusSelect != null
-                                      ? IconButton(
-                                          onPressed: () {
-                                            widget.onCheckChanged!();
-                                          },
-                                          icon: widget.isChecked!
-                                              ? Icon(
-                                                  Icons.check_circle_rounded,
-                                                  color: GPrimaryColor,
-                                                  size: 25,
-                                                )
-                                              : Icon(
-                                                  Icons
-                                                      .check_circle_outline_rounded,
-                                                  color: Colors.grey.shade400,
-                                                  size: 25,
-                                                ),
-                                        )
-                                      : Padding(
-                                          padding: EdgeInsets.only(right: 10),
-                                          child: ElevatedButton.icon(
-                                              style: ButtonStyle(
-                                                backgroundColor: widget.results
-                                                            .collection_id ==
-                                                        0
-                                                    ? MaterialStateProperty.all(
-                                                        Colors.green.shade400)
-                                                    : MaterialStateProperty.all(
-                                                        Colors.transparent),
-                                                surfaceTintColor: widget.results
-                                                            .collection_id ==
-                                                        0
-                                                    ? MaterialStateProperty.all(
-                                                        Colors.green.shade400)
-                                                    : MaterialStateProperty.all(
-                                                        Colors.transparent),
-                                                padding:
-                                                    MaterialStateProperty.all(
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            horizontal: 10,
-                                                            vertical: 5)),
-                                                minimumSize:
-                                                    MaterialStateProperty.all(
-                                                        const Size(50, 25)),
-                                              ),
-                                              onPressed: widget.results
-                                                          .collection_id ==
-                                                      0
-                                                  ? () {
-                                                      _displaybottomsheet(
-                                                          context);
-                                                    }
-                                                  : () {
-                                                      // _displaybottomsheet(context);
-                                                    },
-                                              icon: Icon(
-                                                Icons.collections_rounded,
-                                                color: widget.results
-                                                            .collection_id ==
-                                                        0
-                                                    ? WhiteColor
-                                                    : Colors.grey.shade100,
-                                                size: 20,
-                                              ),
-                                              label: Icon(
+                              widget.statusSelect != null
+                                  ? IconButton(
+                                      onPressed: () {
+                                        widget.onCheckChanged!();
+                                      },
+                                      icon: widget.isChecked!
+                                          ? Icon(
+                                              Icons.check_circle_rounded,
+                                              color: GPrimaryColor,
+                                              size: 25,
+                                            )
+                                          : Icon(
+                                              Icons
+                                                  .check_circle_outline_rounded,
+                                              color: Colors.grey.shade400,
+                                              size: 25,
+                                            ),
+                                    )
+                                  : Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: ElevatedButton.icon(
+                                          style: ButtonStyle(
+                                            backgroundColor:
                                                 widget.results.collection_id ==
                                                         0
-                                                    ? Icons.add
-                                                    : Icons.check,
-                                                color: widget.results
-                                                            .collection_id ==
+                                                    ? MaterialStateProperty.all(
+                                                        Colors.green.shade400)
+                                                    : MaterialStateProperty.all(
+                                                        Colors.transparent),
+                                            surfaceTintColor:
+                                                widget.results.collection_id ==
+                                                        0
+                                                    ? MaterialStateProperty.all(
+                                                        Colors.green.shade400)
+                                                    : MaterialStateProperty.all(
+                                                        Colors.transparent),
+                                            padding: MaterialStateProperty.all(
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 5)),
+                                            minimumSize:
+                                                MaterialStateProperty.all(
+                                                    const Size(50, 25)),
+                                          ),
+                                          onPressed: widget
+                                                      .results.collection_id ==
+                                                  0
+                                              ? () {
+                                                  _displaybottomsheet(context);
+                                                }
+                                              : () {
+                                                  // _displaybottomsheet(context);
+                                                },
+                                          icon: Icon(
+                                            Icons.collections_rounded,
+                                            color:
+                                                widget.results.collection_id ==
                                                         0
                                                     ? WhiteColor
                                                     : Colors.grey.shade100,
-                                                size: 10,
-                                              )),
-                                        )
-                                  : SizedBox(),
+                                            size: 20,
+                                          ),
+                                          label: Icon(
+                                            widget.results.collection_id == 0
+                                                ? Icons.add
+                                                : Icons.check,
+                                            color:
+                                                widget.results.collection_id ==
+                                                        0
+                                                    ? WhiteColor
+                                                    : Colors.grey.shade100,
+                                            size: 10,
+                                          )),
+                                    ),
                             ],
                           ),
                           const Spacer(),
-                          Row(
-                            children: [
-                              Text(
-                                "ระดับ",
-                                style: TextStyle(
-                                    color: GPrimaryColor, fontSize: 15),
-                              ),
-                              const SizedBox(
-                                  width: 15), // เว้นระยะห่างระหว่างข้อความ
-                              Text(
-                                widget.results.quality,
-                                style: TextStyle(
-                                    color: gradeColor[widget.results.quality],
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
+                          widget.number != null
+                              ? Row(
+                                  children: [
+                                    Text(
+                                      "ระดับ",
+                                      style: TextStyle(
+                                          color: GPrimaryColor, fontSize: 15),
+                                    ),
+                                    const SizedBox(
+                                        width:
+                                            15), // เว้นระยะห่างระหว่างข้อความ
+                                    Text(
+                                      widget.results.quality,
+                                      style: TextStyle(
+                                          color: gradeColor[
+                                              widget.results.quality],
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                )
+                              : SizedBox(),
                           const Spacer(),
                           Row(
                             children: [
@@ -279,12 +299,10 @@ class _CradforHistoryState extends State<CradforHistory> {
                                 padding: const EdgeInsets.only(right: 10),
                                 child: ElevatedButton(
                                     style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
-                                      surfaceTintColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
+                                      backgroundColor: MaterialStateProperty.all(
+                                          Colors.red.shade400),
+                                      surfaceTintColor: MaterialStateProperty.all(
+                                          Colors.red.shade400),
                                       padding: MaterialStateProperty.all(
                                           const EdgeInsets.symmetric(
                                               horizontal: 10, vertical: 5)),
@@ -294,6 +312,8 @@ class _CradforHistoryState extends State<CradforHistory> {
                                     onPressed: () async {
                                       final status = widget.statusdelete ?? 0;
                                       if (status == 0) {
+                                        debugPrint(
+                                            "รายการที่ ${widget.number}");
                                         await showGeneralDialog(
                                           context: context,
                                           barrierDismissible: true,
@@ -320,8 +340,9 @@ class _CradforHistoryState extends State<CradforHistory> {
                                           pageBuilder: (context, animation,
                                               secondaryAnimation) {
                                             return DialogDelete(
-                                              message:
-                                                  "รายการที่ ${widget.results.result_id}",
+                                              message: widget.number != null
+                                                  ? "รายการที่ ${widget.number}"
+                                                  : "รายการที่ ${widget.results.result_id}",
                                               name: "การวิเคราะห์",
                                               onConfirm: DeleteResult,
                                             );
@@ -358,8 +379,9 @@ class _CradforHistoryState extends State<CradforHistory> {
                                           pageBuilder: (context, animation,
                                               secondaryAnimation) {
                                             return DialogDelete(
-                                              message:
-                                                  "รายการที่ ${widget.results.result_id}",
+                                              message: widget.number != null
+                                                  ? "รายการที่ ${widget.number}"
+                                                  : "รายการที่ ${widget.results.result_id}",
                                               name: "การวิเคราะห์",
                                               onConfirm:
                                                   DeleteResultincolletion,
@@ -398,6 +420,7 @@ class _CradforHistoryState extends State<CradforHistory> {
                   BorderRadius.circular(15.0), // กำหนด radius ของการ์ด
             ),
             surfaceTintColor: WhiteColor,
+            color: WhiteColor,
             child: SizedBox(
               // width: 450,
               height: 170,
@@ -557,12 +580,10 @@ class _CradforHistoryState extends State<CradforHistory> {
                                 padding: const EdgeInsets.only(right: 10),
                                 child: ElevatedButton(
                                     style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
-                                      surfaceTintColor:
-                                          MaterialStateProperty.all(
-                                              Colors.red.shade400),
+                                      backgroundColor: MaterialStateProperty.all(
+                                          Colors.red.shade400),
+                                      surfaceTintColor: MaterialStateProperty.all(
+                                          Colors.red.shade400),
                                       padding: MaterialStateProperty.all(
                                           const EdgeInsets.symmetric(
                                               horizontal: 10, vertical: 5)),
@@ -710,7 +731,7 @@ class _CradforHistoryState extends State<CradforHistory> {
               children: <Widget>[
                 for (int i = 0; i < widget.collection!.length; i++)
                   ListTile(
-                    leading: new Icon(
+                    leading: Icon(
                       Icons.collections_rounded,
                       color: Colors.grey.shade700,
                       size: 30,

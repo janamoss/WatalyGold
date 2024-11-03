@@ -16,8 +16,6 @@ class Result_DB {
       collection_id INTEGER,
       another_note TEXT NOT NULL,
       quality TEXT NOT NULL,
-      lenght INTEGER NOT NULL,
-      width INTEGER NOT NULL,
       weight INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -33,8 +31,6 @@ class Result_DB {
       {required int user_id,
       required String another_note,
       required String quality,
-      required double lenght,
-      required double width,
       required double weight}) async {
     final database = await DatabaseService().database;
     debugPrint("$database");
@@ -42,17 +38,13 @@ class Result_DB {
     debugPrint("$user_id");
     debugPrint(another_note);
     debugPrint(quality);
-    debugPrint("$lenght ความยาว");
     debugPrint("$weight น้ำหนัก");
-    debugPrint("$width ความกว้าง");
     return await database.rawInsert(
-      '''INSERT INTO $tablename (user_id,another_note,quality,lenght,width,weight,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)''',
+      '''INSERT INTO $tablename (user_id,another_note,quality,weight,created_at,updated_at) VALUES (?,?,?,?,?,?)''',
       [
         user_id,
         another_note,
         quality,
-        lenght,
-        width,
         weight,
         DateTime.now().microsecondsSinceEpoch,
         DateTime.now().microsecondsSinceEpoch,

@@ -1,16 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:watalygold/Widgets/Appbar_mains_notbotton.dart';
 import 'package:watalygold/Widgets/Color.dart';
 import 'package:intl/intl.dart';
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
+
+void main() {}
 
 class NumericData {
   NumericData(
@@ -31,16 +33,32 @@ class _ExportPriceState extends State<ExportPrice> {
   TextEditingController _dateController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   late TooltipBehavior _tooltipBehavior;
-
   String formattedDate = DateFormat('yyyy-M-d').format(DateTime.now());
+  // void _updateExportPrice() {
+  //   String formattedDate = DateFormat('yyyy-M-d').format(DateTime.now());
+  //   updateExportPrice(formattedDate);
+  // }
 
   @override
   void initState() {
     super.initState();
     _dateController.text =
         DateFormat('d/M/yyyy').format(selectedDate); //ตั้งค่าเร่ิมต้น
+
+    // checkDataForSelectedDate(context);
     checkDataForSelectedDate(context);
-    _tooltipBehavior = TooltipBehavior(enable: true);
+    getLatestDateWithData().then((latestDate) {
+      if (latestDate != null) {
+        setState(() {
+          selectedDate = latestDate;
+          _dateController.text = DateFormat('d/M/yyyy').format(latestDate);
+        });
+      } else {
+        // ถ้าไม่พบข้อมูล ใช้วันที่ปัจจุบัน
+        selectedDate = DateTime.now();
+        _dateController.text = DateFormat('d/M/yyyy').format(selectedDate);
+      }
+    });
     fetchDataAndSaveToFirestore(context);
   }
 
@@ -55,10 +73,10 @@ class _ExportPriceState extends State<ExportPrice> {
         return Theme(
           data: ThemeData().copyWith(
             colorScheme: ColorScheme.dark(
-              primary: GPrimaryColor,
-              onPrimary: YPrimaryColor,
-              surface: Colors.white,
-              onSurface: Colors.black,
+              primary: GPrimaryColor, // header background color
+              onPrimary: YPrimaryColor, // text color on header background
+              surface: Colors.white, // dialog background color
+              onSurface: Colors.black, // text color on dialog background
             ),
           ),
           child: child!,
@@ -70,9 +88,27 @@ class _ExportPriceState extends State<ExportPrice> {
         selectedDate = picked;
         _dateController.text = DateFormat('d/M/yyyy').format(picked);
       });
-      await fetchDataAndSaveToFirestore(context);
+      fetchDataAndSaveToFirestore(context);
       await checkDataForSelectedDate(context);
     }
+  }
+
+  Future<DateTime?> getLatestDateWithData() async {
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('ExportPrice')
+        .doc('new_ExportPrice')
+        .get();
+
+    if (docSnapshot.exists) {
+      final data = docSnapshot.data() as Map<String, dynamic>;
+      final priceList = data['price_list'] as List<dynamic>?;
+
+      if (priceList != null && priceList.isNotEmpty) {
+        String latestDateStr = priceList.last['date'];
+        return DateFormat('M/d/yyyy').parse(latestDateStr);
+      }
+    }
+    return null;
   }
 
   Future<void> checkDataForSelectedDate(BuildContext context) async {
@@ -108,8 +144,7 @@ class _ExportPriceState extends State<ExportPrice> {
     final apiUrl =
         "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=$toDate";
     debugPrint(apiUrl);
-    // final apiUrl =
-    // "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
+    //     "https://dataapi.moc.go.th/gis-product-prices?product_id=W14024&from_date=2018-01-01&to_date=2030-02-28";
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
@@ -123,17 +158,19 @@ class _ExportPriceState extends State<ExportPrice> {
               '${dateTime.month}/${dateTime.day}/${dateTime.year}';
           priceList[i]['date'] = formattedDate;
         }
+
         await FirebaseFirestore.instance
             .collection('ExportPrice')
             .doc('new_ExportPrice')
             .set(data);
 
-        print('Data fetched from API and saved to Firestore successfully.');
+        debugPrint(
+            'Data fetched from API and saved to Firestore successfully.');
       } else {
-        print('Failed to fetch data from API: ${response.statusCode}');
+        debugPrint('Failed to fetch data from API: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching data from API: $error');
+      debugPrint('Error fetching data from API: $error');
     }
   }
 
@@ -192,7 +229,7 @@ class _ExportPriceState extends State<ExportPrice> {
                     child: Column(
                       children: [
                         Text(
-                          'ไม่พบข้อมูลราคาตลาดกลางสำหรับวันที่ ${DateFormat('d/M/yyyy').format(selectedDate)} สามารถตรวจสอบได้ที่ ',
+                          'ไม่พบข้อมูลราคาตลาดกลางสำหรับวันที่ ${DateFormat('d/M/yyyy').format(DateTime.now())} สามารถตรวจสอบได้ที่ ',
                           style: TextStyle(color: Colors.black, fontSize: 18),
                           textAlign: TextAlign.center,
                         ),
@@ -247,14 +284,54 @@ class _ExportPriceState extends State<ExportPrice> {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text('Loading...');
+            return Center(
+              child: LoadingAnimationWidget.discreteCircle(
+                color: WhiteColor,
+                secondRingColor: GPrimaryColor,
+                thirdRingColor: YPrimaryColor,
+                size: 200,
+              ),
+            );
           }
 
           Map<String, dynamic>? data =
               snapshot.data?.data() as Map<String, dynamic>?;
 
           if (data == null || data.isEmpty) {
-            return Text('No data available');
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.wifi_off,
+                    size: 80,
+                    color: Colors.red.shade300,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "ตอนนี้คุณไม่ได้เชื่อมต่ออินเทอร์เน็ต",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.red.shade400,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     // Do not dismiss the modal here, let _updateNoInternetState handle it
+                  //   },
+                  //   style: ButtonStyle(
+                  //     backgroundColor:
+                  //         MaterialStateProperty.all(Colors.red.shade300),
+                  //   ),
+                  //   child: const Text(
+                  //     "ลองใหม่",
+                  //     style: TextStyle(color: WhiteColor, fontSize: 15),
+                  //   ),
+                  // ),
+                ],
+              ),
+            );
           }
 
           String? unit = data['unit'];
@@ -393,7 +470,7 @@ class _ExportPriceState extends State<ExportPrice> {
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.black,
-                          ), 
+                          ),
                         ),
                       ),
                       Padding(
@@ -483,170 +560,99 @@ class _ExportPriceState extends State<ExportPrice> {
                     thickness: 2.0,
                   )),
                 ]),
-                // Padding(
-                //   padding: EdgeInsets.all(7),
-                //   child: maxDataList.isEmpty && minDataList.isEmpty
-                //       ? Center(
-                //           child: Text(
-                //             'ไม่พบข้อมูลสำหรับเดือนนี้',
-                //             style: TextStyle(fontSize: 18, color: Colors.red),
-                //           ),
-                //         )
-                //       : SfCartesianChart(
-                //           tooltipBehavior: _tooltipBehavior,
-                //           series: <ChartSeries>[
-                //             LineSeries<NumericData, double>(
-                //               name: 'ราคาสูงสุด',
-                //               dataSource: maxDataList,
-                //               xValueMapper: (NumericData data, _) =>
-                //                   data.domain,
-                //               yValueMapper: (NumericData data, _) =>
-                //                   data.measure,
-                //               enableTooltip: true,
-                //               color: GPrimaryColor,
-                //               markerSettings: MarkerSettings(
-                //                 isVisible: true,
-                //                 shape: DataMarkerType.circle,
-                //                 color: GPrimaryColor,
-                //                 height: 5,
-                //                 width: 5,
-                //               ),
-                //             ),
-                //             AreaSeries<NumericData, double>(
-                //               name: 'ราคาสูงสุด',
-                //               dataSource: maxDataList,
-                //               xValueMapper: (NumericData data, _) =>
-                //                   data.domain,
-                //               yValueMapper: (NumericData data, _) =>
-                //                   data.measure,
-                //               enableTooltip: true,
-                //               color: YPrimaryColor.withOpacity(0.2),
-                //             ),
-                //             LineSeries<NumericData, double>(
-                //               name: 'ราคาต่ำสุด',
-                //               dataSource: minDataList,
-                //               xValueMapper: (NumericData data, _) =>
-                //                   data.domain,
-                //               yValueMapper: (NumericData data, _) =>
-                //                   data.measure,
-                //               enableTooltip: true,
-                //               color: yellowColor,
-                //               markerSettings: MarkerSettings(
-                //                 isVisible: true,
-                //                 shape: DataMarkerType.circle,
-                //                 color: yellowColor,
-                //                 height: 5,
-                //                 width: 5,
-                //               ),
-                //             ),
-                //             AreaSeries<NumericData, double>(
-                //               name: 'ราคาต่ำสุด',
-                //               dataSource: minDataList,
-                //               xValueMapper: (NumericData data, _) =>
-                //                   data.domain,
-                //               yValueMapper: (NumericData data, _) =>
-                //                   data.measure,
-                //               enableTooltip: true,
-                //               color: YPrimaryColor.withOpacity(0.2),
-                //             ),
-
-                //             // AreaSeries<NumericData, double>(
-                //             //  name: 'ราคาสูงสุด',
-                //             //   dataSource: maxDataList,
-                //             //   xValueMapper: (NumericData data, _) => data.domain,
-                //             //   yValueMapper: (NumericData data, _) => data.measure,
-                //             //   enableTooltip: true,
-                //             //   color: GPrimaryColor.withOpacity(0.2),
-
-                //             // ),
-                //           ],
-                //           // primaryXAxis: NumericAxis(
-                //           //   edgeLabelPlacement: EdgeLabelPlacement.shift,
-                //           // ),
-                //           // primaryYAxis: NumericAxis(
-                //           //   labelFormat: '{value}',
-                //           // ),
-                //         ),
-                // ),
                 Padding(
                   padding: EdgeInsets.all(7),
-                  child: Container(
-                    height: MediaQuery.of(context).size.width * 0.65,
-                    child: Stack(
-                      children: [
-                        SfCartesianChart(
-                          tooltipBehavior: _tooltipBehavior,
-                          series: <ChartSeries>[
-                            LineSeries<NumericData, double>(
-                              name: 'ราคาสูงสุด',
-                              dataSource: maxDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: GPrimaryColor,
-                              markerSettings: MarkerSettings(
-                                isVisible: true,
-                                shape: DataMarkerType.circle,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Stack(
+                        children: [
+                          SfCartesianChart(
+                            tooltipBehavior: TooltipBehavior(
+                              enable: true,
+                              color: Colors.white,
+                              textStyle:
+                                  TextStyle(color: Colors.black, fontSize: 14),
+                              borderColor: Colors.grey,
+                              borderWidth: 1,
+                              duration: 3000,
+                              animationDuration: 500,
+                            ),
+                            series: <ChartSeries>[
+                              LineSeries<NumericData, double>(
+                                name: 'ราคาสูงสุด',
+                                dataSource: maxDataList,
+                                xValueMapper: (NumericData data, _) =>
+                                    data.domain,
+                                yValueMapper: (NumericData data, _) =>
+                                    data.measure,
+                                enableTooltip: true,
                                 color: GPrimaryColor,
-                                height: 5,
-                                width: 5,
+                                markerSettings: MarkerSettings(
+                                  isVisible: true,
+                                  shape: DataMarkerType.circle,
+                                  color: GPrimaryColor,
+                                  height: 5,
+                                  width: 5,
+                                ),
                               ),
-                            ),
-                            AreaSeries<NumericData, double>(
-                              name: 'ราคาสูงสุด',
-                              dataSource: maxDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: YPrimaryColor.withOpacity(0.2),
-                            ),
-                            LineSeries<NumericData, double>(
-                              name: 'ราคาต่ำสุด',
-                              dataSource: minDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: yellowColor,
-                              markerSettings: MarkerSettings(
-                                isVisible: true,
-                                shape: DataMarkerType.circle,
+                              AreaSeries<NumericData, double>(
+                                name: 'ราคาสูงสุด',
+                                dataSource: maxDataList,
+                                xValueMapper: (NumericData data, _) =>
+                                    data.domain,
+                                yValueMapper: (NumericData data, _) =>
+                                    data.measure,
+                                enableTooltip: true,
+                                color: YPrimaryColor.withOpacity(0.2),
+                              ),
+                              LineSeries<NumericData, double>(
+                                name: 'ราคาต่ำสุด',
+                                dataSource: minDataList,
+                                xValueMapper: (NumericData data, _) =>
+                                    data.domain,
+                                yValueMapper: (NumericData data, _) =>
+                                    data.measure,
+                                enableTooltip: true,
                                 color: yellowColor,
-                                height: 5,
-                                width: 5,
+                                markerSettings: MarkerSettings(
+                                  isVisible: true,
+                                  shape: DataMarkerType.circle,
+                                  color: yellowColor,
+                                  height: 5,
+                                  width: 5,
+                                ),
                               ),
-                            ),
-                            AreaSeries<NumericData, double>(
-                              name: 'ราคาต่ำสุด',
-                              dataSource: minDataList,
-                              xValueMapper: (NumericData data, _) =>
-                                  data.domain,
-                              yValueMapper: (NumericData data, _) =>
-                                  data.measure,
-                              enableTooltip: true,
-                              color: YPrimaryColor.withOpacity(0.2),
-                            ),
-                          ],
-                        ),
-                        if (maxDataList.isEmpty && minDataList.isEmpty)
-                          Center(
-                            child: Container(
-                              child: Text(
-                                'ไม่พบข้อมูลราคาตลาดกลางสำหรับเดือนนี้',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.red),
+                              AreaSeries<NumericData, double>(
+                                name: 'ราคาต่ำสุด',
+                                dataSource: minDataList,
+                                xValueMapper: (NumericData data, _) =>
+                                    data.domain,
+                                yValueMapper: (NumericData data, _) =>
+                                    data.measure,
+                                enableTooltip: true,
+                                color: YPrimaryColor.withOpacity(0.2),
                               ),
-                            ),
+                            ],
                           ),
-                      ],
-                    ),
+                          if (maxDataList.isEmpty && minDataList.isEmpty)
+                            Positioned.fill(
+                              child: Container(
+                                color: Colors.white.withOpacity(0.7), //
+                                child: Center(
+                                  child: Text(
+                                    'ไม่พบข้อมูลราคาตลาดกลางสำหรับเดือนนี้',
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.red),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
-                ),
+                )
               ],
             ),
           );

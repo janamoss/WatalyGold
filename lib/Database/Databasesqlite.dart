@@ -26,6 +26,7 @@ class DatabaseService {
 
   Future<Database> _iniialize() async {
     final path = await fullpath;
+    print(path);
     _databaseExists = await databaseExists(path);
     if (!_databaseExists!) {
       var database = await openDatabase(path,

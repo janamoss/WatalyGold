@@ -5,8 +5,6 @@ class Result {
 
   final String another_note;
   final String quality;
-  final int lenght;
-  final int width;
   final int weight;
 
   final String created_at;
@@ -19,8 +17,6 @@ class Result {
     this.collection_id,
     required this.another_note,
     required this.quality,
-    required this.lenght,
-    required this.width,
     required this.weight,
     required this.created_at,
     this.updated_at,
@@ -32,9 +28,7 @@ class Result {
         user_id: map['user_id']?.toInt() ?? 0,
         collection_id: map['collection_id']?.toInt() ?? 0,
         another_note: map['another_note'] ?? '',
-        lenght: map['lenght']?.toInt() ?? 0,
         weight: map['weight']?.toInt() ?? 0,
-        width: map['width']?.toInt() ?? 0,
         quality: map['quality'] ?? '',
         created_at: DateTime.fromMicrosecondsSinceEpoch(map['created_at'])
             .toIso8601String(),
@@ -45,5 +39,4 @@ class Result {
                 : map['updated_at'] as String)
             : null,
       );
-
 }

@@ -16,8 +16,6 @@ class Image_DB {
       image_status TEXT NOT NULL,
       image_name TEXT NOT NULL,
       image_url TEXT NOT NULL,
-      image_lenght INTEGER NOT NULL,
-      image_width INTEGER NOT NULL,
       image_weight INTEGER NOT NULL,
       flaws_percent INTEGER NOT NULL,
       brown_spot INTEGER NOT NULL,
@@ -37,8 +35,6 @@ class Image_DB {
       required String image_status,
       required String image_name,
       required String image_url,
-      required double image_lenght,
-      required double image_width,
       required double image_weight,
       required double flaws_percent,
       required double brown_spot,
@@ -46,14 +42,12 @@ class Image_DB {
     final database = await DatabaseService().database;
     stdout.writeln(database);
     return await database.rawInsert(
-      '''INSERT INTO $tablename (result_id,image_status,image_name,image_url,image_lenght,image_width,image_weight,flaws_percent,brown_spot,color,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''',
+      '''INSERT INTO $tablename (result_id,image_status,image_name,image_url,image_weight,flaws_percent,brown_spot,color,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)''',
       [
         result_id,
         image_status,
         image_name,
         image_url,
-        image_lenght,
-        image_width,
         image_weight,
         flaws_percent,
         brown_spot,

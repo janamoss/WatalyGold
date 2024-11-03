@@ -2,14 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watalygold/Widgets/Color.dart';
 
-class Dialog_HowtoUse_NW extends StatefulWidget {
+class Dialog_HowtoUse_NW extends StatelessWidget {
   const Dialog_HowtoUse_NW({super.key});
 
-  @override
-  State<Dialog_HowtoUse_NW> createState() => _Dialog_HowtoUse_NWState();
-}
-
-class _Dialog_HowtoUse_NWState extends State<Dialog_HowtoUse_NW> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -19,9 +14,9 @@ class _Dialog_HowtoUse_NWState extends State<Dialog_HowtoUse_NW> {
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(10))),
       content: Container(
-        height: MediaQuery.of(context).size.height * 0.6,
         width: MediaQuery.of(context).size.width,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               "ภาพถ่ายน้ำหนักมะม่วงจากตาชั่งดิจิทัล",
@@ -126,8 +121,8 @@ class _Dialog_HowtoUse_NWState extends State<Dialog_HowtoUse_NW> {
                     elevation: MaterialStatePropertyAll(1)),
                 onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
-                  prefs.setBool("checkhowtouse", true);
-                  Navigator.of(context).pop();
+                  prefs.setBool("checkhowtouse_nw", true);
+                  Navigator.of(context).pop(true);
                 },
                 child: Text('เข้าใจแล้ว',
                     style: TextStyle(
