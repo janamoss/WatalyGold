@@ -17,11 +17,17 @@ class BottomSheetGemini extends StatelessWidget {
             color: Colors.red.shade300,
           ),
           const SizedBox(height: 20),
-          Text(
-            "การวิเคราะห์คุณภาพต่อจากนี้จะไม่มีการตรวจสอบบางขั้นตอน",
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.red.shade400,
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              "การวิเคราะห์คุณภาพต่อจากนี้จะไม่มีการตรวจสอบบางขั้นตอน",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.red.shade400,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              softWrap: true,
             ),
           ),
           const SizedBox(height: 20),

@@ -29,16 +29,15 @@ class ImageState extends ChangeNotifier {
     required Function() onNoInternet,
     required Future<void> Function(File, int) analyzeImage,
     required Future<bool> Function() checkInternetConnection,
+    required Function() checkCapturedImages,
   }) async {
     try {
-      final List<XFile> images = 
-          await _picker.pickMultiImage(imageQuality: 60);
+      final List<XFile> images = await _picker.pickMultiImage(imageQuality: 60);
 
       if (images.isNotEmpty) {
         // จำกัดจำนวนรูปไม่เกิน 4 รูป
-        List<XFile> selectedImages = images.length > 4
-            ? images.sublist(0, 4)
-            : images;
+        List<XFile> selectedImages =
+            images.length > 4 ? images.sublist(0, 4) : images;
 
         Set<int> existingStatusImages =
             capturedImages.map((image) => image.statusimage).toSet();
@@ -70,6 +69,7 @@ class ImageState extends ChangeNotifier {
 
         // ดำเนินการวิเคราะห์รูปภาพทั้งหมด
         await Future.wait(analysisFutures);
+        checkCapturedImages();
       }
     } on PlatformException catch (e) {
       onError(e.toString());
@@ -135,9 +135,8 @@ class ImageState extends ChangeNotifier {
   }
 
   List<CapturedImage> get getSortedImages {
-    final sortedList = [...capturedImages]..sort(
-      (a, b) => a.statusimage.compareTo(b.statusimage)
-    );
+    final sortedList = [...capturedImages]
+      ..sort((a, b) => a.statusimage.compareTo(b.statusimage));
     return sortedList;
   }
 
@@ -157,6 +156,7 @@ class ImageState extends ChangeNotifier {
         capturedImages.every(
             (image) => image.statusMango == 1 && image.statusMangoColor == 1);
   }
+
   // ดึงรูปภาพทั้งหมด
   List<CapturedImage> get getAllImages => capturedImages;
 }

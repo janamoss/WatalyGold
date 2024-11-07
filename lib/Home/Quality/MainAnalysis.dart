@@ -294,7 +294,6 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       // อัปเดตสถานะ UI
       context.read<ImageState>().updateStatusMangoColor(index, numberresult);
-      checkCapturedImages();
 
       if (context.read<ImageState>().isAllImagesComplete) {
         debugPrint("ครบ 4 รูปภาพเรียบร้อยแล้ว");
@@ -324,6 +323,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       checkInternetConnection: () async {
         // ใส่โค้ดตรวจสอบอินเทอร์เน็ตของคุณที่นี่
         return await _checkInternetConnection();
+      },
+      checkCapturedImages: () {
+        // call your checkCapturedImages() function here
+        checkCapturedImages();
       },
     );
   }
@@ -573,16 +576,34 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     // ตรวจสอบว่ามี capturedImages ครบ 4 ภาพ
     if (context.read<ImageState>().isImagesFull) {
       // ตรวจสอบว่า status ของภาพทั้งหมดถูกประมวลผลแล้ว
-      final capturedImage = context.read<ImageState>().getAllImages;
-      bool allImagesProcessed = capturedImages.every(
-          (image) => image.statusMango != 0 || image.statusMangoColor != 0);
+      final capturedImages = context.read<ImageState>().getAllImages;
 
-      // หากทุกภาพได้รับการประมวลผลแล้ว
-      debugPrint(allImagesProcessed.toString());
-      if (allImagesProcessed && !_hasShownDialog) {
-        // ตรวจสอบว่าภาพประมวลผลเสร็จและยังไม่เคยแสดง Dialog
-        // ภาพที่มีปัญหา (statusMango == 2 หรือ statusMangoColor == 2)
-        List<ProblematicImage> problematicImages = capturedImage
+      // for (var image in capturedImages) {
+      //   // print("capturedImages length : ${capturedImages.length}");
+      //   // print("image statusMangoColor: ${image.statusMangoColor}");
+      //   if (image.statusMango == 2 || image.statusMangoColor == 2) {
+      //     // print("image statusMango: ${image.statusMango}");
+      //     // print("image statusMangoColor: ${image.statusMangoColor}");
+      //     // print("image statusimage: ${image.statusimage}");
+      //     problematicImages.add(ProblematicImage(
+      //       statusimage: image.statusimage,
+      //       isStatusMangoProblem: image.statusMango == 2,
+      //       isStatusMangoColorProblem: image.statusMangoColor == 2,
+      //     ));
+      //   }
+      // }
+
+      bool allImagesProcessed = capturedImages.length == 4 &&
+          capturedImages
+              .map((image) => image.statusimage)
+              .toSet()
+              .containsAll([1, 2, 3, 4]) &&
+          capturedImages.any(
+              (image) => image.statusMango == 2 || image.statusMangoColor == 2);
+
+      // ตรวจสอบว่ามีภาพที่ไม่ผ่านการวิเคราะห์หรือไม่
+      if (allImagesProcessed) {
+        List<ProblematicImage> problematicImages = capturedImages
             .where((image) =>
                 image.statusMango == 2 || image.statusMangoColor == 2)
             .map((image) => ProblematicImage(
@@ -593,9 +614,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             .toList()
           ..sort((a, b) => a.statusimage.compareTo(b.statusimage));
 
-        // ตรวจสอบว่ามีภาพที่ไม่ผ่านการวิเคราะห์หรือไม่
-        if (problematicImages.isNotEmpty) {
+        if (problematicImages.isNotEmpty && !_hasShownDialog) {
           _hasShownDialog = true; // แสดง Dialog แค่ครั้งเดียว
+          print(problematicImages.length);
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -606,9 +627,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 title: Text(
                   'พบรูปภาพที่ไม่ถูกต้อง',
                   style: TextStyle(
-                      color: Colors.red.shade400,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.red.shade400,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 content: Column(
@@ -617,7 +639,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                   children: [
                     FittedBox(
                       child: Text(
-                        'ภาพที่ไม่ถูกต้องมีดังนี้ :',
+                        'ภาพที่ไม่ถูกต้องมีดังนี้:',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 15,
@@ -639,7 +661,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                             Text(
                               "ภาพด้าน ",
                               style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
                               "${mapIndexToText(problematicImage.statusimage)} ",
@@ -668,9 +692,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                       child: Text(
                         'กรุณาถ่ายภาพด้านดังกล่าวใหม่อีกครั้ง',
                         style: TextStyle(
-                            color: Colors.red.shade300,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
+                          color: Colors.red.shade300,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -678,76 +703,107 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                 actions: <Widget>[
                   SizedBox(
                     child: ElevatedButton(
-                        style: ButtonStyle(
-                            backgroundColor:
-                                WidgetStatePropertyAll(GPrimaryColor),
-                            elevation: WidgetStatePropertyAll(1)),
-                        onPressed: () async {
-                          _hasShownDialog =
-                              false; // รีเซ็ต flag เมื่อปิด Dialog
-                          Navigator.of(context).pop();
-                        },
-                        child: Text('เข้าใจแล้ว',
-                            style: TextStyle(
-                              color: WhiteColor,
-                              fontSize: 16,
-                            ))),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(GPrimaryColor),
+                        elevation: WidgetStatePropertyAll(1),
+                      ),
+                      onPressed: () {
+                        _hasShownDialog = false; // รีเซ็ต flag เมื่อปิด Dialog
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        'เข้าใจแล้ว',
+                        style: TextStyle(
+                          color: WhiteColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               );
             },
           );
-        } else if (!_hasSavedToFirebase) {
-          _hasSavedToFirebase = true;
-          saveGeminiCountToFirebase();
         }
+      } else if (!_hasSavedToFirebase) {
+        _hasSavedToFirebase = true;
+        saveGeminiCountToFirebase();
       }
     }
   }
 
   Future<void> analyzeImage(File image, int index) async {
-    try {
-      setState(() {
-        geminiProcessCount++;
-      });
+    final provider = Provider.of<ProcessCountProvider>(context, listen: false);
+    await provider.checkProcessCount();
+    if (provider.isLimitReached && mounted) {
+      try {
+        setState(() {
+          geminiProcessCount++;
+        });
 
-      final gemini = Gemini.instance;
-      final result = await gemini.textAndImage(
-        // text:
-        //     """ From the picture I gave you, can you check if there is a mango and a 5 baht coin in this picture? If there are both, then answer "mango".
-        // If there are neither or if there is a hand or finger in the picture, then answer "not a mango".
-        // Please note that this picture may show the mango from different angles, such as front, back, top or bottom.
-        // The bottom may look like the top of the mango but there is no stem in the middle.""",
-        text: """
-          ฉันจะส่งรูปภาพให้คุณ ให้คุณลองเช็คดูว่าในรูปนี้มีมะม่วงมั้ย ถ้าเป็นมะม่วงให้ตอบว่า "mango"
-          ถ้าไม่เป็นมะม่วงหรือไม่มีมะม่วง ให้ตอบว่า "ไม่ใช่มะม่วง" โดยฉันขออธิบายเพิ่มเติมว่า มะม่วงที่ฉันจะส่งรูปภาพให้คุณ มีทั้งมะม่วงที่ถ่ายจากด้านหน้า ด้านหลัง ด้านล่าง และด้านบนของมะม่วง เพราะฉะนั้นฉันคิดว่าคุณน่าจะทราบอยู่แล้วว่ามะม่วงมีลักษณะอย่างไร
-          และเพิ่มเติมช่วยบอกสาเหตุฉันหน่อยว่า ทำไมไม่ใช่มะม่วง
-        """,
-        images: [await image.readAsBytes()],
-      );
+        // ข้ามการทำงานของ Gemini ทั้งหมด และไปทำงานที่ runInference(image, index); เลย
 
-      debugPrint("จำนวนครั้งที่ส่งไป Gemini: $geminiProcessCount");
-
-      final geminiText = (result?.content?.parts?.last.text ?? '').trim();
-
-      setState(() {
-        if (geminiText == "mango" || geminiText == "mango.") {
+        setState(() {
           context.read<ImageState>().updateStatusMango(index, 1);
           runInference(image, index);
-        } else {
-          context.read<ImageState>().updateStatusMango(index, 2);
-        }
-        checkCapturedImages();
-      });
-      await _checkDetectCoin(image, index);
+          // checkCapturedImages();
+        });
+        await _checkDetectCoin(image, index);
+      } catch (error) {
+        setState(() {
+          geminiProcessCount--;
+        });
+        debugPrint("Error: $error");
+        // จัดการ error ตามที่ต้องการ
+      }
+    } else {
+      try {
+        setState(() {
+          geminiProcessCount++;
+        });
 
-      debugPrint("Gemini response: $geminiText");
-    } catch (error) {
-      setState(() {
-        geminiProcessCount--;
-      });
-      debugPrint("Error: $error");
-      // จัดการ error ตามที่ต้องการ
+        final gemini = Gemini.instance;
+        final result = await gemini.textAndImage(
+          // text:
+          //     """ From the picture I gave you, can you check if there is a mango and a 5 baht coin in this picture? If there are both, then answer "mango".
+          // If there are neither or if there is a hand or finger in the picture, then answer "not a mango".
+          // Please note that this picture may show the mango from different angles, such as front, back, top or bottom.
+          // The bottom may look like the top of the mango but there is no stem in the middle.""",
+          text: """
+      ฉันจะส่งรูปภาพให้คุณ ให้คุณลองเช็คดูว่าในรูปนี้มีมะม่วงมั้ย ถ้าเป็นมะม่วงให้ตอบว่า "mango"
+      ถ้าไม่เป็นมะม่วงหรือไม่มีมะม่วง ให้ตอบว่า "ไม่ใช่มะม่วง" โดยฉันขออธิบายเพิ่มเติมว่า มะม่วงที่ฉันจะส่งรูปภาพให้คุณ มีทั้งมะม่วงที่ถ่ายจากด้านหน้า ด้านหลัง ด้านล่าง และด้านบนของมะม่วง เพราะฉะนั้นฉันคิดว่าคุณน่าจะทราบอยู่แล้วว่ามะม่วงมีลักษณะอย่างไร
+      และเพิ่มเติมช่วยบอกสาเหตุฉันหน่อยว่า ทำไมไม่ใช่มะม่วง
+    """,
+          images: [await image.readAsBytes()],
+        );
+
+        debugPrint("จำนวนครั้งที่ส่งไป Gemini: $geminiProcessCount");
+
+        final geminiText = (result?.content?.parts?.last.text ?? '').trim();
+
+        // setState(() {
+
+        // });
+        setState(() {
+          if (geminiText == "mango" || geminiText == "mango.") {
+            context.read<ImageState>().updateStatusMango(index, 1);
+            runInference(image, index);
+          } else {
+            context.read<ImageState>().updateStatusMango(index, 2);
+          }
+          // checkCapturedImages();
+        });
+
+        await _checkDetectCoin(image, index);
+
+        debugPrint("Gemini response: $geminiText");
+      } catch (error) {
+        setState(() {
+          geminiProcessCount--;
+        });
+        debugPrint("Error: $error");
+        // จัดการ error ตามที่ต้องการ
+      }
     }
   }
 
@@ -1026,6 +1082,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                               if (!noInternet) {
                                                 await analyzeImage(
                                                     File(xFile.path), statusN);
+                                                checkCapturedImages();
                                               }
                                             },
                                       child: Container(
