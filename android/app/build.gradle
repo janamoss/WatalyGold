@@ -39,6 +39,10 @@ android {
         jvmTarget = '1.8'
     }
 
+    buildFeatures {
+        android.buildFeatures.buildConfig true
+    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
