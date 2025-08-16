@@ -9,21 +9,16 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:watalygold/Database/Databasesqlite.dart';
 import 'package:watalygold/Database/User_DB.dart';
 import 'package:watalygold/Home/Model/Image_State.dart';
 import 'package:watalygold/Home/Model/Model_Analysis.dart';
-import 'package:watalygold/Home/Model/Model_Gemini.dart';
 import 'package:watalygold/Home/Model/gemini_state.dart';
 import 'package:watalygold/Home/Onboarding/onboarding_screen.dart';
-import 'package:watalygold/Home/Quality/test.dart';
 import 'Home/basepage.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
-String? _deviceId;
 
 Future<String?> getDeviceId() async {
   var deviceInfo = DeviceInfoPlugin();
@@ -40,7 +35,7 @@ Future<String?> getDeviceId() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Gemini.init(apiKey: "AIzaSyByGLUAfh3-KjTmTY2MV_i32u2MJFUtEDE");
+  Gemini.init(apiKey: "AIzaSyDuPAwyNPI0AYLbmIv5zdnC--bLnht4MB8");
 
   final prefs = await SharedPreferences.getInstance();
   final onboarding = prefs.getBool("onboarding") ?? false;
@@ -48,14 +43,10 @@ Future<void> main() async {
   debugPrint("$onboarding");
 
   final mobileDeviceIdentifier = await getDeviceId();
-  print('Device ID: $mobileDeviceIdentifier');
   prefs.setString("device", mobileDeviceIdentifier!);
   await DatabaseService().database;
   // await DatabaseService().deleteDatabases(await getDatabasesPath());
   if (await DatabaseService().isDatabaseExists()) {
-    final results = await User_db()
-        .create(user_ipaddress: mobileDeviceIdentifier.toString());
-
     log('Database exists!');
   } else {
     log('Database does not exist.');

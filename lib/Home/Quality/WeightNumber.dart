@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:watalygold/Home/Quality/Result.dart';
@@ -352,8 +351,6 @@ class _WeightNumberState extends State<WeightNumber> {
 
     await processImageAndAnalyze(processedImage);
   }
-
-  final textRecognizer = TextRecognizer();
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 
+/// ไม่ได้ใช้งานแล้ว Model ตัวนี้
 class GeminiState extends ChangeNotifier {
   bool _isAnalyzing = false;
   String? _lastError;

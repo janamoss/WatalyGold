@@ -187,7 +187,7 @@ class _KnowledgePageState extends State<KnowledgePage> {
                           dotsCount: widget.knowledge != null
                               ? widget.knowledge!.knowledgeImg.length
                               : widget.contents!.ImageURL.length,
-                          position: currentIndex,
+                          position: currentIndex.toDouble(),
                           onTap: (position) {
                             controller.animateToPage(position.toInt());
                           },
