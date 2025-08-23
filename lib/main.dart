@@ -35,7 +35,7 @@ Future<String?> getDeviceId() async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Gemini.init(apiKey: "AIzaSyDuPAwyNPI0AYLbmIv5zdnC--bLnht4MB8");
+  Gemini.init(apiKey: "sdsd");
 
   final prefs = await SharedPreferences.getInstance();
   final onboarding = prefs.getBool("onboarding") ?? false;
